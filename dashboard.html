@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance | Dashboard</title>
     <!-- Supabase JS Library -->
-    <script src="https://pdyrfnbjegsyjmcmbqck.supabase.co"></script>
     <style>
         :root {
             --bg-color: #09090b;
@@ -100,16 +99,20 @@
         </div>
     </div>
 
-    <script>
-        // HIER DEINE CITENTIALS EINTRAGEN
+   <script type="module">
+        // Wir importieren Supabase direkt und fehlerfrei über ES-Modules
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
         const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Hier nutzen wir jetzt direkt die importierte Funktion
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isSignUp = false;
         let currentUser = null;
 
+        // ... AB HIER BLEIBT DER REST VOM CODE EXAKT GLEICH ...
         // Auth UI Switcher
         document.getElementById('auth-toggle').addEventListener('click', () => {
             isSignUp = !isSignUp;
