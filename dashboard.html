@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vengeance | Dashboard</title>
+    <!-- Supabase JS Library -->
+    <script src="https://pdyrfnbjegsyjmcmbqck.supabase.co"></script>
+    <style>
+        :root {
+            --bg-color: #09090b;
+            --card-bg: #18181b;
+            --accent-color: #a855f7;
+            --text-color: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --input-bg: #27272a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; padding: 2rem; }
+        .wrapper { width: 100%; max-width: 900px; }
+        
+        /* Auth Form */
+        .auth-container { max-width: 400px; margin: 100px auto; background: var(--card-bg); padding: 2rem; border-radius: 12px; border: 1px solid #27272a; text-align: center; }
+        .auth-container h2 { margin-bottom: 1.5rem; }
+        
+        input, textarea { width: 100%; padding: 0.75rem; background: var(--input-bg); border: 1px solid #3f3f46; border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
+        input:focus, textarea:focus { border-color: var(--accent-color); outline: none; }
+        
+        button { width: 100%; padding: 0.75rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .toggle-auth { color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem; cursor: pointer; text-decoration: underline; }
+
+        /* Dashboard Layout */
+        .hidden { display: none !important; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #27272a; padding-bottom: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        
+        .panel-box { background: var(--card-bg); border: 1px solid #27272a; padding: 1.5rem; border-radius: 14px; margin-bottom: 1.5rem; }
+        .panel-box h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color); }
+        label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <!-- 1. LOGIN / REGISTRIERUNG -->
+        <div id="auth-section" class="auth-container">
+            <h2 id="auth-title">Login</h2>
+            <input type="text" id="auth-username" placeholder="Wunsch-Username (nur bei Registrierung)" class="hidden">
+            <input type="email" id="auth-email" placeholder="E-Mail">
+            <input type="password" id="auth-password" placeholder="Passwort">
+            <button id="auth-btn">Einloggen</button>
+            <p id="auth-toggle" class="toggle-auth">Noch kein Konto? Registrieren</p>
+        </div>
+
+        <!-- 2. DASHBOARD (Wird nach Login sichtbar) -->
+        <div id="dash-section" class="hidden">
+            <div class="header">
+                <h2>Manage Bio Dashboard</h2>
+                <button id="logout-btn" style="width: auto; padding: 0.5rem 1rem; background: #ef4444;">Logout</button>
+            </div>
+
+            <div class="grid">
+                <!-- Linke Spalte: General & Socials -->
+                <div>
+                    <div class="panel-box">
+                        <h3>General Settings</h3>
+                        <label>Anzeigename</label>
+                        <input type="text" id="display-name" placeholder="z.B. Vengeance Utilities">
+                        
+                        <label>Bio Beschreibung</label>
+                        <textarea id="bio-text" rows="3" placeholder="Erzähl was über dich..."></textarea>
+                        
+                        <label>Avatar Bild-URL</label>
+                        <input type="text" id="avatar-url" placeholder="https://link-zu-deinem-bild.com/img.png">
+                    </div>
+
+                    <div class="panel-box">
+                        <h3>Social Links</h3>
+                        <label>GitHub Link</label>
+                        <input type="text" id="github-link" placeholder="https://github.com/...">
+                        
+                        <label>Discord Einladungslink</label>
+                        <input type="text" id="discord-link" placeholder="https://discord.gg/...">
+                    </div>
+                    
+                    <button id="save-btn">Save Changes</button>
+                </div>
+
+                <!-- Rechte Spalte: Produkte (Zukunftsausbau) -->
+                <div>
+                    <div class="panel-box">
+                        <h3>Cosmetic & Products</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Hier bauen wir im nächsten Schritt die dynamischen Produkt-Karten ein, die du hinzufügen und löschen kannst!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // HIER DEINE CITENTIALS EINTRAGEN
+        const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
+        const SUPABASE_ANON_KEY = "DEIN_PUBLISHABLE_KEY_HIER_EINFÜGEN";
+
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let isSignUp = false;
+        let currentUser = null;
+
+        // Auth UI Switcher
+        document.getElementById('auth-toggle').addEventListener('click', () => {
+            isSignUp = !isSignUp;
+            document.getElementById('auth-title').innerText = isSignUp ? 'Registrieren' : 'Login';
+            document.getElementById('auth-btn').innerText = isSignUp ? 'Konto erstellen' : 'Einloggen';
+            document.getElementById('auth-username').classList.toggle('hidden', !isSignUp);
+            document.getElementById('auth-toggle').innerText = isSignUp ? 'Bereits ein Konto? Login' : 'Noch kein Konto? Registrieren';
+        });
+
+        // Auth Logic (Login / Register)
+        document.getElementById('auth-btn').addEventListener('click', async () => {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const username = document.getElementById('auth-username').value.toLowerCase().trim();
+
+            if (isSignUp) {
+                if(!username) return alert('Bitte gib einen Usernamen an!');
+                // 1. User Account anlegen
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) return alert(error.message);
+                
+                // 2. Eintrag in user_bios Tabelle machen
+                const { error: bioError } = await supabase.from('user_bios').insert([
+                    { id: data.user.id, username: username, display_name: username }
+                ]);
+                if (bioError) alert("Username vergeben oder Fehler: " + bioError.message);
+                else alert('Registrierung erfolgreich! Bitte logge dich jetzt ein.');
+            } else {
+                // Login
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) return alert(error.message);
+                checkUser();
+            }
+        });
+
+        // Prüfen ob eingeloggt
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('dash-section').classList.remove('hidden');
+                loadUserData();
+            }
+        }
+
+        // Daten aus DB ins Dashboard laden
+        async function loadUserData() {
+            const { data, error } = await supabase.from('user_bios').select('*').eq('id', currentUser.id).single();
+            if (data) {
+                document.getElementById('display-name').value = data.display_name || '';
+                document.getElementById('bio-text').value = data.bio_text || '';
+                document.getElementById('avatar-url').value = data.avatar_url || '';
+                document.getElementById('github-link').value = data.github_link || '';
+                document.getElementById('discord-link').value = data.discord_link || '';
+            }
+        }
+
+        // Daten speichern
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const updates = {
+                id: currentUser.id,
+                display_name: document.getElementById('display-name').value,
+                bio_text: document.getElementById('bio-text').value,
+                avatar_url: document.getElementById('avatar-url').value,
+                github_link: document.getElementById('github-link').value,
+                discord_link: document.getElementById('discord-link').value,
+                updated_at: new Date()
+            };
+
+            const { error } = await supabase.from('user_bios').upsert(updates);
+            if (error) alert('Fehler beim Speichern: ' + error.message);
+            else alert('Erfolgreich gespeichert!');
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            location.reload();
+        });
+
+        // Initialer Check beim Laden der Seite
+        checkUser();
+    </script>
+</body>
+</html>
