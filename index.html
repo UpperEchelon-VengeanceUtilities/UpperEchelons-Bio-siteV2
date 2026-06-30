@@ -125,10 +125,11 @@
                 return;
             }
 
+           // Datenbank abfragen (ilike ignoriert Groß-/Kleinschreibung)
             const { data, error } = await supabase
                 .from('user_bios')
                 .select('*')
-                .eq('username', usernameParam.toLowerCase().trim())
+                .ilike('username', usernameParam.trim())
                 .single();
 
             if (error || !data) {
