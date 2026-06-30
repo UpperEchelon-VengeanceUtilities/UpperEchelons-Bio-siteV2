@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance | Dashboard</title>
-    <!-- Supabase JS Library -->
     <style>
         :root {
             --bg-color: #09090b;
@@ -44,7 +43,6 @@
 <body>
 
     <div class="wrapper">
-        <!-- 1. LOGIN / REGISTRIERUNG -->
         <div id="auth-section" class="auth-container">
             <h2 id="auth-title">Login</h2>
             <input type="text" id="auth-username" placeholder="Wunsch-Username (nur bei Registrierung)" class="hidden">
@@ -54,7 +52,6 @@
             <p id="auth-toggle" class="toggle-auth">Noch kein Konto? Registrieren</p>
         </div>
 
-        <!-- 2. DASHBOARD (Wird nach Login sichtbar) -->
         <div id="dash-section" class="hidden">
             <div class="header">
                 <h2>Manage Bio Dashboard</h2>
@@ -62,7 +59,6 @@
             </div>
 
             <div class="grid">
-                <!-- Linke Spalte: General & Socials -->
                 <div>
                     <div class="panel-box">
                         <h3>General Settings</h3>
@@ -88,7 +84,6 @@
                     <button id="save-btn">Save Changes</button>
                 </div>
 
-                <!-- Rechte Spalte: Produkte (Zukunftsausbau) -->
                 <div>
                     <div class="panel-box">
                         <h3>Cosmetic & Products</h3>
@@ -99,20 +94,17 @@
         </div>
     </div>
 
-   <script type="module">
-        // Wir importieren Supabase direkt und fehlerfrei über ES-Modules
+    <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
         const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0";
+        const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HA00";
 
-        // Hier nutzen wir jetzt direkt die importierte Funktion
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isSignUp = false;
         let currentUser = null;
 
-        // ... AB HIER BLEIBT DER REST VOM CODE EXAKT GLEICH ...
         // Auth UI Switcher
         document.getElementById('auth-toggle').addEventListener('click', () => {
             isSignUp = !isSignUp;
