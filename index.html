@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio & Shop</title>
+    <title>Vengeance Utilities | Bio & Shop</title>
     <style>
         :root {
             --bg-color: #09090b;
@@ -13,80 +13,20 @@
             --text-muted: #a1a1aa;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 2rem 1rem;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 550px;
-            text-align: center;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem 1rem; }
+        .container { width: 100%; max-width: 550px; text-align: center; }
         .hidden { display: none !important; }
 
-        .profile-img {
-            width: 96px;
-            height: 96px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-color);
-            object-fit: cover;
-            margin-bottom: 1rem;
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-        }
+        /* Profil-Bereich */
+        .profile-img { width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--accent-color); object-fit: cover; margin-bottom: 1rem; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; letter-spacing: -0.5px; }
+        .bio { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; }
 
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            letter-spacing: -0.5px;
-        }
-
-        .bio {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
-        }
-
-        .links-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .bio-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            text-decoration: none;
-            padding: 0.9rem;
-            border-radius: 12px;
-            border: 1px solid #27272a;
-            font-weight: 600;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .bio-link:hover {
-            border-color: var(--accent-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(168, 85, 247, 0.15);
-        }
+        /* Links */
+        .links-container { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2.5rem; }
+        .bio-link { display: flex; align-items: center; justify-content: center; background-color: var(--card-bg); color: var(--text-color); text-decoration: none; padding: 0.9rem; border-radius: 12px; border: 1px solid #27272a; font-weight: 600; transition: all 0.2s ease-in-out; }
+        .bio-link:hover { border-color: var(--accent-color); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(168, 85, 247, 0.15); }
 
         #status-msg { color: var(--text-muted); font-size: 1.1rem; }
     </style>
@@ -94,13 +34,13 @@
 <body>
 
     <div id="loading-profile" class="container">
-        <p id="status-msg">Profil wird geladen...</p>
+        <p id="status-msg">Vengeance Utilities wird geladen...</p>
     </div>
 
     <div id="main-profile" class="container hidden">
         <img id="user-avatar" class="profile-img" src="https://via.placeholder.com/150" alt="Logo">
-        <h1 id="user-name">Lade Name...</h1>
-        <p id="user-bio" class="bio">Lade Bio...</p>
+        <h1 id="user-name">Vengeance Utilities</h1>
+        <p id="user-bio" class="bio"></p>
 
         <div class="links-container">
             <a id="link-github" href="#" target="_blank" class="bio-link hidden">GitHub Profile</a>
@@ -113,32 +53,23 @@
 
         const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0";
-
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loadBio() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const usernameParam = urlParams.get('u');
-
-            if (!usernameParam) {
-                document.getElementById('status-msg').innerText = "Kein Username angegeben! Nutze ?u=deinname in der URL.";
-                return;
-            }
-
-           // Datenbank abfragen (ilike ignoriert Groß-/Kleinschreibung)
+            // Holt einfach die allererste Zeile aus der Tabelle (da nur du drin stehst)
             const { data, error } = await supabase
                 .from('user_bios')
                 .select('*')
-                .ilike('username', usernameParam.trim())
+                .limit(1)
                 .single();
 
             if (error || !data) {
-                document.getElementById('status-msg').innerText = "User nicht gefunden!";
+                document.getElementById('status-msg').innerText = "Profil-Daten konnten nicht geladen werden.";
                 return;
             }
 
-            document.getElementById('user-name').innerText = data.display_name || data.username;
-            document.getElementById('user-bio').innerText = data.bio_text || 'Keine Bio eingetragen.';
+            document.getElementById('user-name').innerText = data.display_name || "Vengeance Utilities";
+            document.getElementById('user-bio').innerText = data.bio_text || '';
             
             if (data.avatar_url) {
                 document.getElementById('user-avatar').src = data.avatar_url;
