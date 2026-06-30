@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vengeance | Dashboard</title>
+    <title>Bio & Shop</title>
     <style>
         :root {
             --bg-color: #09090b;
@@ -11,89 +11,47 @@
             --accent-color: #a855f7;
             --text-color: #f4f4f5;
             --text-muted: #a1a1aa;
-            --input-bg: #27272a;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; padding: 2rem; }
-        .wrapper { width: 100%; max-width: 900px; }
-        
-        /* Auth Form */
-        .auth-container { max-width: 400px; margin: 100px auto; background: var(--card-bg); padding: 2rem; border-radius: 12px; border: 1px solid #27272a; text-align: center; }
-        .auth-container h2 { margin-bottom: 1.5rem; }
-        
-        input, textarea { width: 100%; padding: 0.75rem; background: var(--input-bg); border: 1px solid #3f3f46; border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
-        input:focus, textarea:focus { border-color: var(--accent-color); outline: none; }
-        
-        button { width: 100%; padding: 0.75rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        .toggle-auth { color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem; cursor: pointer; text-decoration: underline; }
-
-        /* Dashboard Layout */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem 1rem; }
+        .container { width: 100%; max-width: 550px; text-align: center; }
         .hidden { display: none !important; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #27272a; padding-bottom: 1rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        
-        .panel-box { background: var(--card-bg); border: 1px solid #27272a; padding: 1.5rem; border-radius: 14px; margin-bottom: 1.5rem; }
-        .panel-box h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color); }
-        label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
+
+        /* Profil-Bereich */
+        .profile-img { width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--accent-color); object-fit: cover; margin-bottom: 1rem; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; letter-spacing: -0.5px; }
+        .bio { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; }
+
+        /* Buttons / Social Links */
+        .links-container { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2.5rem; }
+        .bio-link { display: flex; align-items: center; justify-content: center; background-color: var(--card-bg); color: var(--text-color); text-decoration: none; padding: 0.9rem; border-radius: 12px; border: 1px solid #27272a; font-weight: 600; transition: all 0.2s ease-in-out; }
+        .bio-link:hover { border-color: var(--accent-color); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(168, 85, 247, 0.15); }
+
+        /* Status & Fehler */
+        #status-msg { color: var(--text-muted); font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div id="auth-section" class="auth-container">
-            <h2 id="auth-title">Login</h2>
-            <input type="text" id="auth-username" placeholder="Wunsch-Username (nur bei Registrierung)" class="hidden">
-            <input type="email" id="auth-email" placeholder="E-Mail">
-            <input type="password" id="auth-password" placeholder="Passwort">
-            <button id="auth-btn">Einloggen</button>
-            <p id="auth-toggle" class="toggle-auth">Noch kein Konto? Registrieren</p>
-        </div>
+    <div id="loading-profile" class="container">
+        <p id="status-msg">Profil wird geladen...</p>
+    </div>
 
-        <div id="dash-section" class="hidden">
-            <div class="header">
-                <h2>Manage Bio Dashboard</h2>
-                <button id="logout-btn" style="width: auto; padding: 0.5rem 1rem; background: #ef4444;">Logout</button>
-            </div>
+    <div id="main-profile" class="container hidden">
+        <!-- Profil-Bereich -->
+        <img id="user-avatar" class="profile-img" src="https://via.placeholder.com/150" alt="Logo">
+        <h1 id="user-name">Lade Name...</h1>
+        <p id="user-bio" class="bio">Lade Bio...</p>
 
-            <div class="grid">
-                <div>
-                    <div class="panel-box">
-                        <h3>General Settings</h3>
-                        <label>Anzeigename</label>
-                        <input type="text" id="display-name" placeholder="z.B. Vengeance Utilities">
-                        
-                        <label>Bio Beschreibung</label>
-                        <textarea id="bio-text" rows="3" placeholder="Erzähl was über dich..."></textarea>
-                        
-                        <label>Avatar Bild-URL</label>
-                        <input type="text" id="avatar-url" placeholder="https://link-zu-deinem-bild.com/img.png">
-                    </div>
-
-                    <div class="panel-box">
-                        <h3>Social Links</h3>
-                        <label>GitHub Link</label>
-                        <input type="text" id="github-link" placeholder="https://github.com/...">
-                        
-                        <label>Discord Einladungslink</label>
-                        <input type="text" id="discord-link" placeholder="https://discord.gg/...">
-                    </div>
-                    
-                    <button id="save-btn">Save Changes</button>
-                </div>
-
-                <div>
-                    <div class="panel-box">
-                        <h3>Cosmetic & Products</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Hier bauen wir im nächsten Schritt die dynamischen Produkt-Karten ein, die du hinzufügen und löschen kannst!</p>
-                    </div>
-                </div>
-            </div>
+        <!-- Links -->
+        <div class="links-container">
+            <a id="link-github" href="#" target="_blank" class="bio-link hidden">GitHub Profile</a>
+            <a id="link-discord" href="#" target="_blank" class="bio-link hidden">Discord Server</a>
         </div>
     </div>
 
+    <!-- Supabase Modul Integration -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
@@ -102,92 +60,54 @@
 
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let isSignUp = false;
-        let currentUser = null;
+        async function loadBio() {
+            // Holt den Usernamen aus der URL, z.B. ?u=upperechelondev
+            const urlParams = new URLSearchParams(window.location.search);
+            const usernameParam = urlParams.get('u');
 
-        // Auth UI Switcher
-        document.getElementById('auth-toggle').addEventListener('click', () => {
-            isSignUp = !isSignUp;
-            document.getElementById('auth-title').innerText = isSignUp ? 'Registrieren' : 'Login';
-            document.getElementById('auth-btn').innerText = isSignUp ? 'Konto erstellen' : 'Einloggen';
-            document.getElementById('auth-username').classList.toggle('hidden', !isSignUp);
-            document.getElementById('auth-toggle').innerText = isSignUp ? 'Bereits ein Konto? Login' : 'Noch kein Konto? Registrieren';
-        });
-
-        // Auth Logic (Login / Register)
-        document.getElementById('auth-btn').addEventListener('click', async () => {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const username = document.getElementById('auth-username').value.toLowerCase().trim();
-
-            if (isSignUp) {
-                if(!username) return alert('Bitte gib einen Usernamen an!');
-                // 1. User Account anlegen
-                const { data, error } = await supabase.auth.signUp({ email, password });
-                if (error) return alert(error.message);
-                
-                // 2. Eintrag in user_bios Tabelle machen
-                const { error: bioError } = await supabase.from('user_bios').insert([
-                    { id: data.user.id, username: username, display_name: username }
-                ]);
-                if (bioError) alert("Username vergeben oder Fehler: " + bioError.message);
-                else alert('Registrierung erfolgreich! Bitte logge dich jetzt ein.');
-            } else {
-                // Login
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) return alert(error.message);
-                checkUser();
+            if (!usernameParam) {
+                document.getElementById('status-msg').innerText = "Kein Username angegeben! Nutze ?u=deinname in der URL.";
+                return;
             }
-        });
 
-        // Prüfen ob eingeloggt
-        async function checkUser() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                currentUser = user;
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('dash-section').classList.remove('hidden');
-                loadUserData();
+            // Datenbank abfragen
+            const { data, error } = await supabase
+                .from('user_bios')
+                .select('*')
+                .eq('username', usernameParam.toLowerCase().trim())
+                .single();
+
+            if (error || !data) {
+                document.getElementById('status-msg').innerText = "User nicht gefunden!";
+                return;
             }
+
+            // HTML mit den echten Daten befüllen
+            document.getElementById('user-name').innerText = data.display_name || data.username;
+            document.getElementById('user-bio').innerText = data.bio_text || 'Keine Bio eingetragen.';
+            
+            if (data.avatar_url) {
+                document.getElementById('user-avatar').src = data.avatar_url;
+            }
+
+            // Social Links aktivieren falls vorhanden
+            if (data.github_link) {
+                const gh = document.getElementById('link-github');
+                gh.href = data.github_link;
+                gh.classList.remove('hidden');
+            }
+            if (data.discord_link) {
+                const dc = document.getElementById('link-discord');
+                dc.href = data.discord_link;
+                dc.classList.remove('hidden');
+            }
+
+            // Loader verstecken, Profil anzeigen
+            document.getElementById('loading-profile').classList.add('hidden');
+            document.getElementById('main-profile').classList.remove('hidden');
         }
 
-        // Daten aus DB ins Dashboard laden
-        async function loadUserData() {
-            const { data, error } = await supabase.from('user_bios').select('*').eq('id', currentUser.id).single();
-            if (data) {
-                document.getElementById('display-name').value = data.display_name || '';
-                document.getElementById('bio-text').value = data.bio_text || '';
-                document.getElementById('avatar-url').value = data.avatar_url || '';
-                document.getElementById('github-link').value = data.github_link || '';
-                document.getElementById('discord-link').value = data.discord_link || '';
-            }
-        }
-
-        // Daten speichern
-        document.getElementById('save-btn').addEventListener('click', async () => {
-            const updates = {
-                id: currentUser.id,
-                display_name: document.getElementById('display-name').value,
-                bio_text: document.getElementById('bio-text').value,
-                avatar_url: document.getElementById('avatar-url').value,
-                github_link: document.getElementById('github-link').value,
-                discord_link: document.getElementById('discord-link').value,
-                updated_at: new Date()
-            };
-
-            const { error } = await supabase.from('user_bios').upsert(updates);
-            if (error) alert('Fehler beim Speichern: ' + error.message);
-            else alert('Erfolgreich gespeichert!');
-        });
-
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            location.reload();
-        });
-
-        // Initialer Check beim Laden der Seite
-        checkUser();
+        loadBio();
     </script>
 </body>
 </html>
