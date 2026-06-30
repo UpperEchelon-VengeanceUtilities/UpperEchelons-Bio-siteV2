@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vengeance | Dashboard</title>
+    <title>Vengeance | Admin Panel</title>
     <style>
         :root {
             --bg-color: #09090b;
@@ -26,7 +26,6 @@
         
         button { width: 100%; padding: 0.75rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
-        .toggle-auth { color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem; cursor: pointer; text-decoration: underline; }
 
         .hidden { display: none !important; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #27272a; padding-bottom: 1rem; }
@@ -42,17 +41,15 @@
 
     <div class="wrapper">
         <div id="auth-section" class="auth-container">
-            <h2 id="auth-title">Login</h2>
-            <input type="text" id="auth-username" placeholder="Wunsch-Username (nur bei Registrierung)" class="hidden">
+            <h2>Vengeance Admin Login</h2>
             <input type="email" id="auth-email" placeholder="E-Mail">
             <input type="password" id="auth-password" placeholder="Passwort">
             <button id="auth-btn">Einloggen</button>
-            <p id="auth-toggle" class="toggle-auth">Noch kein Konto? Registrieren</p>
         </div>
 
         <div id="dash-section" class="hidden">
             <div class="header">
-                <h2>Manage Bio Dashboard</h2>
+                <h2>Vengeance Utilities Dashboard</h2>
                 <button id="logout-btn" style="width: auto; padding: 0.5rem 1rem; background: #ef4444;">Logout</button>
             </div>
 
@@ -85,7 +82,7 @@
                 <div>
                     <div class="panel-box">
                         <h3>Cosmetic & Products</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Hier bauen wir im nächsten Schritt deine Produkte ein!</p>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Deine Bio-Seite läuft jetzt autark. Hier kommen bald die Produkte rein!</p>
                     </div>
                 </div>
             </div>
@@ -97,55 +94,34 @@
 
         const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0";
-
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let isSignUp = false;
-        let currentUser = null;
+        let rowId = null;
 
-        document.getElementById('auth-toggle').addEventListener('click', () => {
-            isSignUp = !isSignUp;
-            document.getElementById('auth-title').innerText = isSignUp ? 'Registrieren' : 'Login';
-            document.getElementById('auth-btn').innerText = isSignUp ? 'Konto erstellen' : 'Einloggen';
-            document.getElementById('auth-username').classList.toggle('hidden', !isSignUp);
-            document.getElementById('auth-toggle').innerText = isSignUp ? 'Bereits ein Konto? Login' : 'Noch kein Konto? Registrieren';
-        });
-
+        // Login Logik
         document.getElementById('auth-btn').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            const username = document.getElementById('auth-username').value.toLowerCase().trim();
 
-            if (isSignUp) {
-                if(!username) return alert('Bitte gib einen Usernamen an!');
-                const { data, error } = await supabase.auth.signUp({ email, password });
-                if (error) return alert(error.message);
-                
-                const { error: bioError } = await supabase.from('user_bios').insert([
-                    { id: data.user.id, username: username, display_name: username }
-                ]);
-                if (bioError) alert("Fehler: " + bioError.message);
-                else alert('Registrierung erfolgreich! Bitte logge dich jetzt ein.');
-            } else {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) return alert(error.message);
-                checkUser();
-            }
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) return alert("Login fehlgeschlagen: " + error.message);
+            checkUser();
         });
 
         async function checkUser() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                currentUser = user;
                 document.getElementById('auth-section').classList.add('hidden');
                 document.getElementById('dash-section').classList.remove('hidden');
                 loadUserData();
             }
         }
 
+        // Daten laden
         async function loadUserData() {
-            const { data, error } = await supabase.from('user_bios').select('*').eq('id', currentUser.id).single();
+            const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
             if (data) {
+                rowId = data.id; // Wir merken uns die ID der Zeile zum Überschreiben
                 document.getElementById('display-name').value = data.display_name || '';
                 document.getElementById('bio-text').value = data.bio_text || '';
                 document.getElementById('avatar-url').value = data.avatar_url || '';
@@ -154,9 +130,9 @@
             }
         }
 
+        // Daten speichern
         document.getElementById('save-btn').addEventListener('click', async () => {
             const updates = {
-                id: currentUser.id,
                 display_name: document.getElementById('display-name').value,
                 bio_text: document.getElementById('bio-text').value,
                 avatar_url: document.getElementById('avatar-url').value,
@@ -165,13 +141,26 @@
                 updated_at: new Date()
             };
 
-            const { error } = await supabase.from('user_bios').upsert(updates);
+            // Falls schon eine Zeile existiert, updaten wir sie, ansonsten legen wir sie an
+            let error;
+            if (rowId) {
+                const { error: err } = await supabase.from('user_bios').update(updates).eq('id', rowId);
+                error = err;
+            } else {
+                const { error: err } = await supabase.from('user_bios').insert([updates]);
+                error = err;
+            }
+
             if (error) alert('Fehler beim Speichern: ' + error.message);
-            else alert('Erfolgreich gespeichert!');
+            else {
+                alert('Erfolgreich gespeichert!');
+                loadUserData();
+            }
         });
 
+        // Logout
         document.getElementById('logout-btn').addEventListener('click', async () => {
-            await supabase.signOut();
+            await supabase.auth.signOut();
             location.reload();
         });
 
