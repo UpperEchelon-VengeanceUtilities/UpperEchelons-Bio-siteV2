@@ -23,21 +23,40 @@
         .video-background video { width: 100%; height: 100%; object-fit: cover; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; background: rgba(0,0,0,0.3); }
 
-        /* Wrapper für den Glow-Balken */
-        .card-wrapper { position: relative; z-index: 10; padding: 3px; border-radius: 24px; opacity: 0; transform: scale(0.96); transition: opacity 0.8s, transform 0.8s; }
+        /* NEU: Wrapper ist jetzt transparent, die Border-Dicke wird über Padding geregelt */
+        .card-wrapper { 
+            position: relative; 
+            z-index: 10; 
+            padding: 2px; 
+            opacity: 0; 
+            transform: scale(0.96); 
+            transition: opacity 0.8s, transform 0.8s; 
+            background: transparent; 
+        }
         .card-wrapper.loaded { opacity: 1; transform: scale(1); }
 
-        .card-wrapper.glow-active {
-            background: linear-gradient(0deg, var(--accent), #18181b, var(--accent));
+        /* NEU: Maskiertes Pseudoelement für die animierte Glow-Border (Zentrum bleibt 100% durchsichtig!) */
+        .card-wrapper.glow-active::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(0deg, var(--accent), transparent, var(--accent));
             background-size: 400% 400%;
             animation: border-dance 4s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+            padding: 2px; 
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
         }
         @keyframes border-dance { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* Der eigentliche Card-Container erhält KEINE feste Hintergrundfarbe im statischen CSS */
+        /* NEU: Der Container sitzt über dem Pseudoelement */
         .container { 
             width: 444px; text-align: center; display: flex; flex-direction: column; overflow: hidden;
-            border-radius: 22px;
+            position: relative;
+            z-index: 2;
         }
 
         .card-banner { width: 100%; height: 110px; background-size: cover; background-position: center; display: none; }
@@ -113,7 +132,6 @@
             const styleTag = document.getElementById('dynamic-theme');
             document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
 
-            // Absolut fehlerfreier Hex-to-RGB Wandler
             const hexToRgb = (hex) => {
                 let s = hex.replace('#', '');
                 if (s.length === 3) s = s.split('').map(x => x + x).join('');
@@ -125,23 +143,24 @@
             };
             
             const rgb = c.background_color ? hexToRgb(c.background_color) : { r: 24, g: 24, b: 27 };
-            // Sicherstellen, dass die Opacity mathematisch als 0.10 statt 10 ankommt
             const op = c.opacity !== undefined ? (parseFloat(c.opacity) / 100) : 0.65;
             const blurVal = c.blur !== undefined ? c.blur : 20;
+            const bRadius = c.border_radius || 24;
 
             let cursorStyle = data.cursor_url ? `* { cursor: url('${data.cursor_url}'), auto !important; }` : "";
 
-            // FIX: Erzwungene Zuweisung direkt auf die '.container'-Klasse mit !important
+            // NEU: Hier werden die dynamischen Variablen sauber injiziert, damit auch die Ecken synchron abgerundet sind
             styleTag.innerHTML = `
                 ${cursorStyle}
                 :root { --accent: ${c.primary_color || '#a855f7'}; }
+                .card-wrapper, .card-wrapper::before { border-radius: ${bRadius}px; }
                 .container { 
                     background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${op}) !important; 
                     backdrop-filter: blur(${blurVal}px) !important; 
                     -webkit-backdrop-filter: blur(${blurVal}px) !important; 
                     color: ${c.text_color || '#f4f4f5'}; 
+                    border-radius: ${bRadius - 2}px;
                 }
-                .card-wrapper { border-radius: ${c.border_radius || 24}px; }
                 .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; }
                 .bio-link { color: ${c.text_color || '#f4f4f5'}; border: 1px solid rgba(255,255,255,0.06); transition: ${c.animations ? 'all 0.25s' : 'none'}; }
                 .bio-link:hover { ${c.animations ? `border-color: ${c.primary_color || '#a855f7'}88; background: ${c.primary_color || '#a855f7'}14; transform: translateY(-2px);` : ''} }
