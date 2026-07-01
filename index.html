@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance Utilities | Bio</title>
-    <!-- Tab-Icon, das dynamisch über das Admin-Bild geladen wird -->
     <link id="favicon" rel="icon" type="image/png" href="">
     
     <style>
@@ -33,7 +32,7 @@
             position: relative;
         }
 
-        /* Fullscreen Video-Hintergrund in Originalqualität */
+        /* Fullscreen Video-Hintergrund */
         .video-background {
             position: fixed;
             top: 0;
@@ -51,7 +50,6 @@
             object-fit: cover;
         }
 
-        /* Dunkler Overlay-Filter über das Video für bessere Lesbarkeit */
         .video-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -59,7 +57,7 @@
             z-index: -1;
         }
 
-        /* Haupt-Profilkarte im edlen e-z.bio Look */
+        /* Profilkarte */
         .container { 
             width: 100%; 
             max-width: 480px; 
@@ -76,7 +74,6 @@
         
         .hidden { display: none !important; }
 
-        /* Profilbild */
         .profile-img { 
             width: 100px; 
             height: 100px; 
@@ -90,7 +87,6 @@
         h1 { font-size: 1.65rem; font-weight: 700; margin-bottom: 0.35rem; letter-spacing: -0.5px; }
         .bio { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
 
-        /* Buttons / Social-Links */
         .links-container { display: flex; flex-direction: column; gap: 0.8rem; }
         .bio-link { 
             display: flex; 
@@ -112,7 +108,7 @@
             box-shadow: 0 8px 25px rgba(168, 85, 247, 0.15); 
         }
 
-        /* Audio- / Volume-Button oben links wie bei e-z.bio */
+        /* Sound-Button oben links */
         .audio-control {
             position: fixed;
             top: 20px;
@@ -136,26 +132,21 @@
 </head>
 <body>
 
-    <!-- Audio-Umschalter (Wird eingeblendet wenn Video existiert) -->
     <div id="mute-toggle" class="audio-control">
         <svg id="volume-icon" viewBox="0 0 24 24">
-            <!-- Pfad für Stummgeschaltet (Standard) -->
             <path id="icon-path" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM4 9v6h4l5 5V4L8 9H4zm12.5 3c0 2.21-1.29 4.12-3.12 5.01v2.04c2.94-.97 5.12-3.73 5.12-7.05s-2.18-6.08-5.12-7.05v2.04c1.83.89 3.12 2.8 3.12 5.01z"/>
         </svg>
     </div>
 
-    <!-- Hintergrundvideo-Ebene -->
     <div class="video-background">
         <video id="bg-video" loop playsinline muted></video>
     </div>
     <div class="video-overlay"></div>
 
-    <!-- Lade-Bildschirm -->
     <div id="loading-profile" class="container">
         <p id="status-msg">Vengeance Utilities wird geladen...</p>
     </div>
 
-    <!-- Hauptprofil-Inhalt -->
     <div id="main-profile" class="container hidden">
         <img id="user-avatar" class="profile-img" src="" alt="Logo">
         <h1 id="user-name">Vengeance Utilities</h1>
@@ -178,11 +169,10 @@
             const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
 
             if (error || !data) {
-                document.getElementById('status-msg').innerText = "Profil-Daten konnten nicht geladen werden.";
+                document.getElementById('status-msg').innerText = "Fehler beim Laden oder noch keine Daten eingetragen.";
                 return;
             }
 
-            // Profildaten setzen
             document.getElementById('user-name').innerText = data.display_name || "Vengeance Utilities";
             document.getElementById('user-bio').innerText = data.bio_text || '';
             
@@ -191,7 +181,6 @@
                 document.getElementById('favicon').href = data.avatar_url;
             }
 
-            // Social Links steuern
             if (data.github_link) {
                 const gh = document.getElementById('link-github');
                 gh.href = data.github_link;
@@ -203,7 +192,6 @@
                 dc.classList.remove('hidden');
             }
 
-            // Fullscreen Video verarbeiten
             if (data.video_url) {
                 const video = document.getElementById('bg-video');
                 const muteToggle = document.getElementById('mute-toggle');
@@ -211,32 +199,26 @@
                 video.src = data.video_url;
                 muteToggle.style.display = 'flex';
 
-                // Autoplay starten (Muted, da Browser es sonst blockieren)
-                video.play().catch(err => console.log("Autoplay-Fehler:", err));
+                video.play().catch(err => console.log("Autoplay blockiert:", err));
 
-                // Sound aktivieren / deaktiveren bei Klick auf das Symbol
                 muteToggle.addEventListener('click', () => {
                     if (video.muted) {
                         video.muted = false;
-                        // Ändert das Icon auf "Laut"
                         document.getElementById('icon-path').setAttribute('d', 'M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z');
                     } else {
                         video.muted = true;
-                        // Ändert das Icon auf "Stumm"
                         document.getElementById('icon-path').setAttribute('d', 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM4 9v6h4l5 5V4L8 9H4zm12.5 3c0 2.21-1.29 4.12-3.12 5.01v2.04c2.94-.97 5.12-3.73 5.12-7.05s-2.18-6.08-5.12-7.05v2.04c1.83.89 3.12 2.8 3.12 5.01z');
                     }
                 });
 
-                // Falls der Nutzer irgendwo auf die Karte klickt, schalten wir den Ton testweise auch direkt ein
                 document.body.addEventListener('click', (e) => {
                     if (video.muted && e.target !== muteToggle && !muteToggle.contains(e.target)) {
                         video.muted = false;
                         document.getElementById('icon-path').setAttribute('d', 'M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z');
                     }
-                }, { once: true }); // Nur beim allerersten Klick ausführen
+                }, { once: true });
             }
 
-            // Loader verbergen, Profilkarte einblenden
             document.getElementById('loading-profile').classList.add('hidden');
             document.getElementById('main-profile').classList.remove('hidden');
         }
