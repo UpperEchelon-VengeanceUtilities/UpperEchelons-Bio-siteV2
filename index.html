@@ -4,113 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance Utilities | Bio</title>
-    <link id="favicon" rel="icon" type="image/png" href="https://via.placeholder.com/32">
+    <!-- Tab-Icon, das dynamisch über das Admin-Bild geladen wird -->
+    <link id="favicon" rel="icon" type="image/png" href="">
     
     <style>
         :root {
-            --bg-color: #050507;
-            --card-bg: rgba(24, 24, 27, 0.65);
+            --bg-blur: rgba(10, 10, 12, 0.55);
+            --card-bg: rgba(20, 20, 25, 0.6);
             --accent-color: #a855f7;
             --text-color: #f4f4f5;
             --text-muted: #a1a1aa;
-            --border-color: rgba(39, 39, 42, 0.5);
+            --border-color: rgba(255, 255, 255, 0.08);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         
-        body { 
-            background-color: var(--bg-color); 
+        body, html { 
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #050507; 
             color: var(--text-color); 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            min-height: 100vh; 
-            padding: 2rem 1rem;
-            overflow-x: hidden;
+            overflow: hidden;
             position: relative;
         }
 
-        /* Animierter Hintergrund im e-z.bio Stil */
-        body::before {
-            content: "";
-            position: absolute;
+        /* Fullscreen Video-Hintergrund in Originalqualität */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            background: #050507;
+        }
+
+        .video-background video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Dunkler Overlay-Filter über das Video für bessere Lesbarkeit */
+        .video-overlay {
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.12), transparent 60%);
+            background: rgba(0, 0, 0, 0.45);
             z-index: -1;
         }
 
+        /* Haupt-Profilkarte im edlen e-z.bio Look */
         .container { 
             width: 100%; 
-            max-width: 540px; 
+            max-width: 480px; 
             text-align: center; 
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 2.5rem 2rem;
+            padding: 3rem 2rem;
             border-radius: 24px;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 50px rgba(168, 85, 247, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            z-index: 10;
         }
         
         .hidden { display: none !important; }
 
-        /* Profil-Bereich */
+        /* Profilbild */
         .profile-img { 
-            width: 110px; 
-            height: 110px; 
+            width: 100px; 
+            height: 100px; 
             border-radius: 50%; 
             border: 2px solid var(--accent-color); 
             object-fit: cover; 
             margin-bottom: 1.25rem; 
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.45); 
-            transition: transform 0.3s ease;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); 
         }
-        .profile-img:hover { transform: scale(1.05); }
 
-        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.35rem; letter-spacing: -0.5px; }
+        h1 { font-size: 1.65rem; font-weight: 700; margin-bottom: 0.35rem; letter-spacing: -0.5px; }
         .bio { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
 
-        /* Links & Buttons */
-        .links-container { display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 2rem; }
+        /* Buttons / Social-Links */
+        .links-container { display: flex; flex-direction: column; gap: 0.8rem; }
         .bio-link { 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            background-color: rgba(39, 39, 42, 0.4); 
+            background-color: rgba(255, 255, 255, 0.03); 
             color: var(--text-color); 
             text-decoration: none; 
-            padding: 1rem; 
+            padding: 0.95rem; 
             border-radius: 14px; 
             border: 1px solid var(--border-color); 
             font-weight: 600; 
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: all 0.2s ease-in-out; 
         }
         .bio-link:hover { 
             border-color: var(--accent-color); 
             background-color: rgba(168, 85, 247, 0.08);
             transform: translateY(-2px); 
-            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.15); 
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.15); 
         }
 
-        /* Video Player Modul */
-        .video-player-container {
-            margin-top: 1.5rem;
-            border-radius: 14px;
-            overflow: hidden;
+        /* Audio- / Volume-Button oben links wie bei e-z.bio */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
-            background: #000;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
             display: none;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
         }
-        video { width: 100%; display: block; max-height: 260px; object-fit: cover; }
+        .audio-control:hover { background: rgba(168, 85, 247, 0.2); }
+        .audio-control svg { width: 20px; height: 20px; fill: #fff; }
 
         #status-msg { color: var(--text-muted); font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
+    <!-- Audio-Umschalter (Wird eingeblendet wenn Video existiert) -->
+    <div id="mute-toggle" class="audio-control">
+        <svg id="volume-icon" viewBox="0 0 24 24">
+            <!-- Pfad für Stummgeschaltet (Standard) -->
+            <path id="icon-path" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM4 9v6h4l5 5V4L8 9H4zm12.5 3c0 2.21-1.29 4.12-3.12 5.01v2.04c2.94-.97 5.12-3.73 5.12-7.05s-2.18-6.08-5.12-7.05v2.04c1.83.89 3.12 2.8 3.12 5.01z"/>
+        </svg>
+    </div>
+
+    <!-- Hintergrundvideo-Ebene -->
+    <div class="video-background">
+        <video id="bg-video" loop playsinline muted></video>
+    </div>
+    <div class="video-overlay"></div>
+
+    <!-- Lade-Bildschirm -->
     <div id="loading-profile" class="container">
         <p id="status-msg">Vengeance Utilities wird geladen...</p>
     </div>
 
+    <!-- Hauptprofil-Inhalt -->
     <div id="main-profile" class="container hidden">
         <img id="user-avatar" class="profile-img" src="" alt="Logo">
         <h1 id="user-name">Vengeance Utilities</h1>
@@ -119,10 +164,6 @@
         <div class="links-container">
             <a id="link-github" href="#" target="_blank" class="bio-link hidden">GitHub Profile</a>
             <a id="link-discord" href="#" target="_blank" class="bio-link hidden">Discord Server</a>
-        </div>
-
-        <div id="video-box" class="video-player-container">
-            <video id="bg-video" controls loop playsinline></video>
         </div>
     </div>
 
@@ -141,17 +182,16 @@
                 return;
             }
 
-            // Daten setzen
+            // Profildaten setzen
             document.getElementById('user-name').innerText = data.display_name || "Vengeance Utilities";
             document.getElementById('user-bio').innerText = data.bio_text || '';
             
-            // Avatar & Favicon auf das gleiche Bild setzen
             if (data.avatar_url) {
                 document.getElementById('user-avatar').src = data.avatar_url;
                 document.getElementById('favicon').href = data.avatar_url;
             }
 
-            // Links aktivieren
+            // Social Links steuern
             if (data.github_link) {
                 const gh = document.getElementById('link-github');
                 gh.href = data.github_link;
@@ -163,20 +203,40 @@
                 dc.classList.remove('hidden');
             }
 
-            // Video einbinden
+            // Fullscreen Video verarbeiten
             if (data.video_url) {
-                const videoBox = document.getElementById('video-box');
-                const videoElement = document.getElementById('bg-video');
-                videoElement.src = data.video_url;
-                videoBox.style.display = 'block';
+                const video = document.getElementById('bg-video');
+                const muteToggle = document.getElementById('mute-toggle');
                 
-                // Versuche Autoplay mit Ton (Wird oft vom Browser gedrosselt, bis Interaktion erfolgt)
-                videoElement.muted = false;
-                videoElement.play().catch(() => {
-                    console.log("Autoplay blockiert. User muss erst interagieren.");
+                video.src = data.video_url;
+                muteToggle.style.display = 'flex';
+
+                // Autoplay starten (Muted, da Browser es sonst blockieren)
+                video.play().catch(err => console.log("Autoplay-Fehler:", err));
+
+                // Sound aktivieren / deaktiveren bei Klick auf das Symbol
+                muteToggle.addEventListener('click', () => {
+                    if (video.muted) {
+                        video.muted = false;
+                        // Ändert das Icon auf "Laut"
+                        document.getElementById('icon-path').setAttribute('d', 'M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z');
+                    } else {
+                        video.muted = true;
+                        // Ändert das Icon auf "Stumm"
+                        document.getElementById('icon-path').setAttribute('d', 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM4 9v6h4l5 5V4L8 9H4zm12.5 3c0 2.21-1.29 4.12-3.12 5.01v2.04c2.94-.97 5.12-3.73 5.12-7.05s-2.18-6.08-5.12-7.05v2.04c1.83.89 3.12 2.8 3.12 5.01z');
+                    }
                 });
+
+                // Falls der Nutzer irgendwo auf die Karte klickt, schalten wir den Ton testweise auch direkt ein
+                document.body.addEventListener('click', (e) => {
+                    if (video.muted && e.target !== muteToggle && !muteToggle.contains(e.target)) {
+                        video.muted = false;
+                        document.getElementById('icon-path').setAttribute('d', 'M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z');
+                    }
+                }, { once: true }); // Nur beim allerersten Klick ausführen
             }
 
+            // Loader verbergen, Profilkarte einblenden
             document.getElementById('loading-profile').classList.add('hidden');
             document.getElementById('main-profile').classList.remove('hidden');
         }
