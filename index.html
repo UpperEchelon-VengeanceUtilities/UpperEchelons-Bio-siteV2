@@ -5,104 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance Utilities | Bio</title>
     <link id="favicon" rel="icon" type="image/png" href="">
+    <style id="dynamic-theme"></style>
     
     <style>
-        :root {
-            --bg-blur: rgba(10, 10, 12, 0.45);
-            --card-bg: rgba(18, 18, 24, 0.65);
-            --accent-color: #a855f7;
-            --text-color: #f4f4f5;
-            --text-muted: #a1a1aa;
-            --border-color: rgba(255, 255, 255, 0.06);
-        }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        
-        body, html { 
-            width: 100%; height: 100%; margin: 0; padding: 0;
-            background-color: #050507; color: var(--text-color); 
-            display: flex; justify-content: center; align-items: center; 
-            overflow: hidden; position: relative;
-        }
+        body, html { width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #050507; }
 
-        .video-background {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 1; overflow: hidden; background: #050507;
-        }
+        .video-background { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; overflow: hidden; }
         .video-background video { width: 100%; height: 100%; object-fit: cover; }
-        .video-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
-            z-index: 2;
-        }
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; background: rgba(0,0,0,0.3); }
 
-        /* High-End Container im e-z.bio Look */
+        /* Profilkarte */
         .container { 
-            width: 100%; max-width: 460px; text-align: center; 
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 3.5rem 2.5rem;
-            border-radius: 28px;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 60px rgba(168, 85, 247, 0.05);
-            z-index: 10;
-            transition: transform 0.4s ease;
+            width: 100%; max-width: 450px; text-align: center; z-index: 10;
+            overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column;
         }
-        
         .hidden { display: none !important; }
 
+        /* Banner-Bereich innerhalb der Karte */
+        .card-banner { width: 100%; height: 110px; background: #27272a; background-size: cover; background-position: center; position: relative; }
+
+        .profile-content { padding: 0 2rem 2.5rem 2rem; position: relative; margin-top: -50px; }
+
         .profile-img { 
-            width: 105px; height: 105px; border-radius: 50%; 
-            border: 2px solid var(--accent-color); object-fit: cover; 
-            margin-bottom: 1.5rem; 
-            box-shadow: 0 0 35px rgba(168, 85, 247, 0.5);
-            transition: transform 0.3s ease;
+            width: 95px; height: 95px; border-radius: 50%; object-fit: cover; 
+            margin-bottom: 1rem; background: #18181b; position: relative; z-index: 3;
         }
-        .profile-img:hover { transform: rotate(5deg) scale(1.03); }
 
-        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .bio { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2.5rem; line-height: 1.6; }
+        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .bio { font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
 
-        /* Dynamische Custom Links */
-        .links-container { display: flex; flex-direction: column; gap: 0.9rem; width: 100%; }
-        
+        /* Custom Navigation Links */
+        .links-container { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; }
         .bio-link { 
             display: flex; align-items: center; justify-content: center; 
-            background: rgba(255, 255, 255, 0.03); 
-            color: var(--text-color); text-decoration: none; 
-            padding: 1.1rem; border-radius: 16px; 
-            border: 1px solid var(--border-color); 
-            font-weight: 600; font-size: 0.95rem;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .bio-link:hover { 
-            border-color: rgba(168, 85, 247, 0.5); 
-            background: rgba(168, 85, 247, 0.1);
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 25px rgba(168, 85, 247, 0.2); 
-            letter-spacing: 0.3px;
+            background: rgba(255, 255, 255, 0.03); text-decoration: none; 
+            padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
         }
 
-        /* Volume-Slider */
+        /* Volume-Slider Box */
         .volume-box {
             position: fixed; top: 20px; left: 20px; z-index: 100;
-            background: rgba(10, 10, 12, 0.7); border: 1px solid var(--border-color);
+            background: rgba(10, 10, 12, 0.7); border: 1px solid rgba(255,255,255,0.08);
             padding: 10px 16px; border-radius: 30px; display: none; align-items: center; gap: 10px;
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .volume-box svg { width: 16px; height: 16px; fill: #fff; }
-        .volume-slider {
-            -webkit-appearance: none; appearance: none; width: 75px; height: 4px;
-            background: #3f3f46; border-radius: 2px; outline: none; cursor: pointer;
-        }
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
-            border-radius: 50%; background: var(--accent-color); box-shadow: 0 0 10px var(--accent-color);
-        }
+        .volume-slider { -webkit-appearance: none; appearance: none; width: 75px; height: 4px; background: #3f3f46; border-radius: 2px; outline: none; cursor: pointer; }
+        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; }
 
-        #status-msg { color: var(--text-muted); font-size: 1.1rem; }
+        #status-msg { color: #a1a1aa; font-size: 1.1rem; padding: 2rem; background: #18181b; border-radius: 14px; }
     </style>
 </head>
 <body>
@@ -113,17 +66,21 @@
     </div>
 
     <div class="video-background"><video id="bg-video" loop playsinline muted preload="auto"></video></div>
-    <div class="video-overlay"></div>
+    <div class="video-overlay" id="v-overlay"></div>
 
-    <div id="loading-profile" class="container"><p id="status-msg">Vengeance Utilities wird geladen...</p></div>
+    <div id="loading-profile"><p id="status-msg">Vengeance Engine initialisiert...</p></div>
 
     <div id="main-profile" class="container hidden">
-        <img id="user-avatar" class="profile-img" src="" alt="Logo">
-        <h1 id="user-name">Vengeance Utilities</h1>
-        <p id="user-bio" class="bio"></p>
-
-        <div id="custom-links" class="links-container"></div>
+        <div id="user-banner" class="card-banner"></div>
+        <div class="profile-content">
+            <img id="user-avatar" class="profile-img" src="" alt="Logo">
+            <h1 id="user-name"></h1>
+            <p id="user-bio" class="bio"></p>
+            <div id="custom-links" class="links-container"></div>
+        </div>
     </div>
+
+    <audio id="bg-music" loop></audio>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
@@ -131,55 +88,86 @@
 
         async function loadBio() {
             const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
-            if (error || !data) {
-                document.getElementById('status-msg').innerText = "Fehler beim Laden."; return;
-            }
+            if (error || !data) { document.getElementById('status-msg').innerText = "Fehler beim Laden."; return; }
+
+            // Theme-Konfiguration verarbeiten
+            const c = data.settings || {};
+            const styleTag = document.getElementById('dynamic-theme');
+            
+            // Konvertiere hex2rgba für die Card Deckkraft
+            const hexToRgb = hex => hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,(m,r,g,b)=>r+r+g+g+b+b).substring(1).match(/.{2}/g).map(x=>parseInt(x,16));
+            const rgb = c.primary_color ? hexToRgb(c.background_color || '#18181b') : [24,24,27];
+            const op = c.opacity ? (c.opacity / 100) : 0.65;
+
+            // CSS-Injektion basierend auf deinen Admin-Einstellungen
+            styleTag.innerHTML = `
+                .container {
+                    background: rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${op});
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: ${c.border_radius || 24}px;
+                    backdrop-filter: blur(${c.blur || 20}px);
+                    -webkit-backdrop-filter: blur(${c.blur || 20}px);
+                    color: ${c.text_color || '#f4f4f5'};
+                    ${c.glow ? `box-shadow: 0 0 40px ${c.primary_color || '#a855f7'}33, 0 30px 60px rgba(0,0,0,0.6);` : ''}
+                }
+                .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; box-shadow: 0 0 25px ${c.primary_color || '#a855f7'}66; }
+                .bio-link { 
+                    color: ${c.text_color || '#f4f4f5'}; 
+                    border: 1px solid rgba(255,255,255,0.06);
+                    transition: ${c.animations ? 'all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'};
+                }
+                .bio-link:hover {
+                    ${c.animations ? `
+                        border-color: ${c.primary_color || '#a855f7'}88;
+                        background: ${c.primary_color || '#a855f7'}14;
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 20px ${c.primary_color || '#a855f7'}22;
+                    ` : ''}
+                }
+                .video-background video {
+                    filter: blur(${c.background_blur || 0}px) brightness(${(c.background_brightness || 100) / 100});
+                }
+                .volume-slider::-webkit-slider-thumb { background: ${c.primary_color || '#a855f7'}; box-shadow: 0 0 10px ${c.primary_color || '#a855f7'}; }
+            `;
 
             document.getElementById('user-name').innerText = data.display_name || "Vengeance Utilities";
             document.getElementById('user-bio').innerText = data.bio_text || '';
-            if (data.avatar_url) {
-                document.getElementById('user-avatar').src = data.avatar_url;
-                document.getElementById('favicon').href = data.avatar_url;
-            }
-
-            // Custom Links generieren
-            const linksContainer = document.getElementById('custom-links');
-            linksContainer.innerHTML = "";
             
-            const linksList = data.products || [];
-            linksList.forEach(linkObj => {
-                if(linkObj.name && linkObj.url) {
-                    const a = document.createElement('a');
-                    a.className = "bio-link";
-                    // Automatischer HTTPS-Fix, falls man es vergisst einzutippen
-                    a.href = linkObj.url.startsWith('http') ? linkObj.url : `https://${linkObj.url}`;
-                    a.target = "_blank";
-                    a.innerText = linkObj.name;
-                    linksContainer.appendChild(a);
-                }
+            if (data.avatar_url) { document.getElementById('user-avatar').src = data.avatar_url; document.getElementById('favicon').href = data.avatar_url; }
+            if (data.banner_url) { document.getElementById('user-banner').style.backgroundImage = `url('${data.banner_url}')`; }
+
+            // Links generieren
+            const container = document.getElementById('custom-links');
+            container.innerHTML = "";
+            (data.products || []).forEach(l => {
+                const a = document.createElement('a'); a.className = "bio-link";
+                a.href = l.url.startsWith('http') ? l.url : `https://${l.url}`; a.target = "_blank"; a.innerText = l.name;
+                container.appendChild(a);
             });
 
-            // Video-Handling
-            if (data.video_url) {
-                const video = document.getElementById('bg-video');
-                const volumeContainer = document.getElementById('volume-container');
-                const volumeSlider = document.getElementById('volume-control');
-                
-                video.src = data.video_url;
-                volumeContainer.style.display = 'flex';
-                video.volume = volumeSlider.value;
+            // Media & Sound Playback
+            const video = document.getElementById('bg-video');
+            const audio = document.getElementById('bg-music');
+            const volumeContainer = document.getElementById('volume-container');
+            const volumeSlider = document.getElementById('volume-control');
 
-                video.play().catch(err => console.log("Autoplay blockiert"));
+            if (data.video_url || data.song_url) {
+                volumeContainer.style.display = 'flex';
+                
+                if (data.video_url) { video.src = data.video_url; video.play().catch(() => {}); }
+                if (data.song_url) { audio.src = data.song_url; audio.volume = volumeSlider.value; audio.play().catch(() => {}); }
+                
+                video.volume = data.song_url ? 0 : volumeSlider.value; // Wenn Musik existiert, schalten wir das Video stumm
 
                 volumeSlider.addEventListener('input', (e) => {
-                    video.volume = e.target.value;
-                    video.muted = e.target.value == 0;
+                    const val = e.target.value;
+                    if(data.song_url) { audio.volume = val; audio.muted = val == 0; }
+                    else { video.volume = val; video.muted = val == 0; }
                 });
 
                 document.body.addEventListener('click', () => {
-                    if (video.muted || video.volume === 0.15) {
-                        video.muted = false; video.volume = volumeSlider.value;
-                    }
+                    if (data.song_url) { audio.muted = false; audio.play(); }
+                    video.muted = data.song_url ? true : false;
                 }, { once: true });
             }
 
