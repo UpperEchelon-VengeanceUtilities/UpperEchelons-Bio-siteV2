@@ -33,7 +33,6 @@
         }
         @keyframes border-dance { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* FIX: Standard-Hintergrund entfernt, damit das JS-Skript die volle Kontrolle hat */
         .container { 
             width: 444px; text-align: center; display: flex; flex-direction: column; overflow: hidden;
             border-radius: 22px;
@@ -112,27 +111,32 @@
             const styleTag = document.getElementById('dynamic-theme');
             document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
 
+            // Hex-to-RGB-Konverter
             const hexToRgb = (hex) => {
                 let s = hex.replace('#', '');
                 if (s.length === 3) s = s.split('').map(x => x + x).join('');
-                return [parseInt(s.substr(0,2),16), parseInt(s.substr(2,2),16), parseInt(s.substr(4,2),16)];
+                return {
+                    r: parseInt(s.substr(0, 2), 16),
+                    g: parseInt(s.substr(2, 2), 16),
+                    b: parseInt(s.substr(4, 2), 16)
+                };
             };
-            const rgb = c.background_color ? hexToRgb(c.background_color) : [24,24,27];
+            
+            const rgb = c.background_color ? hexToRgb(c.background_color) : { r: 24, g: 24, b: 27 };
             const op = c.opacity !== undefined ? (c.opacity / 100) : 0.65;
 
             let cursorStyle = data.cursor_url ? `* { cursor: url('${data.cursor_url}'), auto !important; }` : "";
 
-            // FIX: Erzwungenes '!important' beim Background, um jede andere CSS-Regel plattzumachen
             styleTag.innerHTML = `
                 ${cursorStyle}
                 :root { --accent: ${c.primary_color || '#a855f7'}; }
                 .container { 
-                    background: rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${op}) !important; 
+                    background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${op}) !important; 
                     backdrop-filter: blur(${c.blur || 20}px); 
                     -webkit-backdrop-filter: blur(${c.blur || 20}px); 
                     color: ${c.text_color || '#f4f4f5'}; 
                 }
-                .card-frame { border-radius: ${c.border_radius || 24}px; }
+                .card-wrapper { border-radius: ${c.border_radius || 24}px; }
                 .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; }
                 .bio-link { color: ${c.text_color || '#f4f4f5'}; border: 1px solid rgba(255,255,255,0.06); transition: ${c.animations ? 'all 0.25s' : 'none'}; }
                 .bio-link:hover { ${c.animations ? `border-color: ${c.primary_color || '#a855f7'}88; background: ${c.primary_color || '#a855f7'}14; transform: translateY(-2px);` : ''} }
