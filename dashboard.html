@@ -16,6 +16,7 @@
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
         
         input[type="text"], textarea { width: 100%; padding: 0.75rem; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
+        input:focus, textarea:focus { border-color: var(--accent-color); outline: none; }
         
         .color-picker-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
         .color-box { text-align: center; }
@@ -35,7 +36,8 @@
         input:checked + .slider-toggle:before { transform: translateX(20px); }
 
         button { width: 100%; padding: 0.75rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        
+        button:hover { opacity: 0.9; }
+
         .panel-box { background: var(--card-bg); border: 1px solid #27272a; padding: 1.5rem; border-radius: 14px; margin-bottom: 1.5rem; }
         .panel-box h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; }
         label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
@@ -133,10 +135,10 @@
                     <div class="slider-group"><label>Video Brightness</label><div class="slider-row"><input type="range" id="cfg-bright" min="20" max="100" value="100"><span class="slider-value" id="val-bright">100%</span></div></div>
 
                     <label style="margin-top: 1.5rem;">e-z.bio Features</label>
-                    <div class="switch-group"><span>Show Views</span><label class="switch"><input type="checkbox" id="cfg-views" checked><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Show Views</span><label class="switch"><input type="checkbox" id="cfg-views"><span class="slider-toggle"></span></label></div>
                     <div class="switch-group"><span>Username Sparkle</span><label class="switch"><input type="checkbox" id="cfg-sparkle"><span class="slider-toggle"></span></label></div>
-                    <div class="switch-group"><span>Animated Gradient Glow Border</span><label class="switch"><input type="checkbox" id="cfg-glow" checked><span class="slider-toggle"></span></label></div>
-                    <div class="switch-group"><span>Hover Animations</span><label class="switch"><input type="checkbox" id="cfg-anim" checked><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Animated Gradient Glow Border</span><label class="switch"><input type="checkbox" id="cfg-glow"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Hover Animations</span><label class="switch"><input type="checkbox" id="cfg-anim"><span class="slider-toggle"></span></label></div>
                 </div>
                 <button id="save-btn" style="background: #22c55e;">Save All Changes</button>
             </div>
@@ -156,7 +158,8 @@
         } else { loadUserData(); }
 
         const bindSlider = (id, targetId, unit) => {
-            document.getElementById(id).addEventListener('input', (e) => document.getElementById(targetId).innerText = e.target.value + unit);
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('input', (e) => document.getElementById(targetId).innerText = e.target.value + unit);
         };
         bindSlider('cfg-opacity', 'val-opacity', '%');
         bindSlider('cfg-blur', 'val-blur', 'px');
@@ -165,7 +168,8 @@
         bindSlider('cfg-bright', 'val-bright', '%');
 
         const bindFile = (id, targetId, delBtnId) => {
-            document.getElementById(id).addEventListener('change', (e) => { 
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('change', (e) => { 
                 if(e.target.files[0]) { document.getElementById(targetId).innerText = "Bereit: " + e.target.files[0].name; document.getElementById(delBtnId).style.display = 'block'; } 
             });
         };
@@ -176,7 +180,8 @@
         bindFile('file-cursor', 'status-cursor', 'del-cursor');
 
         const setupDeleteTrigger = (btnId, statusId, inputId, flagRefSetter) => {
-            document.getElementById(btnId).addEventListener('click', () => { document.getElementById(inputId).value = ""; document.getElementById(statusId).innerText = "Wird gelöscht"; flagRefSetter(true); });
+            const el = document.getElementById(btnId);
+            if(el) el.addEventListener('click', () => { document.getElementById(inputId).value = ""; document.getElementById(statusId).innerText = "Wird gelöscht"; flagRefSetter(true); });
         };
         setupDeleteTrigger('del-avatar', 'status-avatar', 'file-avatar', (v) => deleteAvatarFlag = v);
         setupDeleteTrigger('del-banner', 'status-banner', 'file-banner', (v) => deleteBannerFlag = v);
@@ -214,4 +219,80 @@
                 const c = data.settings || {};
                 document.getElementById('cfg-enter-text').value = c.enter_text || '[ click to enter ]';
                 if(c.primary_color) document.getElementById('cfg-accent').value = c.primary_color;
-                if(c
+                if(c.background_color) document.getElementById('cfg-bg').value = c.background_color;
+                if(c.text_color) document.getElementById('cfg-text').value = c.text_color;
+                if(c.opacity) { document.getElementById('cfg-opacity').value = c.opacity; document.getElementById('val-opacity').innerText = c.opacity + '%'; }
+                if(c.blur !== undefined) { document.getElementById('cfg-blur').value = c.blur; document.getElementById('val-blur').innerText = c.blur + 'px'; }
+                if(c.border_radius) { document.getElementById('cfg-radius').value = c.border_radius; document.getElementById('val-radius').innerText = c.border_radius + 'px'; }
+                if(c.background_blur !== undefined) { document.getElementById('cfg-bgblur').value = c.background_blur; document.getElementById('val-bgblur').innerText = c.background_blur + 'px'; }
+                if(c.background_brightness) { document.getElementById('cfg-bright').value = c.background_brightness; document.getElementById('val-bright').innerText = c.background_brightness + '%'; }
+                
+                document.getElementById('cfg-views').checked = c.show_views !== false;
+                document.getElementById('cfg-sparkle').checked = c.sparkle === true;
+                document.getElementById('cfg-glow').checked = c.glow !== false;
+                document.getElementById('cfg-anim').checked = c.animations !== false;
+            }
+        }
+
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            document.getElementById('save-btn').innerText = "Wird verarbeitet...";
+            document.getElementById('save-btn').disabled = true;
+
+            const handleFileProcessing = async (inputElement, existingUrl, prefix, shouldDelete) => {
+                if (shouldDelete) return ""; 
+                const file = inputElement.files[0]; if (!file) return existingUrl;
+                const name = `${prefix}_${Date.now()}.${file.name.split('.').pop()}`;
+                const { error } = await supabase.storage.from('media').upload(name, file);
+                return !error ? `https://pdyrfnbjegsyjmcmbqck.supabase.co/storage/v1/object/public/media/${name}` : existingUrl;
+            };
+
+            const avatarUrl = await handleFileProcessing(document.getElementById('file-avatar'), extAvatar, 'avatar', deleteAvatarFlag);
+            const bannerUrl = await handleFileProcessing(document.getElementById('file-banner'), extBanner, 'banner', deleteBannerFlag);
+            const videoUrl = await handleFileProcessing(document.getElementById('file-video'), extVideo, 'video', deleteVideoFlag);
+            const songUrl = await handleFileProcessing(document.getElementById('file-song'), extSong, 'song', deleteSongFlag);
+            const cursorUrl = await handleFileProcessing(document.getElementById('file-cursor'), extCursor, 'cursor', deleteCursorFlag);
+
+            const customLinks = [];
+            document.querySelectorAll('.link-row').forEach(row => {
+                const name = row.querySelector('.link-name').value.trim();
+                const url = row.querySelector('.link-url').value.trim();
+                if(name && url) customLinks.push({ name, url });
+            });
+
+            const configJson = {
+                enter_text: document.getElementById('cfg-enter-text').value || '[ click to enter ]',
+                primary_color: document.getElementById('cfg-accent').value,
+                background_color: document.getElementById('cfg-bg').value,
+                text_color: document.getElementById('cfg-text').value,
+                opacity: document.getElementById('cfg-opacity').value,
+                blur: document.getElementById('cfg-blur').value,
+                border_radius: document.getElementById('cfg-radius').value,
+                background_blur: document.getElementById('cfg-bgblur').value,
+                background_brightness: document.getElementById('cfg-bright').value,
+                show_views: document.getElementById('cfg-views').checked,
+                sparkle: document.getElementById('cfg-sparkle').checked,
+                glow: document.getElementById('cfg-glow').checked,
+                animations: document.getElementById('cfg-anim').checked
+            };
+
+            const updates = {
+                display_name: document.getElementById('display-name').value, bio_text: document.getElementById('bio-text').value,
+                avatar_url: avatarUrl, banner_url: bannerUrl, video_url: videoUrl, song_url: songUrl, cursor_url: cursorUrl,
+                products: customLinks, settings: configJson, updated_at: new Date()
+            };
+
+            const { error } = await supabase.from('user_bios').update(updates).eq('id', rowId);
+            
+            document.getElementById('save-btn').innerText = "Save All Changes";
+            document.getElementById('save-btn').disabled = false;
+            
+            if (error) {
+                alert('Fehler: ' + error.message);
+            } else { 
+                alert('Erfolgreich geupdated!'); 
+                loadUserData(); 
+            }
+        });
+    </script>
+</body>
+</html>
