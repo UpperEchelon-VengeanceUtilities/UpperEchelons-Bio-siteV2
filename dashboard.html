@@ -97,7 +97,7 @@
                             <p>📁 Klicke hier um ein Bild hochzuladen</p>
                             <input type="file" id="file-avatar" class="file-input" accept="image/*">
                         </div>
-                        <span id="status-avatar" class="preview-status">Keine Datei ausgewählt (Behält altes Bild)</span>
+                        <span id="status-avatar" class="preview-status">Keine Datei ausgewählt</span>
 
                         <label>Hintergrundvideo (.mp4 mit Ton)</label>
                         <div class="upload-zone">
@@ -105,7 +105,7 @@
                             <input type="file" id="file-video" class="file-input" accept="video/mp4">
                             <span>Max. 50MB (Supabase Limit)</span>
                         </div>
-                        <span id="status-video" class="preview-status">Keine Datei ausgewählt (Behält altes Video)</span>
+                        <span id="status-video" class="preview-status">Keine Datei ausgewählt</span>
                     </div>
 
                     <div class="panel-box">
@@ -141,17 +141,15 @@
         let existingAvatarUrl = "";
         let existingVideoUrl = "";
 
-        // Status-Updates für Dateiauswahl anzeigen
         document.getElementById('file-avatar').addEventListener('change', (e) => {
-            if(e.target.files[0]) document.getElementById('status-avatar').innerText = "Bereit zum Hochladen: " + e.target.files[0].name;
+            if(e.target.files[0]) document.getElementById('status-avatar').innerText = "Bereit: " + e.target.files[0].name;
         });
         document.getElementById('file-video').addEventListener('change', (e) => {
-            if(e.target.files[0]) document.getElementById('status-video').innerText = "Bereit zum Hochladen: " + e.target.files[0].name;
+            if(e.target.files[0]) document.getElementById('status-video').innerText = "Bereit: " + e.target.files[0].name;
         });
 
-        // Login Logik
         document.getElementById('auth-btn').addEventListener('click', async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
 
-            const { error } = await supabase.auth.signInWithPassword({Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+            const { error } = await supabase.auth.signInWithPassword({ emailNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
