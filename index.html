@@ -33,14 +33,14 @@
         }
         @keyframes border-dance { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
+        /* FIX: Standard-Hintergrund entfernt, damit das JS-Skript die volle Kontrolle hat */
         .container { 
             width: 444px; text-align: center; display: flex; flex-direction: column; overflow: hidden;
-            background: rgba(24,24,27,0.65); border-radius: 22px;
+            border-radius: 22px;
         }
 
         .card-banner { width: 100%; height: 110px; background-size: cover; background-position: center; display: none; }
         
-        /* FIX: Flex-Zentrierung für Profilbild und Name erzwungen */
         .profile-content { padding: 0 2rem 2.5rem 2rem; position: relative; margin-top: -50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .profile-content.no-banner { margin-top: 2.5rem; }
 
@@ -83,7 +83,7 @@
     <div class="video-overlay"></div>
 
     <div id="card-frame" class="card-wrapper">
-        <div class="container">
+        <div class="container" id="main-card-container">
             <div id="v-count" class="views-badge">👁️ 0</div>
             <div id="user-banner" class="card-banner"></div>
             <div id="profile-content-wrapper" class="profile-content">
@@ -112,21 +112,26 @@
             const styleTag = document.getElementById('dynamic-theme');
             document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
 
-            // FIX: Robuster Hex-to-RGB Parser für funktionierende Opacity
             const hexToRgb = (hex) => {
                 let s = hex.replace('#', '');
                 if (s.length === 3) s = s.split('').map(x => x + x).join('');
                 return [parseInt(s.substr(0,2),16), parseInt(s.substr(2,2),16), parseInt(s.substr(4,2),16)];
             };
             const rgb = c.background_color ? hexToRgb(c.background_color) : [24,24,27];
-            const op = c.opacity ? (c.opacity / 100) : 0.65;
+            const op = c.opacity !== undefined ? (c.opacity / 100) : 0.65;
 
             let cursorStyle = data.cursor_url ? `* { cursor: url('${data.cursor_url}'), auto !important; }` : "";
 
+            // FIX: Erzwungenes '!important' beim Background, um jede andere CSS-Regel plattzumachen
             styleTag.innerHTML = `
                 ${cursorStyle}
                 :root { --accent: ${c.primary_color || '#a855f7'}; }
-                .container { background: rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${op}) !important; backdrop-filter: blur(${c.blur || 20}px); -webkit-backdrop-filter: blur(${c.blur || 20}px); color: ${c.text_color || '#f4f4f5'}; }
+                .container { 
+                    background: rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${op}) !important; 
+                    backdrop-filter: blur(${c.blur || 20}px); 
+                    -webkit-backdrop-filter: blur(${c.blur || 20}px); 
+                    color: ${c.text_color || '#f4f4f5'}; 
+                }
                 .card-frame { border-radius: ${c.border_radius || 24}px; }
                 .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; }
                 .bio-link { color: ${c.text_color || '#f4f4f5'}; border: 1px solid rgba(255,255,255,0.06); transition: ${c.animations ? 'all 0.25s' : 'none'}; }
