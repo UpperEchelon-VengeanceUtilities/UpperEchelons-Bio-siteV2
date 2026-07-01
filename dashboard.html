@@ -2,154 +2,42 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance | Admin Panel</title>
-    <style>
-        :root {
-            --bg-color: #09090b;
-            --card-bg: #18181b;
-            --accent-color: #a855f7;
-            --text-color: #f4f4f5;
-            --text-muted: #a1a1aa;
-            --input-bg: #27272a;
-            --border-color: #3f3f46;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; padding: 2rem; }
-        .wrapper { width: 100%; max-width: 900px; }
-        
-        .auth-container { max-width: 400px; margin: 100px auto; background: var(--card-bg); padding: 2rem; border-radius: 12px; border: 1px solid #27272a; text-align: center; }
-        .auth-container h2 { margin-bottom: 1.5rem; }
-        
-        input, textarea { width: 100%; padding: 0.75rem; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
-        input:focus, textarea:focus { border-color: var(--accent-color); outline: none; }
-        
-        button { width: 100%; padding: 0.75rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-
-        .hidden { display: none !important; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #27272a; padding-bottom: 1rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        
-        .panel-box { background: var(--card-bg); border: 1px solid #27272a; padding: 1.5rem; border-radius: 14px; margin-bottom: 1.5rem; }
-        .panel-box h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color); }
-        label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
-
-        /* Drag & Drop Upload Fenster im ez-bio Stil */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
-            padding: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
-            background: rgba(39, 39, 42, 0.3);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-        .upload-zone:hover {
-            border-color: var(--accent-color);
-            background: rgba(168, 85, 247, 0.04);
-        }
-        .upload-zone p { font-size: 0.85rem; color: var(--text-muted); }
-        .upload-zone span { font-size: 0.75rem; color: #f43f5e; display: block; margin-top: 0.25rem; }
-        .file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        
-        .preview-status { font-size: 0.8rem; color: #22c55e; margin-top: -0.5rem; margin-bottom: 1rem; display: block; word-break: break-all; }
-    </style>
+    <!-- CSS von oben bleibt gleich... -->
 </head>
 <body>
-
     <div class="wrapper">
-        <!-- LOGIN -->
-        <div id="auth-section" class="auth-container">
-            <h2>Vengeance Admin Login</h2>
-            <input type="email" id="auth-email" placeholder="E-Mail">
-            <input type="password" id="auth-password" placeholder="Passwort">
-            <button id="auth-btn">Einloggen</button>
-        </div>
-
-        <!-- DASHBOARD -->
-        <div id="dash-section" class="hidden">
-            <div class="header">
-                <h2>Vengeance Utilities Dashboard</h2>
-                <button id="logout-btn" style="width: auto; padding: 0.5rem 1rem; background: #ef4444;">Logout</button>
-            </div>
-
-            <div class="grid">
-                <div>
-                    <div class="panel-box">
-                        <h3>General Settings</h3>
-                        <label>Anzeigename</label>
-                        <input type="text" id="display-name" placeholder="z.B. Vengeance Utilities">
-                        
-                        <label>Bio Beschreibung</label>
-                        <textarea id="bio-text" rows="3" placeholder="Erzähl was über dich..."></textarea>
-                    </div>
-
-                    <div class="panel-box">
-                        <h3>Media Uploads (Vom PC wählen)</h3>
-                        
-                        <label>Profilbild / Web-Icon</label>
-                        <div class="upload-zone">
-                            <p>📁 Klicke hier um ein Bild hochzuladen</p>
-                            <input type="file" id="file-avatar" class="file-input" accept="image/*">
-                        </div>
-                        <span id="status-avatar" class="preview-status">Keine Datei ausgewählt</span>
-
-                        <label>Hintergrundvideo (.mp4 mit Ton)</label>
-                        <div class="upload-zone">
-                            <p>🎥 Klicke hier um dein Video hochzuladen</p>
-                            <input type="file" id="file-video" class="file-input" accept="video/mp4">
-                            <span>Max. 50MB (Supabase Limit)</span>
-                        </div>
-                        <span id="status-video" class="preview-status">Keine Datei ausgewählt</span>
-                    </div>
-
-                    <div class="panel-box">
-                        <h3>Social Links</h3>
-                        <label>GitHub Link</label>
-                        <input type="text" id="github-link" placeholder="https://github.com/...">
-                        
-                        <label>Discord Einladungslink</label>
-                        <input type="text" id="discord-link" placeholder="https://discord.gg/...">
-                    </div>
-                    
-                    <button id="save-btn">Save Changes</button>
-                </div>
-
-                <div>
-                    <div class="panel-box">
-                        <h3>Cosmetic & Products</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Deine hochgeladenen Clips und Bilder werden ohne Qualitätsverlust direkt im Hintergrund gerendert!</p>
-                    </div>
-                </div>
-            </div>
+        <div id="dash-section">
+            <h2>Vengeance Admin Panel</h2>
+            <!-- Deine Felder... -->
+            <button id="save-btn">Save Changes</button>
         </div>
     </div>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
-        const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Admin-Check
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin') !== '123') {
+            document.body.innerHTML = "<h1>Zugriff verweigert!</h1>";
+        } else {
+            // Lade Daten sofort, da wir kein Login mehr brauchen
+            loadUserData();
+        }
 
-        let rowId = null;
-        let existingAvatarUrl = "";
-        let existingVideoUrl = "";
+        async function loadUserData() {
+            const { data } = await supabase.from('user_bios').select('*').limit(1).single();
+            if (data) {
+                document.getElementById('display-name').value = data.display_name || '';
+                // ... restliche Felder
+            }
+        }
 
-        document.getElementById('file-avatar').addEventListener('change', (e) => {
-            if(e.target.files[0]) document.getElementById('status-avatar').innerText = "Bereit: " + e.target.files[0].name;
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            // Speichern-Logik ohne Auth...
         });
-        document.getElementById('file-video').addEventListener('change', (e) => {
-            if(e.target.files[0]) document.getElementById('status-video').innerText = "Bereit: " + e.target.files[0].name;
-        });
-
-        document.getElementById('auth-btn').addEventListener('click', async () => {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-
-            const { error } = await supabase.auth.signInWithPassword({ emailNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+    </script>
+</body>
+</html>
