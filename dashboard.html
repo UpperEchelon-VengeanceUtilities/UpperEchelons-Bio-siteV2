@@ -102,8 +102,9 @@
                     </div>
                     <div class="upload-grid" style="margin-top: 5px;">
                         <div class="upload-cell">
-                            <label>Custom Cursor</label>
-                            <div class="upload-zone"><p>🖱️ Cursor</p><input type="file" id="file-cursor" class="file-input" accept="image/png, image/x-icon"></div>
+                            <!-- Akzeptiert jetzt echte Cursor Formate -->
+                            <label>Custom Cursor (.cur / .ani)</label>
+                            <div class="upload-zone"><p>🖱️ Cursor-Datei</p><input type="file" id="file-cursor" class="file-input" accept=".cur, .ani"></div>
                             <span id="status-cursor" class="preview-status">Unverändert</span>
                             <button id="del-cursor" class="clear-media-btn">🗑️ Entfernen</button>
                         </div>
@@ -117,7 +118,7 @@
                 </div>
             </div>
 
-            <!-- RECHTE SEITE (COSMETIC SETTINGS AUS IMAGE_9E6EF8.PNG) -->
+            <!-- RECHTE SEITE -->
             <div>
                 <div class="panel-box">
                     <h3>Cosmetic Theme Settings</h3>
@@ -135,8 +136,8 @@
                     <div class="slider-group"><label>Video Brightness</label><div class="slider-row"><input type="range" id="cfg-bright" min="20" max="100"><span class="slider-value" id="val-bright">100%</span></div></div>
 
                     <label style="margin-top: 1.5rem;">e-z.bio Features</label>
-                    <div class="switch-group"><span>Show Views (Klicks anzeigen)</span><label class="switch"><input type="checkbox" id="cfg-views"><span class="slider-toggle"></span></label></div>
-                    <div class="switch-group"><span>Username Sparkle (Glitzer-Name)</span><label class="switch"><input type="checkbox" id="cfg-sparkle"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Show Views</span><label class="switch"><input type="checkbox" id="cfg-views"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Username Sparkle</span><label class="switch"><input type="checkbox" id="cfg-sparkle"><span class="slider-toggle"></span></label></div>
                     <div class="switch-group"><span>Animated Gradient Glow Border</span><label class="switch"><input type="checkbox" id="cfg-glow"><span class="slider-toggle"></span></label></div>
                     <div class="switch-group"><span>Hover Animations</span><label class="switch"><input type="checkbox" id="cfg-anim"><span class="slider-toggle"></span></label></div>
                 </div>
