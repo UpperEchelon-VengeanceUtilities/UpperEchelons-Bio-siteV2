@@ -58,7 +58,6 @@
         <div class="header"><h2>Vengeance Utilities Control Panel</h2></div>
 
         <div class="grid">
-            <!-- LINKE SEITE -->
             <div>
                 <div class="panel-box">
                     <h3>Profile Data</h3>
@@ -117,7 +116,6 @@
                 </div>
             </div>
 
-            <!-- RECHTE SEITE (FIX: Initialwerte im HTML verankert) -->
             <div>
                 <div class="panel-box">
                     <h3>Cosmetic Theme Settings</h3>
@@ -149,7 +147,7 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
         const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
-        let rowId = null, extAvatar = "", extVideo = "", extBanner = "", extSong = "";
+        let rowId = null, extAvatar = "", extVideo = "", extBanner = "", extSong = "", extCursor = "";
         let deleteAvatarFlag = false, deleteBannerFlag = false, deleteVideoFlag = false, deleteSongFlag = false, deleteCursorFlag = false;
 
         const params = new URLSearchParams(window.location.search);
@@ -216,72 +214,4 @@
                 const c = data.settings || {};
                 document.getElementById('cfg-enter-text').value = c.enter_text || '[ click to enter ]';
                 if(c.primary_color) document.getElementById('cfg-accent').value = c.primary_color;
-                if(c.background_color) document.getElementById('cfg-bg').value = c.background_color;
-                if(c.text_color) document.getElementById('cfg-text').value = c.text_color;
-                if(c.opacity) { document.getElementById('cfg-opacity').value = c.opacity; document.getElementById('val-opacity').innerText = c.opacity + '%'; }
-                if(c.blur !== undefined) { document.getElementById('cfg-blur').value = c.blur; document.getElementById('val-blur').innerText = c.blur + 'px'; }
-                if(c.border_radius) { document.getElementById('cfg-radius').value = c.border_radius; document.getElementById('val-radius').innerText = c.border_radius + 'px'; }
-                if(c.background_blur !== undefined) { document.getElementById('cfg-bgblur').value = c.background_blur; document.getElementById('val-bgblur').innerText = c.background_blur + 'px'; }
-                if(c.background_brightness) { document.getElementById('cfg-bright').value = c.background_brightness; document.getElementById('val-bright').innerText = c.background_brightness + '%'; }
-                document.getElementById('cfg-views').checked = c.show_views !== false;
-                document.getElementById('cfg-sparkle').checked = c.sparkle === true;
-                document.getElementById('cfg-glow').checked = c.glow !== false;
-                document.getElementById('cfg-anim').checked = c.animations !== false;
-            }
-        }
-
-        document.getElementById('save-btn').addEventListener('click', async () => {
-            document.getElementById('save-btn').innerText = "Wird verarbeitet...";
-            document.getElementById('save-btn').disabled = true;
-
-            const handleFileProcessing = async (inputElement, existingUrl, prefix, shouldDelete) => {
-                if (shouldDelete) return ""; 
-                const file = inputElement.files[0]; if (!file) return existingUrl;
-                const name = `${prefix}_${Date.now()}.${file.name.split('.').pop()}`;
-                const { error } = await supabase.storage.from('media').upload(name, file);
-                return !error ? `https://pdyrfnbjegsyjmcmbqck.supabase.co/storage/v1/object/public/media/${name}` : existingUrl;
-            };
-
-            const avatarUrl = await handleFileProcessing(document.getElementById('file-avatar'), extAvatar, 'avatar', deleteAvatarFlag);
-            const bannerUrl = await handleFileProcessing(document.getElementById('file-banner'), extBanner, 'banner', deleteBannerFlag);
-            const videoUrl = await handleFileProcessing(document.getElementById('file-video'), extVideo, 'video', deleteVideoFlag);
-            const songUrl = await handleFileProcessing(document.getElementById('file-song'), extSong, 'song', deleteSongFlag);
-            const cursorUrl = await handleFileProcessing(document.getElementById('file-cursor'), extCursor, 'cursor', deleteCursorFlag);
-
-            const customLinks = [];
-            document.querySelectorAll('.link-row').forEach(row => {
-                const name = row.querySelector('.link-name').value.trim();
-                const url = row.querySelector('.link-url').value.trim();
-                if(name && url) customLinks.push({ name, url });
-            });
-
-            const configJson = {
-                enter_text: document.getElementById('cfg-enter-text').value || '[ click to enter ]',
-                primary_color: document.getElementById('cfg-accent').value,
-                background_color: document.getElementById('cfg-bg').value,
-                text_color: document.getElementById('cfg-text').value,
-                opacity: document.getElementById('cfg-opacity').value,
-                blur: document.getElementById('cfg-blur').value,
-                border_radius: document.getElementById('cfg-radius').value,
-                background_blur: document.getElementById('cfg-bgblur').value,
-                background_brightness: document.getElementById('cfg-bright').value,
-                show_views: document.getElementById('cfg-views').checked,
-                sparkle: document.getElementById('cfg-sparkle').checked,
-                glow: document.getElementById('cfg-glow').checked,
-                animations: document.getElementById('cfg-anim').checked
-            };
-
-            const updates = {
-                display_name: document.getElementById('display-name').value, bio_text: document.getElementById('bio-text').value,
-                avatar_url: avatarUrl, banner_url: bannerUrl, video_url: videoUrl, song_url: songUrl, cursor_url: cursorUrl,
-                products: customLinks, settings: configJson, updated_at: new Date()
-            };
-
-            const { error } = await supabase.from('user_bios').update(updates).eq('id', rowId);
-            document.getElementById('save-btn').innerText = "Save All Changes";
-            document.getElementById('save-btn').disabled = false;
-            if (error) alert('Fehler: ' + error.message); else { alert('Erfolgreich geupdated!'); loadUserData(); }
-        });
-    </script>
-</body>
-</html>
+                if(c
