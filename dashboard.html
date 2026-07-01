@@ -18,18 +18,15 @@
         input[type="text"], textarea, select { width: 100%; padding: 0.75rem; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
         input:focus, textarea:focus { border-color: var(--accent-color); outline: none; }
         
-        /* Farb-Input Styling */
         .color-picker-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
         .color-box { text-align: center; }
         .color-box input[type="color"] { width: 100%; height: 40px; border: 1px solid var(--border-color); border-radius: 8px; background: none; cursor: pointer; }
 
-        /* Slider Styling */
         .slider-group { margin-bottom: 1rem; }
         .slider-row { display: flex; align-items: center; gap: 15px; }
         .slider-row input[type="range"] { flex: 1; accent-color: var(--accent-color); }
         .slider-value { width: 40px; text-align: right; font-size: 0.9rem; color: var(--accent-color); font-weight: bold; }
 
-        /* Switch/Toggle Button Styling */
         .switch-group { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid rgba(255,255,255,0.05); }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -45,10 +42,14 @@
         .panel-box h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; }
         label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
 
-        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .upload-cell { display: flex; flex-direction: column; }
         .upload-zone { border: 2px dashed var(--border-color); padding: 1.2rem; border-radius: 12px; text-align: center; background: rgba(39, 39, 42, 0.3); cursor: pointer; position: relative; margin-bottom: 0.5rem; }
         .file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .preview-status { font-size: 0.75rem; color: #22c55e; display: block; margin-bottom: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .preview-status { font-size: 0.75rem; color: #22c55e; display: block; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Roter Delete Button für Medien-Files */
+        .clear-media-btn { background: #ef4444; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 500; margin-bottom: 1rem; width: 100%; text-align: center; display: none; }
 
         .link-row { display: flex; gap: 10px; margin-bottom: 0.75rem; align-items: center; }
         .link-row input { margin-bottom: 0; }
@@ -61,6 +62,7 @@
         <div class="header"><h2>Vengeance Utilities Control Panel</h2></div>
 
         <div class="grid">
+            <!-- LINKE SEITE: TEXTE UND FILES -->
             <div>
                 <div class="panel-box">
                     <h3>Profile Data</h3>
@@ -74,27 +76,31 @@
                 <div class="panel-box">
                     <h3>File Settings (Uploads)</h3>
                     <div class="upload-grid">
-                        <div>
+                        <div class="upload-cell">
                             <label>Avatar / Profilbild</label>
                             <div class="upload-zone"><p>📁 Avatar</p><input type="file" id="file-avatar" class="file-input" accept="image/*"></div>
                             <span id="status-avatar" class="preview-status">Unverändert</span>
+                            <button id="del-avatar" class="clear-media-btn">🗑️ Entfernen</button>
                         </div>
-                        <div>
-                            <label>Profile Banner (Hintergrund-Card)</label>
+                        <div class="upload-cell">
+                            <label>Profile Banner</label>
                             <div class="upload-zone"><p>🖼️ Banner</p><input type="file" id="file-banner" class="file-input" accept="image/*"></div>
                             <span id="status-banner" class="preview-status">Unverändert</span>
+                            <button id="del-banner" class="clear-media-btn">🗑️ Entfernen</button>
                         </div>
                     </div>
                     <div class="upload-grid" style="margin-top: 5px;">
-                        <div>
+                        <div class="upload-cell">
                             <label>Hintergrundvideo (.mp4)</label>
                             <div class="upload-zone"><p>🎥 Video</p><input type="file" id="file-video" class="file-input" accept="video/mp4"></div>
                             <span id="status-video" class="preview-status">Unverändert</span>
+                            <button id="del-video" class="clear-media-btn">🗑️ Entfernen</button>
                         </div>
-                        <div>
+                        <div class="upload-cell">
                             <label>Audio / Song Track (.mp3)</label>
                             <div class="upload-zone"><p>🎵 Audio</p><input type="file" id="file-song" class="file-input" accept="audio/mpeg"></div>
                             <span id="status-song" class="preview-status">Unverändert</span>
+                            <button id="del-song" class="clear-media-btn">🗑️ Entfernen</button>
                         </div>
                     </div>
                 </div>
@@ -106,6 +112,7 @@
                 </div>
             </div>
 
+            <!-- RECHTE SEITE: COSMETIC SETTINGS -->
             <div>
                 <div class="panel-box">
                     <h3>Cosmetic Theme Settings</h3>
@@ -157,6 +164,7 @@
         const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
         let rowId = null, extAvatar = "", extVideo = "", extBanner = "", extSong = "";
+        let deleteAvatarFlag = false, deleteBannerFlag = false, deleteVideoFlag = false, deleteSongFlag = false;
 
         const params = new URLSearchParams(window.location.search);
         if (params.get('admin') !== '123') {
@@ -165,7 +173,6 @@
             loadUserData();
         }
 
-        // Live-Anzeige der Slider-Werte
         const bindSlider = (id, targetId, unit) => {
             document.getElementById(id).addEventListener('input', (e) => document.getElementById(targetId).innerText = e.target.value + unit);
         };
@@ -175,14 +182,31 @@
         bindSlider('cfg-bgblur', 'val-bgblur', 'px');
         bindSlider('cfg-bright', 'val-bright', '%');
 
-        // File State Listener
-        const bindFile = (id, targetId) => {
-            document.getElementById(id).addEventListener('change', (e) => { if(e.target.files[0]) document.getElementById(targetId).innerText = "Bereit: " + e.target.files[0].name; });
+        const bindFile = (id, targetId, delBtnId) => {
+            document.getElementById(id).addEventListener('change', (e) => { 
+                if(e.target.files[0]) {
+                    document.getElementById(targetId).innerText = "Bereit: " + e.target.files[0].name;
+                    document.getElementById(delBtnId).style.display = 'block';
+                } 
+            });
         };
-        bindFile('file-avatar', 'status-avatar');
-        bindFile('file-banner', 'status-banner');
-        bindFile('file-video', 'status-video');
-        bindFile('file-song', 'status-song');
+        bindFile('file-avatar', 'status-avatar', 'del-avatar');
+        bindFile('file-banner', 'status-banner', 'del-banner');
+        bindFile('file-video', 'status-video', 'del-video');
+        bindFile('file-song', 'status-song', 'del-song');
+
+        // Delete Trigger Logik für die UI Buttons
+        const setupDeleteTrigger = (btnId, statusId, inputId, flagRefSetter, extValue) => {
+            document.getElementById(btnId).addEventListener('click', () => {
+                document.getElementById(inputId).value = ""; // Reset File input
+                document.getElementById(statusId).innerText = "Wird beim Speichern gelöscht";
+                flagRefSetter(true);
+            });
+        };
+        setupDeleteTrigger('del-avatar', 'status-avatar', 'file-avatar', (v) => deleteAvatarFlag = v, extAvatar);
+        setupDeleteTrigger('del-banner', 'status-banner', 'file-banner', (v) => deleteBannerFlag = v, extBanner);
+        setupDeleteTrigger('del-video', 'status-video', 'file-video', (v) => deleteVideoFlag = v, extVideo);
+        setupDeleteTrigger('del-song', 'status-song', 'file-song', (v) => deleteSongFlag = v, extSong);
 
         document.getElementById('add-link-btn').addEventListener('click', () => createLinkRow('', ''));
 
@@ -195,21 +219,24 @@
         }
 
         async function loadUserData() {
+            // Flags resetten
+            deleteAvatarFlag = false; deleteBannerFlag = false; deleteVideoFlag = false; deleteSongFlag = false;
+            
             const { data } = await supabase.from('user_bios').select('*').limit(1).single();
             if (data) {
                 rowId = data.id; extAvatar = data.avatar_url || ''; extVideo = data.video_url || ''; extBanner = data.banner_url || ''; extSong = data.song_url || '';
                 document.getElementById('display-name').value = data.display_name || '';
                 document.getElementById('bio-text').value = data.bio_text || '';
                 
-                if(extAvatar) document.getElementById('status-avatar').innerText = "Datei auf Server vorhanden";
-                if(extBanner) document.getElementById('status-banner').innerText = "Datei auf Server vorhanden";
-                if(extVideo) document.getElementById('status-video').innerText = "Datei auf Server vorhanden";
-                if(extSong) document.getElementById('status-song').innerText = "Datei auf Server vorhanden";
+                const toggleDelBtn = (ext, id) => document.getElementById(id).style.display = ext ? 'block' : 'none';
+                if(extAvatar) { document.getElementById('status-avatar').innerText = "Datei vorhanden"; toggleDelBtn(extAvatar, 'del-avatar'); }
+                if(extBanner) { document.getElementById('status-banner').innerText = "Datei vorhanden"; toggleDelBtn(extBanner, 'del-banner'); }
+                if(extVideo) { document.getElementById('status-video').innerText = "Datei vorhanden"; toggleDelBtn(extVideo, 'del-video'); }
+                if(extSong) { document.getElementById('status-song').innerText = "Datei vorhanden"; toggleDelBtn(extSong, 'del-song'); }
 
                 document.getElementById('links-list-manager').innerHTML = "";
                 (data.products || []).forEach(l => createLinkRow(l.name, l.url));
 
-                // Settings befüllen
                 const c = data.settings || {};
                 if(c.primary_color) document.getElementById('cfg-accent').value = c.primary_color;
                 if(c.background_color) document.getElementById('cfg-bg').value = c.background_color;
@@ -225,20 +252,21 @@
         }
 
         document.getElementById('save-btn').addEventListener('click', async () => {
-            document.getElementById('save-btn').innerText = "Speichere High-End Konfiguration...";
+            document.getElementById('save-btn').innerText = "Speichere Konfiguration...";
             document.getElementById('save-btn').disabled = true;
 
-            const uploadFile = async (inputElement, existingUrl, prefix) => {
+            const handleFileProcessing = async (inputElement, existingUrl, prefix, shouldDelete) => {
+                if (shouldDelete) return ""; // Wenn gelöscht werden soll, schicken wir einen leeren String
                 const file = inputElement.files[0]; if (!file) return existingUrl;
                 const name = `${prefix}_${Date.now()}.${file.name.split('.').pop()}`;
                 const { error } = await supabase.storage.from('media').upload(name, file);
                 return !error ? `https://pdyrfnbjegsyjmcmbqck.supabase.co/storage/v1/object/public/media/${name}` : existingUrl;
             };
 
-            const avatarUrl = await uploadFile(document.getElementById('file-avatar'), extAvatar, 'avatar');
-            const bannerUrl = await uploadFile(document.getElementById('file-banner'), extBanner, 'banner');
-            const videoUrl = await uploadFile(document.getElementById('file-video'), extVideo, 'video');
-            const songUrl = await uploadFile(document.getElementById('file-song'), extSong, 'song');
+            const avatarUrl = await handleFileProcessing(document.getElementById('file-avatar'), extAvatar, 'avatar', deleteAvatarFlag);
+            const bannerUrl = await handleFileProcessing(document.getElementById('file-banner'), extBanner, 'banner', deleteBannerFlag);
+            const videoUrl = await handleFileProcessing(document.getElementById('file-video'), extVideo, 'video', deleteVideoFlag);
+            const songUrl = await handleFileProcessing(document.getElementById('file-song'), extSong, 'song', deleteSongFlag);
 
             const customLinks = [];
             document.querySelectorAll('.link-row').forEach(row => {
@@ -275,7 +303,7 @@
             document.getElementById('save-btn').disabled = false;
 
             if (error) alert('Fehler: ' + error.message);
-            else { alert('High-End Konfiguration gespeichert!'); loadUserData(); }
+            else { alert('Konfiguration erfolgreich aktualisiert!'); loadUserData(); }
         });
     </script>
 </body>
