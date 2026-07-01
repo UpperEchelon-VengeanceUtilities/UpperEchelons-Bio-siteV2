@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vengeance Utilities | Bio</title>
+    <title>Loading...</title>
     <link id="favicon" rel="icon" type="image/png" href="">
     <style id="dynamic-theme"></style>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
@@ -23,7 +25,6 @@
         .video-background video { width: 100%; height: 100%; object-fit: cover; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; background: rgba(0,0,0,0.3); }
 
-        /* NEU: Wrapper ist jetzt transparent, die Border-Dicke wird über Padding geregelt */
         .card-wrapper { 
             position: relative; 
             z-index: 10; 
@@ -35,7 +36,6 @@
         }
         .card-wrapper.loaded { opacity: 1; transform: scale(1); }
 
-        /* NEU: Maskiertes Pseudoelement für die animierte Glow-Border (Zentrum bleibt 100% durchsichtig!) */
         .card-wrapper.glow-active::before {
             content: "";
             position: absolute;
@@ -52,14 +52,14 @@
         }
         @keyframes border-dance { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* NEU: Der Container sitzt über dem Pseudoelement */
         .container { 
-            width: 444px; text-align: center; display: flex; flex-direction: column; overflow: hidden;
-            position: relative;
-            z-index: 2;
+            width: 444px; text-align: center; display: flex; flex-direction: column; overflow-y: auto; max-height: 85vh;
+            position: relative; z-index: 2;
+            scrollbar-width: none;
         }
+        .container::-webkit-scrollbar { display: none; }
 
-        .card-banner { width: 100%; height: 110px; background-size: cover; background-position: center; display: none; }
+        .card-banner { width: 100%; height: 110px; background-size: cover; background-position: center; display: none; flex-shrink: 0; }
         
         .profile-content { padding: 0 2rem 2.5rem 2rem; position: relative; margin-top: -50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .profile-content.no-banner { margin-top: 2.5rem; }
@@ -76,12 +76,31 @@
         }
         @keyframes shine { to { background-position: 200% center; } }
 
-        .bio { font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; text-align: center; width: 100%; }
+        .bio { font-size: 0.95rem; margin-bottom: 1.2rem; line-height: 1.5; text-align: center; width: 100%; }
         
         .views-badge { position: absolute; top: 15px; right: 20px; font-size: 0.75rem; color: #a1a1aa; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: none; z-index: 20; }
 
+        /* NEU: Icon Zeile unter der Bio */
+        .social-icons-row { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 1.5rem; width: 100%; flex-wrap: wrap; }
+        .social-icon-btn { font-size: 1.4rem; color: #a1a1aa; transition: color 0.25s, transform 0.25s; text-decoration: none; }
+        .social-icon-btn:hover { color: var(--accent); transform: scale(1.15); }
+
         .links-container { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; }
         .bio-link { display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.03); text-decoration: none; padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
+
+        /* NEU: Discord Live Widgets (E-Z.bio Style) */
+        .discord-integration-box { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; margin-top: 0.85rem; }
+        .dc-card { display: flex; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.06); padding: 0.85rem 1.2rem; border-radius: 12px; text-decoration: none; position: relative; text-align: left; }
+        .dc-avatar-wrapper { position: relative; width: 44px; height: 44px; margin-right: 12px; }
+        .dc-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .dc-status-dot { position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid #18181b; background: #747f8d; }
+        .dc-status-dot.online { background: #23a55a; }
+        .dc-status-dot.idle { background: #f0b232; }
+        .dc-status-dot.dnd { background: #f23f43; }
+        .dc-info { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        .dc-name { font-weight: 600; font-size: 0.95rem; }
+        .dc-custom-status { font-size: 0.8rem; color: #a1a1aa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .dc-action-text { font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-left: auto; display: flex; align-items: center; gap: 4px; }
 
         .volume-box { position: fixed; top: 20px; left: 20px; z-index: 100; background: rgba(10, 10, 12, 0.7); border: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; border-radius: 30px; display: none; align-items: center; gap: 10px; backdrop-filter: blur(15px); }
         .volume-box.visible { display: flex; }
@@ -110,7 +129,12 @@
                 <img id="user-avatar" class="profile-img" src="" alt="Logo">
                 <h1 id="user-name"></h1>
                 <p id="user-bio" class="bio"></p>
+                
+                <div id="social-icons" class="social-icons-row"></div>
+
                 <div id="custom-links" class="links-container"></div>
+                
+                <div id="discord-box" class="discord-integration-box"></div>
             </div>
         </div>
     </div>
@@ -120,6 +144,29 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
         const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
+
+        // NEU: Helferfunktion für den automatischen Tab-Text Ticker-Effekt
+        function startTabTicker(text) {
+            let displayTitle = text + "   |   ";
+            setInterval(() => {
+                displayTitle = displayTitle.substring(1) + displayTitle.substring(0, 1);
+                document.title = displayTitle;
+            }, 300);
+        }
+
+        // NEU: Icon-Mapper basierend auf Domainnamen
+        function getSocialIconClass(url) {
+            const l = url.toLowerCase();
+            if(l.includes('instagram.com')) return 'fa-brands fa-instagram';
+            if(l.includes('discord.gg') || l.includes('discord.com')) return 'fa-brands fa-discord';
+            if(l.includes('github.com')) return 'fa-brands fa-github';
+            if(l.includes('youtube.com') || l.includes('youtu.be')) return 'fa-brands fa-youtube';
+            if(l.includes('twitch.tv')) return 'fa-brands fa-twitch';
+            if(l.includes('steamcommunity.com')) return 'fa-brands fa-steam';
+            if(l.includes('tiktok.com')) return 'fa-brands fa-tiktok';
+            if(l.includes('shop') || l.includes('store')) return 'fa-solid fa-cart-shopping';
+            return 'fa-solid fa-link'; // Fallback
+        }
 
         async function loadBio() {
             const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
@@ -131,6 +178,9 @@
             const c = data.settings || {};
             const styleTag = document.getElementById('dynamic-theme');
             document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
+
+            // Tab Text Ticker starten
+            startTabTicker(data.tab_text || "Vengeance Utilities");
 
             const hexToRgb = (hex) => {
                 let s = hex.replace('#', '');
@@ -149,7 +199,6 @@
 
             let cursorStyle = data.cursor_url ? `* { cursor: url('${data.cursor_url}'), auto !important; }` : "";
 
-            // NEU: Hier werden die dynamischen Variablen sauber injiziert, damit auch die Ecken synchron abgerundet sind
             styleTag.innerHTML = `
                 ${cursorStyle}
                 :root { --accent: ${c.primary_color || '#a855f7'}; }
@@ -162,8 +211,8 @@
                     border-radius: ${bRadius - 2}px;
                 }
                 .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; }
-                .bio-link { color: ${c.text_color || '#f4f4f5'}; border: 1px solid rgba(255,255,255,0.06); transition: ${c.animations ? 'all 0.25s' : 'none'}; }
-                .bio-link:hover { ${c.animations ? `border-color: ${c.primary_color || '#a855f7'}88; background: ${c.primary_color || '#a855f7'}14; transform: translateY(-2px);` : ''} }
+                .bio-link, .dc-card { color: ${c.text_color || '#f4f4f5'}; border: 1px solid rgba(255,255,255,0.06); transition: ${c.animations ? 'all 0.25s' : 'none'}; }
+                .bio-link:hover, .dc-card:hover { ${c.animations ? `border-color: ${c.primary_color || '#a855f7'}88; background: ${c.primary_color || '#a855f7'}14; transform: translateY(-2px);` : ''} }
                 .video-background video { filter: blur(${c.background_blur || 0}px) brightness(${(c.background_brightness || 100) / 100}); }
                 .volume-slider::-webkit-slider-thumb { background: ${c.primary_color || '#a855f7'}; }
             `;
@@ -190,13 +239,104 @@
             if (data.banner_url) { bannerElement.style.backgroundImage = `url('${data.banner_url}')`; bannerElement.style.display = "block"; wrapperElement.classList.remove('no-banner'); }
             else { bannerElement.style.display = "none"; wrapperElement.classList.add('no-banner'); }
 
-            const container = document.getElementById('custom-links');
-            container.innerHTML = "";
+            // Links rendern (Große Buttons vs Kleine Social Icons oben)
+            const iconContainer = document.getElementById('social-icons');
+            const linkContainer = document.getElementById('custom-links');
+            iconContainer.innerHTML = "";
+            linkContainer.innerHTML = "";
+
             (data.products || []).forEach(l => {
-                const a = document.createElement('a'); a.className = "bio-link";
-                a.href = l.url.startsWith('http') ? l.url : `https://${l.url}`; a.target = "_blank"; a.innerText = l.name;
-                container.appendChild(a);
+                const urlString = l.url.startsWith('http') ? l.url : `https://${l.url}`;
+                const iconClass = getSocialIconClass(l.url);
+
+                // Wenn es ein klares Social-Media Profil ist, packen wir es als Mini-Icon oben rein
+                if(iconClass !== 'fa-solid fa-link' && !l.name.toLowerCase().includes('shop') && !l.name.toLowerCase().includes('website')) {
+                    const a = document.createElement('a'); a.className = "social-icon-btn";
+                    a.href = urlString; a.target = "_blank"; a.title = l.name;
+                    a.innerHTML = `<i class="${iconClass}"></i>`;
+                    iconContainer.appendChild(a);
+                } else {
+                    // Standard-Buttons für Shop / Eigene Webseiten
+                    const a = document.createElement('a'); a.className = "bio-link";
+                    a.href = urlString; a.target = "_blank"; 
+                    a.innerHTML = `<i class="${iconClass}" style="margin-right:10px; color:var(--accent);"></i> ${l.name}`;
+                    linkContainer.appendChild(a);
+                }
             });
+
+            // Live Discord Integrationen rendern
+            const dcBox = document.getElementById('discord-box');
+            dcBox.innerHTML = "";
+
+            if(data.discord_id) {
+                // 1. Live User-Status Card (via Lanyard API)
+                const userCard = document.createElement('div');
+                userCard.className = "dc-card";
+                userCard.innerHTML = `
+                    <div class="dc-avatar-wrapper">
+                        <img id="dc-user-img" class="dc-avatar" src="https://singlecolorimage.com/get/27272a/44x44" alt="DC">
+                        <div id="dc-status-indicator" class="dc-status-dot"></div>
+                    </div>
+                    <div class="dc-info">
+                        <div id="dc-user-name" class="dc-name">Loading Discord...</div>
+                        <div id="dc-user-status" class="dc-custom-status">Offline / Nicht erreichbar</div>
+                    </div>
+                    <div class="dc-action-text">Profile <i class="fa-solid fa-angle-right"></i></div>
+                `;
+                dcBox.appendChild(userCard);
+
+                // Lanyard API Fetching für Realtime Status
+                fetch(`https://api.lanyard.rest/v1/users/${data.discord_id}`)
+                    .then(res => res.json())
+                    .then(resData => {
+                        if(resData.success && resData.data) {
+                            const d = resData.data;
+                            document.getElementById('dc-user-name').innerText = d.discord_user.global_name || d.discord_user.username;
+                            document.getElementById('dc-user-img').src = `https://cdn.discordapp.com/avatars/${d.discord_user.id}/${d.discord_user.avatar}.png`;
+                            
+                            const dot = document.getElementById('dc-status-indicator');
+                            dot.className = `dc-status-dot ${d.discord_status}`;
+
+                            if(d.activities && d.activities.length > 0) {
+                                const custom = d.activities.find(a => a.type === 4);
+                                if(custom) document.getElementById('dc-user-status').innerText = (custom.emoji ? custom.emoji.name + " " : "") + (custom.state || "");
+                                else document.getElementById('dc-user-status').innerText = `Spielt ${d.activities[0].name}`;
+                            } else {
+                                document.getElementById('dc-user-status').innerText = d.discord_status.toUpperCase();
+                            }
+                        }
+                    }).catch(() => {});
+            }
+
+            if(data.discord_invite) {
+                // 2. Server Invite Banner (Echtzeit-Anzeige über die standardmäßige Discord-Widget JSON API)
+                const inviteCode = data.discord_invite.split('/').pop();
+                const serverCard = document.createElement('a');
+                serverCard.className = "dc-card";
+                serverCard.href = `https://discord.gg/${inviteCode}`;
+                serverCard.target = "_blank";
+                serverCard.innerHTML = `
+                    <div class="dc-avatar-wrapper">
+                        <img id="dc-server-img" class="dc-avatar" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Server">
+                    </div>
+                    <div class="dc-info">
+                        <div id="dc-server-name" class="dc-name">Discord Server</div>
+                        <div id="dc-server-metrics" class="dc-custom-status">Klicke zum Beitreten</div>
+                    </div>
+                    <div class="dc-action-text" style="color:#5865F2;">Join <i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+                `;
+                dcBox.appendChild(serverCard);
+
+                fetch(`https://discord.com/api/v9/invites/${inviteCode}?with_counts=true`)
+                    .then(res => res.json())
+                    .then(srv => {
+                        if(srv.guild) {
+                            document.getElementById('dc-server-name').innerText = srv.guild.name;
+                            if(srv.guild.icon) document.getElementById('dc-server-img').src = `https://cdn.discordapp.com/icons/${srv.guild.id}/${srv.guild.icon}.png`;
+                            document.getElementById('dc-server-metrics').innerHTML = `<span style="color:#23a55a;">●</span> ${srv.approximate_presence_count} Online &nbsp;&nbsp; <span style="color:#a1a1aa;">●</span> ${srv.approximate_member_count} Members`;
+                        }
+                    }).catch(() => {});
+            }
 
             const video = document.getElementById('bg-video');
             const audio = document.getElementById('bg-music');
