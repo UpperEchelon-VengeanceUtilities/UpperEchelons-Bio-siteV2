@@ -80,7 +80,6 @@
         
         .views-badge { position: absolute; top: 15px; right: 20px; font-size: 0.75rem; color: #a1a1aa; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: none; z-index: 20; }
 
-        /* NEU: Icon Zeile unter der Bio */
         .social-icons-row { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 1.5rem; width: 100%; flex-wrap: wrap; }
         .social-icon-btn { font-size: 1.4rem; color: #a1a1aa; transition: color 0.25s, transform 0.25s; text-decoration: none; }
         .social-icon-btn:hover { color: var(--accent); transform: scale(1.15); }
@@ -88,7 +87,6 @@
         .links-container { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; }
         .bio-link { display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.03); text-decoration: none; padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
 
-        /* NEU: Discord Live Widgets (E-Z.bio Style) */
         .discord-integration-box { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; margin-top: 0.85rem; }
         .dc-card { display: flex; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.06); padding: 0.85rem 1.2rem; border-radius: 12px; text-decoration: none; position: relative; text-align: left; }
         .dc-avatar-wrapper { position: relative; width: 44px; height: 44px; margin-right: 12px; }
@@ -131,9 +129,7 @@
                 <p id="user-bio" class="bio"></p>
                 
                 <div id="social-icons" class="social-icons-row"></div>
-
                 <div id="custom-links" class="links-container"></div>
-                
                 <div id="discord-box" class="discord-integration-box"></div>
             </div>
         </div>
@@ -145,7 +141,6 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
         const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
-        // NEU: Helferfunktion für den automatischen Tab-Text Ticker-Effekt
         function startTabTicker(text) {
             let displayTitle = text + "   |   ";
             setInterval(() => {
@@ -154,7 +149,6 @@
             }, 300);
         }
 
-        // NEU: Icon-Mapper basierend auf Domainnamen
         function getSocialIconClass(url) {
             const l = url.toLowerCase();
             if(l.includes('instagram.com')) return 'fa-brands fa-instagram';
@@ -165,21 +159,30 @@
             if(l.includes('steamcommunity.com')) return 'fa-brands fa-steam';
             if(l.includes('tiktok.com')) return 'fa-brands fa-tiktok';
             if(l.includes('shop') || l.includes('store')) return 'fa-solid fa-cart-shopping';
-            return 'fa-solid fa-link'; // Fallback
+            return 'fa-solid fa-link';
         }
 
         async function loadBio() {
+            // Zuerst die aktuellen Daten holen
             const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
             if (error || !data) return;
 
-            const currentViews = (data.views || 0) + 1;
-            await supabase.from('user_bios').update({ views: currentViews }).eq('id', data.id);
+            let currentViews = data.views || 0;
+            const storageKey = `v_visited_${data.id}`;
+            const lastVisit = localStorage.getItem(storageKey);
+            const now = Date.now();
+
+            // NEU: F5-Schutz. Wenn kein Eintrag existiert oder der letzte Besuch älter als 24 Stunden (86400000 ms) ist
+            if (!lastVisit || (now - parseInt(lastVisit)) > 86400000) {
+                currentViews += 1;
+                localStorage.setItem(storageKey, now.toString());
+                await supabase.from('user_bios').update({ views: currentViews }).eq('id', data.id);
+            }
 
             const c = data.settings || {};
             const styleTag = document.getElementById('dynamic-theme');
             document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
 
-            // Tab Text Ticker starten
             startTabTicker(data.tab_text || "Vengeance Utilities");
 
             const hexToRgb = (hex) => {
@@ -239,7 +242,6 @@
             if (data.banner_url) { bannerElement.style.backgroundImage = `url('${data.banner_url}')`; bannerElement.style.display = "block"; wrapperElement.classList.remove('no-banner'); }
             else { bannerElement.style.display = "none"; wrapperElement.classList.add('no-banner'); }
 
-            // Links rendern (Große Buttons vs Kleine Social Icons oben)
             const iconContainer = document.getElementById('social-icons');
             const linkContainer = document.getElementById('custom-links');
             iconContainer.innerHTML = "";
@@ -249,14 +251,12 @@
                 const urlString = l.url.startsWith('http') ? l.url : `https://${l.url}`;
                 const iconClass = getSocialIconClass(l.url);
 
-                // Wenn es ein klares Social-Media Profil ist, packen wir es als Mini-Icon oben rein
                 if(iconClass !== 'fa-solid fa-link' && !l.name.toLowerCase().includes('shop') && !l.name.toLowerCase().includes('website')) {
                     const a = document.createElement('a'); a.className = "social-icon-btn";
                     a.href = urlString; a.target = "_blank"; a.title = l.name;
                     a.innerHTML = `<i class="${iconClass}"></i>`;
                     iconContainer.appendChild(a);
                 } else {
-                    // Standard-Buttons für Shop / Eigene Webseiten
                     const a = document.createElement('a'); a.className = "bio-link";
                     a.href = urlString; a.target = "_blank"; 
                     a.innerHTML = `<i class="${iconClass}" style="margin-right:10px; color:var(--accent);"></i> ${l.name}`;
@@ -264,12 +264,10 @@
                 }
             });
 
-            // Live Discord Integrationen rendern
             const dcBox = document.getElementById('discord-box');
             dcBox.innerHTML = "";
 
             if(data.discord_id) {
-                // 1. Live User-Status Card (via Lanyard API)
                 const userCard = document.createElement('div');
                 userCard.className = "dc-card";
                 userCard.innerHTML = `
@@ -285,7 +283,6 @@
                 `;
                 dcBox.appendChild(userCard);
 
-                // Lanyard API Fetching für Realtime Status
                 fetch(`https://api.lanyard.rest/v1/users/${data.discord_id}`)
                     .then(res => res.json())
                     .then(resData => {
@@ -309,7 +306,6 @@
             }
 
             if(data.discord_invite) {
-                // 2. Server Invite Banner (Echtzeit-Anzeige über die standardmäßige Discord-Widget JSON API)
                 const inviteCode = data.discord_invite.split('/').pop();
                 const serverCard = document.createElement('a');
                 serverCard.className = "dc-card";
