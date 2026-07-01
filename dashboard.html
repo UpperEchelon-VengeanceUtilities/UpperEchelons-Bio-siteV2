@@ -15,8 +15,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
         
-        input[type="text"], textarea, select { width: 100%; padding: 0.75rem; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
-        input:focus, textarea:focus { border-color: var(--accent-color); outline: none; }
+        input[type="text"], textarea { width: 100%; padding: 0.75rem; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
         
         .color-picker-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
         .color-box { text-align: center; }
@@ -36,8 +35,7 @@
         input:checked + .slider-toggle:before { transform: translateX(20px); }
 
         button { width: 100%; padding: 0.75rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-
+        
         .panel-box { background: var(--card-bg); border: 1px solid #27272a; padding: 1.5rem; border-radius: 14px; margin-bottom: 1.5rem; }
         .panel-box h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; }
         label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
@@ -46,10 +44,8 @@
         .upload-cell { display: flex; flex-direction: column; }
         .upload-zone { border: 2px dashed var(--border-color); padding: 1.2rem; border-radius: 12px; text-align: center; background: rgba(39, 39, 42, 0.3); cursor: pointer; position: relative; margin-bottom: 0.5rem; }
         .file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .preview-status { font-size: 0.75rem; color: #22c55e; display: block; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* Roter Delete Button für Medien-Files */
-        .clear-media-btn { background: #ef4444; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 500; margin-bottom: 1rem; width: 100%; text-align: center; display: none; }
+        .preview-status { font-size: 0.75rem; color: #22c55e; display: block; margin-bottom: 0.5rem; }
+        .clear-media-btn { background: #ef4444; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: 6px; width: 100%; display: none; }
 
         .link-row { display: flex; gap: 10px; margin-bottom: 0.75rem; align-items: center; }
         .link-row input { margin-bottom: 0; }
@@ -62,15 +58,16 @@
         <div class="header"><h2>Vengeance Utilities Control Panel</h2></div>
 
         <div class="grid">
-            <!-- LINKE SEITE: TEXTE UND FILES -->
+            <!-- LINKE SEITE -->
             <div>
                 <div class="panel-box">
                     <h3>Profile Data</h3>
                     <label>Anzeigename</label>
                     <input type="text" id="display-name">
-                    
                     <label>Bio Beschreibung</label>
                     <textarea id="bio-text" rows="3"></textarea>
+                    <label>Startbildschirm Text</label>
+                    <input type="text" id="cfg-enter-text">
                 </div>
 
                 <div class="panel-box">
@@ -97,10 +94,18 @@
                             <button id="del-video" class="clear-media-btn">🗑️ Entfernen</button>
                         </div>
                         <div class="upload-cell">
-                            <label>Audio / Song Track (.mp3)</label>
+                            <label>Audio Track (.mp3)</label>
                             <div class="upload-zone"><p>🎵 Audio</p><input type="file" id="file-song" class="file-input" accept="audio/mpeg"></div>
                             <span id="status-song" class="preview-status">Unverändert</span>
                             <button id="del-song" class="clear-media-btn">🗑️ Entfernen</button>
+                        </div>
+                    </div>
+                    <div class="upload-grid" style="margin-top: 5px;">
+                        <div class="upload-cell">
+                            <label>Custom Cursor</label>
+                            <div class="upload-zone"><p>🖱️ Cursor</p><input type="file" id="file-cursor" class="file-input" accept="image/png, image/x-icon"></div>
+                            <span id="status-cursor" class="preview-status">Unverändert</span>
+                            <button id="del-cursor" class="clear-media-btn">🗑️ Entfernen</button>
                         </div>
                     </div>
                 </div>
@@ -112,11 +117,10 @@
                 </div>
             </div>
 
-            <!-- RECHTE SEITE: COSMETIC SETTINGS -->
+            <!-- RECHTE SEITE (COSMETIC SETTINGS AUS IMAGE_9E6EF8.PNG) -->
             <div>
                 <div class="panel-box">
                     <h3>Cosmetic Theme Settings</h3>
-                    
                     <label>Colors</label>
                     <div class="color-picker-group">
                         <div class="color-box"><label>Accent</label><input type="color" id="cfg-accent"></div>
@@ -124,36 +128,18 @@
                         <div class="color-box"><label>Text</label><input type="color" id="cfg-text"></div>
                     </div>
 
-                    <div class="slider-group">
-                        <label>Card Opacity (Deckkraft)</label>
-                        <div class="slider-row"><input type="range" id="cfg-opacity" min="10" max="100" value="65"><span class="slider-value" id="val-opacity">65%</span></div>
-                    </div>
+                    <div class="slider-group"><label>Card Opacity</label><div class="slider-row"><input type="range" id="cfg-opacity" min="10" max="100"><span class="slider-value" id="val-opacity">65%</span></div></div>
+                    <div class="slider-group"><label>Card Backdrop Blur</label><div class="slider-row"><input type="range" id="cfg-blur" min="0" max="40"><span class="slider-value" id="val-blur">20px</span></div></div>
+                    <div class="slider-group"><label>Card Border Radius</label><div class="slider-row"><input type="range" id="cfg-radius" min="0" max="40"><span class="slider-value" id="val-radius">24px</span></div></div>
+                    <div class="slider-group"><label>Video Blur</label><div class="slider-row"><input type="range" id="cfg-bgblur" min="0" max="20"><span class="slider-value" id="val-bgblur">0px</span></div></div>
+                    <div class="slider-group"><label>Video Brightness</label><div class="slider-row"><input type="range" id="cfg-bright" min="20" max="100"><span class="slider-value" id="val-bright">100%</span></div></div>
 
-                    <div class="slider-group">
-                        <label>Card Backdrop Blur (Weichzeichner)</label>
-                        <div class="slider-row"><input type="range" id="cfg-blur" min="0" max="40" value="20"><span class="slider-value" id="val-blur">20px</span></div>
-                    </div>
-
-                    <div class="slider-group">
-                        <label>Card Border Radius (Rundung)</label>
-                        <div class="slider-row"><input type="range" id="cfg-radius" min="0" max="40" value="24"><span class="slider-value" id="val-radius">24px</span></div>
-                    </div>
-
-                    <div class="slider-group">
-                        <label>Background Video Blur</label>
-                        <div class="slider-row"><input type="range" id="cfg-bgblur" min="0" max="20" value="0"><span class="slider-value" id="val-bgblur">0px</span></div>
-                    </div>
-
-                    <div class="slider-group">
-                        <label>Background Video Brightness</label>
-                        <div class="slider-row"><input type="range" id="cfg-bright" min="20" max="100" value="100"><span class="slider-value" id="val-bright">100%</span></div>
-                    </div>
-
-                    <label style="margin-top: 1.5rem;">Toggles</label>
-                    <div class="switch-group"><span>Card Glow Effekt aktivieren</span><label class="switch"><input type="checkbox" id="cfg-glow" checked><span class="slider-toggle"></span></label></div>
-                    <div class="switch-group"><span>Hover Animationen erlauben</span><label class="switch"><input type="checkbox" id="cfg-anim" checked><span class="slider-toggle"></span></label></div>
+                    <label style="margin-top: 1.5rem;">e-z.bio Features</label>
+                    <div class="switch-group"><span>Show Views (Klicks anzeigen)</span><label class="switch"><input type="checkbox" id="cfg-views"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Username Sparkle (Glitzer-Name)</span><label class="switch"><input type="checkbox" id="cfg-sparkle"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Animated Gradient Glow Border</span><label class="switch"><input type="checkbox" id="cfg-glow"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Hover Animations</span><label class="switch"><input type="checkbox" id="cfg-anim"><span class="slider-toggle"></span></label></div>
                 </div>
-                
                 <button id="save-btn" style="background: #22c55e;">Save All Changes</button>
             </div>
         </div>
@@ -163,15 +149,13 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
         const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
-        let rowId = null, extAvatar = "", extVideo = "", extBanner = "", extSong = "";
-        let deleteAvatarFlag = false, deleteBannerFlag = false, deleteVideoFlag = false, deleteSongFlag = false;
+        let rowId = null, extAvatar = "", extVideo = "", extBanner = "", extSong = "", extCursor = "";
+        let deleteAvatarFlag = false, deleteBannerFlag = false, deleteVideoFlag = false, deleteSongFlag = false, deleteCursorFlag = false;
 
         const params = new URLSearchParams(window.location.search);
         if (params.get('admin') !== '123') {
             document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; color:#ef4444;'>Zugriff verweigert!</h1>";
-        } else {
-            loadUserData();
-        }
+        } else { loadUserData(); }
 
         const bindSlider = (id, targetId, unit) => {
             document.getElementById(id).addEventListener('input', (e) => document.getElementById(targetId).innerText = e.target.value + unit);
@@ -184,29 +168,23 @@
 
         const bindFile = (id, targetId, delBtnId) => {
             document.getElementById(id).addEventListener('change', (e) => { 
-                if(e.target.files[0]) {
-                    document.getElementById(targetId).innerText = "Bereit: " + e.target.files[0].name;
-                    document.getElementById(delBtnId).style.display = 'block';
-                } 
+                if(e.target.files[0]) { document.getElementById(targetId).innerText = "Bereit: " + e.target.files[0].name; document.getElementById(delBtnId).style.display = 'block'; } 
             });
         };
         bindFile('file-avatar', 'status-avatar', 'del-avatar');
         bindFile('file-banner', 'status-banner', 'del-banner');
         bindFile('file-video', 'status-video', 'del-video');
         bindFile('file-song', 'status-song', 'del-song');
+        bindFile('file-cursor', 'status-cursor', 'del-cursor');
 
-        // Delete Trigger Logik für die UI Buttons
-        const setupDeleteTrigger = (btnId, statusId, inputId, flagRefSetter, extValue) => {
-            document.getElementById(btnId).addEventListener('click', () => {
-                document.getElementById(inputId).value = ""; // Reset File input
-                document.getElementById(statusId).innerText = "Wird beim Speichern gelöscht";
-                flagRefSetter(true);
-            });
+        const setupDeleteTrigger = (btnId, statusId, inputId, flagRefSetter) => {
+            document.getElementById(btnId).addEventListener('click', () => { document.getElementById(inputId).value = ""; document.getElementById(statusId).innerText = "Wird gelöscht"; flagRefSetter(true); });
         };
-        setupDeleteTrigger('del-avatar', 'status-avatar', 'file-avatar', (v) => deleteAvatarFlag = v, extAvatar);
-        setupDeleteTrigger('del-banner', 'status-banner', 'file-banner', (v) => deleteBannerFlag = v, extBanner);
-        setupDeleteTrigger('del-video', 'status-video', 'file-video', (v) => deleteVideoFlag = v, extVideo);
-        setupDeleteTrigger('del-song', 'status-song', 'file-song', (v) => deleteSongFlag = v, extSong);
+        setupDeleteTrigger('del-avatar', 'status-avatar', 'file-avatar', (v) => deleteAvatarFlag = v);
+        setupDeleteTrigger('del-banner', 'status-banner', 'file-banner', (v) => deleteBannerFlag = v);
+        setupDeleteTrigger('del-video', 'status-video', 'file-video', (v) => deleteVideoFlag = v);
+        setupDeleteTrigger('del-song', 'status-song', 'file-song', (v) => deleteSongFlag = v);
+        setupDeleteTrigger('del-cursor', 'status-cursor', 'file-cursor', (v) => deleteCursorFlag = v);
 
         document.getElementById('add-link-btn').addEventListener('click', () => createLinkRow('', ''));
 
@@ -219,12 +197,9 @@
         }
 
         async function loadUserData() {
-            // Flags resetten
-            deleteAvatarFlag = false; deleteBannerFlag = false; deleteVideoFlag = false; deleteSongFlag = false;
-            
             const { data } = await supabase.from('user_bios').select('*').limit(1).single();
             if (data) {
-                rowId = data.id; extAvatar = data.avatar_url || ''; extVideo = data.video_url || ''; extBanner = data.banner_url || ''; extSong = data.song_url || '';
+                rowId = data.id; extAvatar = data.avatar_url || ''; extVideo = data.video_url || ''; extBanner = data.banner_url || ''; extSong = data.song_url || ''; extCursor = data.cursor_url || '';
                 document.getElementById('display-name').value = data.display_name || '';
                 document.getElementById('bio-text').value = data.bio_text || '';
                 
@@ -233,11 +208,13 @@
                 if(extBanner) { document.getElementById('status-banner').innerText = "Datei vorhanden"; toggleDelBtn(extBanner, 'del-banner'); }
                 if(extVideo) { document.getElementById('status-video').innerText = "Datei vorhanden"; toggleDelBtn(extVideo, 'del-video'); }
                 if(extSong) { document.getElementById('status-song').innerText = "Datei vorhanden"; toggleDelBtn(extSong, 'del-song'); }
+                if(extCursor) { document.getElementById('status-cursor').innerText = "Datei vorhanden"; toggleDelBtn(extCursor, 'del-cursor'); }
 
                 document.getElementById('links-list-manager').innerHTML = "";
                 (data.products || []).forEach(l => createLinkRow(l.name, l.url));
 
                 const c = data.settings || {};
+                document.getElementById('cfg-enter-text').value = c.enter_text || '[ click to enter ]';
                 if(c.primary_color) document.getElementById('cfg-accent').value = c.primary_color;
                 if(c.background_color) document.getElementById('cfg-bg').value = c.background_color;
                 if(c.text_color) document.getElementById('cfg-text').value = c.text_color;
@@ -246,17 +223,19 @@
                 if(c.border_radius) { document.getElementById('cfg-radius').value = c.border_radius; document.getElementById('val-radius').innerText = c.border_radius + 'px'; }
                 if(c.background_blur) { document.getElementById('cfg-bgblur').value = c.background_blur; document.getElementById('val-bgblur').innerText = c.background_blur + 'px'; }
                 if(c.background_brightness) { document.getElementById('cfg-bright').value = c.background_brightness; document.getElementById('val-bright').innerText = c.background_brightness + '%'; }
+                document.getElementById('cfg-views').checked = c.show_views !== false;
+                document.getElementById('cfg-sparkle').checked = c.sparkle === true;
                 document.getElementById('cfg-glow').checked = c.glow !== false;
                 document.getElementById('cfg-anim').checked = c.animations !== false;
             }
         }
 
         document.getElementById('save-btn').addEventListener('click', async () => {
-            document.getElementById('save-btn').innerText = "Speichere Konfiguration...";
+            document.getElementById('save-btn').innerText = "Wird verarbeitet...";
             document.getElementById('save-btn').disabled = true;
 
             const handleFileProcessing = async (inputElement, existingUrl, prefix, shouldDelete) => {
-                if (shouldDelete) return ""; // Wenn gelöscht werden soll, schicken wir einen leeren String
+                if (shouldDelete) return ""; 
                 const file = inputElement.files[0]; if (!file) return existingUrl;
                 const name = `${prefix}_${Date.now()}.${file.name.split('.').pop()}`;
                 const { error } = await supabase.storage.from('media').upload(name, file);
@@ -267,6 +246,7 @@
             const bannerUrl = await handleFileProcessing(document.getElementById('file-banner'), extBanner, 'banner', deleteBannerFlag);
             const videoUrl = await handleFileProcessing(document.getElementById('file-video'), extVideo, 'video', deleteVideoFlag);
             const songUrl = await handleFileProcessing(document.getElementById('file-song'), extSong, 'song', deleteSongFlag);
+            const cursorUrl = await handleFileProcessing(document.getElementById('file-cursor'), extCursor, 'cursor', deleteCursorFlag);
 
             const customLinks = [];
             document.querySelectorAll('.link-row').forEach(row => {
@@ -276,6 +256,7 @@
             });
 
             const configJson = {
+                enter_text: document.getElementById('cfg-enter-text').value || '[ click to enter ]',
                 primary_color: document.getElementById('cfg-accent').value,
                 background_color: document.getElementById('cfg-bg').value,
                 text_color: document.getElementById('cfg-text').value,
@@ -284,26 +265,22 @@
                 border_radius: document.getElementById('cfg-radius').value,
                 background_blur: document.getElementById('cfg-bgblur').value,
                 background_brightness: document.getElementById('cfg-bright').value,
+                show_views: document.getElementById('cfg-views').checked,
+                sparkle: document.getElementById('cfg-sparkle').checked,
                 glow: document.getElementById('cfg-glow').checked,
                 animations: document.getElementById('cfg-anim').checked
             };
 
             const updates = {
-                display_name: document.getElementById('display-name').value,
-                bio_text: document.getElementById('bio-text').value,
-                avatar_url: avatarUrl, banner_url: bannerUrl, video_url: videoUrl, song_url: songUrl,
+                display_name: document.getElementById('display-name').value, bio_text: document.getElementById('bio-text').value,
+                avatar_url: avatarUrl, banner_url: bannerUrl, video_url: videoUrl, song_url: songUrl, cursor_url: cursorUrl,
                 products: customLinks, settings: configJson, updated_at: new Date()
             };
 
-            const { error } = rowId 
-                ? await supabase.from('user_bios').update(updates).eq('id', rowId)
-                : await supabase.from('user_bios').insert([updates]);
-
+            const { error } = await supabase.from('user_bios').update(updates).eq('id', rowId);
             document.getElementById('save-btn').innerText = "Save All Changes";
             document.getElementById('save-btn').disabled = false;
-
-            if (error) alert('Fehler: ' + error.message);
-            else { alert('Konfiguration erfolgreich aktualisiert!'); loadUserData(); }
+            if (error) alert('Fehler: ' + error.message); else { alert('Erfolgreich geupdated!'); loadUserData(); }
         });
     </script>
 </body>
