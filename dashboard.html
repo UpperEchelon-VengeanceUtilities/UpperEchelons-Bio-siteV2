@@ -102,7 +102,6 @@
                     </div>
                     <div class="upload-grid" style="margin-top: 5px;">
                         <div class="upload-cell">
-                            <!-- Akzeptiert jetzt echte Cursor Formate -->
                             <label>Custom Cursor (.cur / .ani)</label>
                             <div class="upload-zone"><p>🖱️ Cursor-Datei</p><input type="file" id="file-cursor" class="file-input" accept=".cur, .ani"></div>
                             <span id="status-cursor" class="preview-status">Unverändert</span>
@@ -118,28 +117,28 @@
                 </div>
             </div>
 
-            <!-- RECHTE SEITE -->
+            <!-- RECHTE SEITE (FIX: Initialwerte im HTML verankert) -->
             <div>
                 <div class="panel-box">
                     <h3>Cosmetic Theme Settings</h3>
                     <label>Colors</label>
                     <div class="color-picker-group">
-                        <div class="color-box"><label>Accent</label><input type="color" id="cfg-accent"></div>
-                        <div class="color-box"><label>Background</label><input type="color" id="cfg-bg"></div>
-                        <div class="color-box"><label>Text</label><input type="color" id="cfg-text"></div>
+                        <div class="color-box"><label>Accent</label><input type="color" id="cfg-accent" value="#a855f7"></div>
+                        <div class="color-box"><label>Background</label><input type="color" id="cfg-bg" value="#050507"></div>
+                        <div class="color-box"><label>Text</label><input type="color" id="cfg-text" value="#f4f4f5"></div>
                     </div>
 
-                    <div class="slider-group"><label>Card Opacity</label><div class="slider-row"><input type="range" id="cfg-opacity" min="10" max="100"><span class="slider-value" id="val-opacity">65%</span></div></div>
-                    <div class="slider-group"><label>Card Backdrop Blur</label><div class="slider-row"><input type="range" id="cfg-blur" min="0" max="40"><span class="slider-value" id="val-blur">20px</span></div></div>
-                    <div class="slider-group"><label>Card Border Radius</label><div class="slider-row"><input type="range" id="cfg-radius" min="0" max="40"><span class="slider-value" id="val-radius">24px</span></div></div>
-                    <div class="slider-group"><label>Video Blur</label><div class="slider-row"><input type="range" id="cfg-bgblur" min="0" max="20"><span class="slider-value" id="val-bgblur">0px</span></div></div>
-                    <div class="slider-group"><label>Video Brightness</label><div class="slider-row"><input type="range" id="cfg-bright" min="20" max="100"><span class="slider-value" id="val-bright">100%</span></div></div>
+                    <div class="slider-group"><label>Card Opacity</label><div class="slider-row"><input type="range" id="cfg-opacity" min="10" max="100" value="65"><span class="slider-value" id="val-opacity">65%</span></div></div>
+                    <div class="slider-group"><label>Card Backdrop Blur</label><div class="slider-row"><input type="range" id="cfg-blur" min="0" max="40" value="20"><span class="slider-value" id="val-blur">20px</span></div></div>
+                    <div class="slider-group"><label>Card Border Radius</label><div class="slider-row"><input type="range" id="cfg-radius" min="0" max="40" value="24"><span class="slider-value" id="val-radius">24px</span></div></div>
+                    <div class="slider-group"><label>Video Blur</label><div class="slider-row"><input type="range" id="cfg-bgblur" min="0" max="20" value="0"><span class="slider-value" id="val-bgblur">0px</span></div></div>
+                    <div class="slider-group"><label>Video Brightness</label><div class="slider-row"><input type="range" id="cfg-bright" min="20" max="100" value="100"><span class="slider-value" id="val-bright">100%</span></div></div>
 
                     <label style="margin-top: 1.5rem;">e-z.bio Features</label>
-                    <div class="switch-group"><span>Show Views</span><label class="switch"><input type="checkbox" id="cfg-views"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Show Views</span><label class="switch"><input type="checkbox" id="cfg-views" checked><span class="slider-toggle"></span></label></div>
                     <div class="switch-group"><span>Username Sparkle</span><label class="switch"><input type="checkbox" id="cfg-sparkle"><span class="slider-toggle"></span></label></div>
-                    <div class="switch-group"><span>Animated Gradient Glow Border</span><label class="switch"><input type="checkbox" id="cfg-glow"><span class="slider-toggle"></span></label></div>
-                    <div class="switch-group"><span>Hover Animations</span><label class="switch"><input type="checkbox" id="cfg-anim"><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Animated Gradient Glow Border</span><label class="switch"><input type="checkbox" id="cfg-glow" checked><span class="slider-toggle"></span></label></div>
+                    <div class="switch-group"><span>Hover Animations</span><label class="switch"><input type="checkbox" id="cfg-anim" checked><span class="slider-toggle"></span></label></div>
                 </div>
                 <button id="save-btn" style="background: #22c55e;">Save All Changes</button>
             </div>
@@ -150,7 +149,7 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
         const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
-        let rowId = null, extAvatar = "", extVideo = "", extBanner = "", extSong = "", extCursor = "";
+        let rowId = null, extAvatar = "", extVideo = "", extBanner = "", extSong = "";
         let deleteAvatarFlag = false, deleteBannerFlag = false, deleteVideoFlag = false, deleteSongFlag = false, deleteCursorFlag = false;
 
         const params = new URLSearchParams(window.location.search);
@@ -220,9 +219,9 @@
                 if(c.background_color) document.getElementById('cfg-bg').value = c.background_color;
                 if(c.text_color) document.getElementById('cfg-text').value = c.text_color;
                 if(c.opacity) { document.getElementById('cfg-opacity').value = c.opacity; document.getElementById('val-opacity').innerText = c.opacity + '%'; }
-                if(c.blur) { document.getElementById('cfg-blur').value = c.blur; document.getElementById('val-blur').innerText = c.blur + 'px'; }
+                if(c.blur !== undefined) { document.getElementById('cfg-blur').value = c.blur; document.getElementById('val-blur').innerText = c.blur + 'px'; }
                 if(c.border_radius) { document.getElementById('cfg-radius').value = c.border_radius; document.getElementById('val-radius').innerText = c.border_radius + 'px'; }
-                if(c.background_blur) { document.getElementById('cfg-bgblur').value = c.background_blur; document.getElementById('val-bgblur').innerText = c.background_blur + 'px'; }
+                if(c.background_blur !== undefined) { document.getElementById('cfg-bgblur').value = c.background_blur; document.getElementById('val-bgblur').innerText = c.background_blur + 'px'; }
                 if(c.background_brightness) { document.getElementById('cfg-bright').value = c.background_brightness; document.getElementById('val-bright').innerText = c.background_brightness + '%'; }
                 document.getElementById('cfg-views').checked = c.show_views !== false;
                 document.getElementById('cfg-sparkle').checked = c.sparkle === true;
