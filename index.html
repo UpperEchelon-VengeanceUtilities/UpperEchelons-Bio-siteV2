@@ -23,6 +23,7 @@
         .video-background video { width: 100%; height: 100%; object-fit: cover; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; background: rgba(0,0,0,0.3); }
 
+        /* Wrapper für den Glow-Balken */
         .card-wrapper { position: relative; z-index: 10; padding: 3px; border-radius: 24px; opacity: 0; transform: scale(0.96); transition: opacity 0.8s, transform 0.8s; }
         .card-wrapper.loaded { opacity: 1; transform: scale(1); }
 
@@ -33,6 +34,7 @@
         }
         @keyframes border-dance { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
+        /* Der eigentliche Card-Container erhält KEINE feste Hintergrundfarbe im statischen CSS */
         .container { 
             width: 444px; text-align: center; display: flex; flex-direction: column; overflow: hidden;
             border-radius: 22px;
@@ -111,7 +113,7 @@
             const styleTag = document.getElementById('dynamic-theme');
             document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
 
-            // Hex-to-RGB-Konverter
+            // Absolut fehlerfreier Hex-to-RGB Wandler
             const hexToRgb = (hex) => {
                 let s = hex.replace('#', '');
                 if (s.length === 3) s = s.split('').map(x => x + x).join('');
@@ -123,17 +125,20 @@
             };
             
             const rgb = c.background_color ? hexToRgb(c.background_color) : { r: 24, g: 24, b: 27 };
-            const op = c.opacity !== undefined ? (c.opacity / 100) : 0.65;
+            // Sicherstellen, dass die Opacity mathematisch als 0.10 statt 10 ankommt
+            const op = c.opacity !== undefined ? (parseFloat(c.opacity) / 100) : 0.65;
+            const blurVal = c.blur !== undefined ? c.blur : 20;
 
             let cursorStyle = data.cursor_url ? `* { cursor: url('${data.cursor_url}'), auto !important; }` : "";
 
+            // FIX: Erzwungene Zuweisung direkt auf die '.container'-Klasse mit !important
             styleTag.innerHTML = `
                 ${cursorStyle}
                 :root { --accent: ${c.primary_color || '#a855f7'}; }
                 .container { 
                     background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${op}) !important; 
-                    backdrop-filter: blur(${c.blur || 20}px); 
-                    -webkit-backdrop-filter: blur(${c.blur || 20}px); 
+                    backdrop-filter: blur(${blurVal}px) !important; 
+                    -webkit-backdrop-filter: blur(${blurVal}px) !important; 
                     color: ${c.text_color || '#f4f4f5'}; 
                 }
                 .card-wrapper { border-radius: ${c.border_radius || 24}px; }
