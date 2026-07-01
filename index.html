@@ -11,58 +11,70 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body, html { width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #050507; }
 
+        #enter-bypass-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #050507; z-index: 9999; display: flex; justify-content: center; 
+            align-items: center; cursor: pointer; transition: opacity 0.8s ease, visibility 0.8s;
+        }
+        #enter-text-prompt { font-size: 1.2rem; color: #a1a1aa; font-weight: 500; letter-spacing: 2px; animation: pulse-glow 2s infinite ease-in-out; }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
         .video-background { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; overflow: hidden; }
         .video-background video { width: 100%; height: 100%; object-fit: cover; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; background: rgba(0,0,0,0.3); }
 
-        /* Profilkarte */
-        .container { 
-            width: 100%; max-width: 450px; text-align: center; z-index: 10;
-            overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
-            display: flex; flex-direction: column;
+        /* Profilkarte mit e-z.bio Gradient-Border Halterung */
+        .card-wrapper { position: relative; z-index: 10; padding: 3px; border-radius: 24px; opacity: 0; transform: scale(0.96); transition: opacity 0.8s, transform 0.8s; }
+        .card-wrapper.loaded { opacity: 1; transform: scale(1); }
+
+        /* Animierter Gradient-Balken um die Card */
+        .card-wrapper.glow-active {
+            background: linear-gradient(0deg, var(--accent), #18181b, var(--accent));
+            background-size: 400% 400%;
+            animation: border-dance 4s linear infinite;
         }
-        .hidden { display: none !important; }
+        @keyframes border-dance { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* Banner-Bereich innerhalb der Karte */
-        .card-banner { width: 100%; height: 110px; background-size: cover; background-position: center; position: relative; }
+        .container { 
+            width: 444px; text-align: center; display: flex; flex-direction: column; overflow: hidden;
+            background: rgba(24,24,27,0.65); border-radius: 22px;
+        }
 
-        /* Standard-Padding wenn ein Banner existiert */
+        .card-banner { width: 100%; height: 110px; background-size: cover; background-position: center; display: none; }
         .profile-content { padding: 0 2rem 2.5rem 2rem; position: relative; margin-top: -50px; }
-        
-        /* FIX: Klasse, wenn KEIN Banner gesetzt ist */
         .profile-content.no-banner { margin-top: 2.5rem; }
 
-        .profile-img { 
-            width: 95px; height: 95px; border-radius: 50%; object-fit: cover; 
-            margin-bottom: 1rem; background: #18181b; position: relative; z-index: 3;
+        .profile-img { width: 95px; height: 95px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; position: relative; z-index: 3; }
+
+        /* Username Sparkle Animation */
+        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; position: relative; display: inline-block; margin-left: auto; margin-right: auto;}
+        h1.sparkle-active {
+            background: linear-gradient(90deg, #fff, var(--accent), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 2.5s linear infinite;
         }
+        @keyframes shine { to { background-position: 200% center; } }
 
-        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; }
-        .bio { font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
+        .bio { font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
+        
+        /* Views Counter Box oben rechts in der Card */
+        .views-badge { position: absolute; top: 15px; right: 20px; font-size: 0.75rem; color: #a1a1aa; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: none; z-index: 20; }
 
-        /* Custom Navigation Links */
         .links-container { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; }
-        .bio-link { 
-            display: flex; align-items: center; justify-content: center; 
-            background: rgba(255, 255, 255, 0.03); text-decoration: none; 
-            padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
-        }
+        .bio-link { display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.03); text-decoration: none; padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
 
-        /* Volume-Slider Box */
-        .volume-box {
-            position: fixed; top: 20px; left: 20px; z-index: 100;
-            background: rgba(10, 10, 12, 0.7); border: 1px solid rgba(255,255,255,0.08);
-            padding: 10px 16px; border-radius: 30px; display: none; align-items: center; gap: 10px;
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-        }
+        .volume-box { position: fixed; top: 20px; left: 20px; z-index: 100; background: rgba(10, 10, 12, 0.7); border: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; border-radius: 30px; display: none; align-items: center; gap: 10px; backdrop-filter: blur(15px); }
+        .volume-box.visible { display: flex; }
         .volume-box svg { width: 16px; height: 16px; fill: #fff; }
         .volume-slider { -webkit-appearance: none; appearance: none; width: 75px; height: 4px; background: #3f3f46; border-radius: 2px; outline: none; cursor: pointer; }
         .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; }
-
-        #status-msg { color: #a1a1aa; font-size: 1.1rem; padding: 2rem; background: #18181b; border-radius: 14px; }
     </style>
 </head>
 <body>
+
+    <div id="enter-bypass-screen"><div id="enter-text-prompt">[ click to bypass ]</div></div>
 
     <div id="volume-container" class="volume-box">
         <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
@@ -70,17 +82,19 @@
     </div>
 
     <div class="video-background"><video id="bg-video" loop playsinline muted preload="auto"></video></div>
-    <div class="video-overlay" id="v-overlay"></div>
+    <div class="video-overlay"></div>
 
-    <div id="loading-profile"><p id="status-msg">Vengeance Engine initialisiert...</p></div>
-
-    <div id="main-profile" class="container hidden">
-        <div id="user-banner" class="card-banner"></div>
-        <div id="profile-content-wrapper" class="profile-content">
-            <img id="user-avatar" class="profile-img" src="" alt="Logo">
-            <h1 id="user-name"></h1>
-            <p id="user-bio" class="bio"></p>
-            <div id="custom-links" class="links-container"></div>
+    <!-- Wrapper für den Gradient Glow Border -->
+    <div id="card-frame" class="card-wrapper">
+        <div class="container">
+            <div id="v-count" class="views-badge">👁️ 0</div>
+            <div id="user-banner" class="card-banner"></div>
+            <div id="profile-content-wrapper" class="profile-content">
+                <img id="user-avatar" class="profile-img" src="" alt="Logo">
+                <h1 id="user-name"></h1>
+                <p id="user-bio" class="bio"></p>
+                <div id="custom-links" class="links-container"></div>
+            </div>
         </div>
     </div>
 
@@ -92,63 +106,58 @@
 
         async function loadBio() {
             const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
-            if (error || !data) { document.getElementById('status-msg').innerText = "Fehler beim Laden."; return; }
+            if (error || !data) return;
+
+            // 1. Inkrementiere Views direkt live bei jedem Aufruf!
+            const currentViews = (data.views || 0) + 1;
+            await supabase.from('user_bios').update({ views: currentViews }).eq('id', data.id);
 
             const c = data.settings || {};
             const styleTag = document.getElementById('dynamic-theme');
-            
+            document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
+
             const hexToRgb = hex => hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,(m,r,g,b)=>r+r+g+g+b+b).substring(1).match(/.{2}/g).map(x=>parseInt(x,16));
             const rgb = c.primary_color ? hexToRgb(c.background_color || '#18181b') : [24,24,27];
             const op = c.opacity ? (c.opacity / 100) : 0.65;
 
+            let cursorStyle = data.cursor_url ? `* { cursor: url('${data.cursor_url}'), auto !important; }` : "";
+
             styleTag.innerHTML = `
-                .container {
-                    background: rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${op});
-                    border: 1px solid rgba(255,255,255,0.06);
-                    border-radius: ${c.border_radius || 24}px;
-                    backdrop-filter: blur(${c.blur || 20}px);
-                    -webkit-backdrop-filter: blur(${c.blur || 20}px);
-                    color: ${c.text_color || '#f4f4f5'};
-                    ${c.glow ? `box-shadow: 0 0 40px ${c.primary_color || '#a855f7'}33, 0 30px 60px rgba(0,0,0,0.6);` : ''}
-                }
-                .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; box-shadow: 0 0 25px ${c.primary_color || '#a855f7'}66; }
-                .bio-link { 
-                    color: ${c.text_color || '#f4f4f5'}; 
-                    border: 1px solid rgba(255,255,255,0.06);
-                    transition: ${c.animations ? 'all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'};
-                }
-                .bio-link:hover {
-                    ${c.animations ? `
-                        border-color: ${c.primary_color || '#a855f7'}88;
-                        background: ${c.primary_color || '#a855f7'}14;
-                        transform: translateY(-2px);
-                        box-shadow: 0 8px 20px ${c.primary_color || '#a855f7'}22;
-                    ` : ''}
-                }
-                .video-background video {
-                    filter: blur(${c.background_blur || 0}px) brightness(${(c.background_brightness || 100) / 100});
-                }
-                .volume-slider::-webkit-slider-thumb { background: ${c.primary_color || '#a855f7'}; box-shadow: 0 0 10px ${c.primary_color || '#a855f7'}; }
+                ${cursorStyle}
+                :root { --accent: ${c.primary_color || '#a855f7'}; }
+                .container { background: rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${op}); backdrop-filter: blur(${c.blur || 20}px); -webkit-backdrop-filter: blur(${c.blur || 20}px); color: ${c.text_color || '#f4f4f5'}; }
+                .card-frame { border-radius: ${c.border_radius || 24}px; }
+                .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; }
+                .bio-link { color: ${c.text_color || '#f4f4f5'}; border: 1px solid rgba(255,255,255,0.06); transition: ${c.animations ? 'all 0.25s' : 'none'}; }
+                .bio-link:hover { ${c.animations ? `border-color: ${c.primary_color || '#a855f7'}88; background: ${c.primary_color || '#a855f7'}14; transform: translateY(-2px);` : ''} }
+                .video-background video { filter: blur(${c.background_blur || 0}px) brightness(${(c.background_brightness || 100) / 100}); }
+                .volume-slider::-webkit-slider-thumb { background: ${c.primary_color || '#a855f7'}; }
             `;
 
-            document.getElementById('user-name').innerText = data.display_name || "Vengeance Utilities";
+            // Verarbeite Views Anzeige
+            if(c.show_views !== false) {
+                const vb = document.getElementById('v-count');
+                vb.innerText = `👁️ ${currentViews}`;
+                vb.style.display = "block";
+            }
+
+            // Verarbeite Sparkle Name
+            const uName = document.getElementById('user-name');
+            uName.innerText = data.display_name || "Vengeance Utilities";
+            if(c.sparkle) uName.classList.add('sparkle-active');
+
+            // Verarbeite Card Glow Frame
+            if(c.glow) {
+                document.getElementById('card-frame').classList.add('glow-active');
+            }
+
             document.getElementById('user-bio').innerText = data.bio_text || '';
-            
             if (data.avatar_url) { document.getElementById('user-avatar').src = data.avatar_url; document.getElementById('favicon').href = data.avatar_url; }
             
-            // DYNAMISCHES BANNER CLEANUP LOGIK
             const bannerElement = document.getElementById('user-banner');
             const wrapperElement = document.getElementById('profile-content-wrapper');
-            
-            if (data.banner_url && data.banner_url.trim() !== "") { 
-                bannerElement.style.backgroundImage = `url('${data.banner_url}')`;
-                bannerElement.style.display = "block";
-                wrapperElement.classList.remove('no-banner');
-            } else {
-                // Komplett entfernen, kein leerer Platzhalter
-                bannerElement.style.display = "none";
-                wrapperElement.classList.add('no-banner');
-            }
+            if (data.banner_url) { bannerElement.style.backgroundImage = `url('${data.banner_url}')`; bannerElement.style.display = "block"; wrapperElement.classList.remove('no-banner'); }
+            else { bannerElement.style.display = "none"; wrapperElement.classList.add('no-banner'); }
 
             const container = document.getElementById('custom-links');
             container.innerHTML = "";
@@ -163,28 +172,24 @@
             const volumeContainer = document.getElementById('volume-container');
             const volumeSlider = document.getElementById('volume-control');
 
-            if (data.video_url || data.song_url) {
-                volumeContainer.style.display = 'flex';
-                
-                if (data.video_url) { video.src = data.video_url; video.play().catch(() => {}); }
-                if (data.song_url) { audio.src = data.song_url; audio.volume = volumeSlider.value; audio.play().catch(() => {}); }
-                
-                video.volume = data.song_url ? 0 : volumeSlider.value;
+            if (data.video_url) video.src = data.video_url;
+            if (data.song_url) { audio.src = data.song_url; audio.volume = volumeSlider.value; }
+            video.volume = data.song_url ? 0 : volumeSlider.value;
 
-                volumeSlider.addEventListener('input', (e) => {
-                    const val = e.target.value;
-                    if(data.song_url) { audio.volume = val; audio.muted = val == 0; }
-                    else { video.volume = val; video.muted = val == 0; }
-                });
+            document.getElementById('enter-bypass-screen').addEventListener('click', () => {
+                const bypassScreen = document.getElementById('enter-bypass-screen');
+                bypassScreen.style.opacity = "0"; setTimeout(() => bypassScreen.style.display = "none", 800);
+                if (data.video_url) video.play().catch(() => {});
+                if (data.song_url) { audio.muted = false; audio.play().catch(() => {}); }
+                if (data.video_url || data.song_url) volumeContainer.classList.add('visible');
+                setTimeout(() => document.getElementById('card-frame').classList.add('loaded'), 50);
+            });
 
-                document.body.addEventListener('click', () => {
-                    if (data.song_url) { audio.muted = false; audio.play(); }
-                    video.muted = data.song_url ? true : false;
-                }, { once: true });
-            }
-
-            document.getElementById('loading-profile').classList.add('hidden');
-            document.getElementById('main-profile').classList.remove('hidden');
+            volumeSlider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                if(data.song_url) { audio.volume = val; audio.muted = val == 0; }
+                else { video.volume = val; video.muted = val == 0; }
+            });
         }
         loadBio();
     </script>
