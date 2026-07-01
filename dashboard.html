@@ -2,24 +2,15 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance | Admin Panel</title>
     <style>
         :root {
-            --bg-color: #09090b;
-            --card-bg: #18181b;
-            --accent-color: #a855f7;
-            --text-color: #f4f4f5;
-            --text-muted: #a1a1aa;
-            --input-bg: #27272a;
-            --border-color: #3f3f46;
+            --bg-color: #09090b; --card-bg: #18181b; --accent-color: #a855f7;
+            --text-color: #f4f4f5; --text-muted: #a1a1aa; --input-bg: #27272a; --border-color: #3f3f46;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; padding: 2rem; }
-        .wrapper { width: 100%; max-width: 900px; }
-
-        .hidden { display: none !important; }
+        .wrapper { width: 100%; max-width: 950px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #27272a; padding-bottom: 1rem; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
@@ -34,84 +25,53 @@
         .panel-box h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color); }
         label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
 
-        /* Drag & Drop Upload Fenster im ez-bio Stil */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
-            padding: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
-            background: rgba(39, 39, 42, 0.3);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-        .upload-zone:hover {
-            border-color: var(--accent-color);
-            background: rgba(168, 85, 247, 0.04);
-        }
-        .upload-zone p { font-size: 0.85rem; color: var(--text-muted); }
-        .upload-zone span { font-size: 0.75rem; color: #f43f5e; display: block; margin-top: 0.25rem; }
+        .upload-zone { border: 2px dashed var(--border-color); padding: 1.5rem; border-radius: 12px; text-align: center; background: rgba(39, 39, 42, 0.3); cursor: pointer; position: relative; margin-bottom: 1rem; }
         .file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        
-        .preview-status { font-size: 0.8rem; color: #22c55e; margin-top: -0.5rem; margin-bottom: 1rem; display: block; word-break: break-all; }
+        .preview-status { font-size: 0.8rem; color: #22c55e; margin-top: -0.5rem; margin-bottom: 1rem; display: block; }
+
+        /* Link-Manager UI */
+        .link-row { display: flex; gap: 10px; margin-bottom: 0.75rem; align-items: center; }
+        .link-row input { margin-bottom: 0; }
+        .remove-btn { background: #ef4444; width: auto; padding: 0.75rem 1rem; }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
-        <div id="dash-section">
-            <div class="header">
-                <h2>Vengeance Utilities Dashboard</h2>
-            </div>
+        <div class="header"><h2>Vengeance Utilities Dashboard</h2></div>
 
-            <div class="grid">
-                <div>
-                    <div class="panel-box">
-                        <h3>General Settings</h3>
-                        <label>Anzeigename</label>
-                        <input type="text" id="display-name" placeholder="z.B. Vengeance Utilities">
-                        
-                        <label>Bio Beschreibung</label>
-                        <textarea id="bio-text" rows="3" placeholder="Erzähl was über dich..."></textarea>
-                    </div>
-
-                    <div class="panel-box">
-                        <h3>Media Uploads (Vom PC wählen)</h3>
-                        
-                        <label>Profilbild / Web-Icon</label>
-                        <div class="upload-zone">
-                            <p>📁 Klicke hier um ein Bild hochzuladen</p>
-                            <input type="file" id="file-avatar" class="file-input" accept="image/*">
-                        </div>
-                        <span id="status-avatar" class="preview-status">Keine Datei ausgewählt</span>
-
-                        <label>Hintergrundvideo (.mp4 mit Ton)</label>
-                        <div class="upload-zone">
-                            <p>🎥 Klicke hier um dein Video hochzuladen</p>
-                            <input type="file" id="file-video" class="file-input" accept="video/mp4">
-                            <span>Max. 50MB (Supabase Limit)</span>
-                        </div>
-                        <span id="status-video" class="preview-status">Keine Datei ausgewählt</span>
-                    </div>
-
-                    <div class="panel-box">
-                        <h3>Social Links</h3>
-                        <label>GitHub Link</label>
-                        <input type="text" id="github-link" placeholder="https://github.com/...">
-                        
-                        <label>Discord Einladungslink</label>
-                        <input type="text" id="discord-link" placeholder="https://discord.gg/...">
-                    </div>
+        <div class="grid">
+            <div>
+                <div class="panel-box">
+                    <h3>General Settings</h3>
+                    <label>Anzeigename</label>
+                    <input type="text" id="display-name">
                     
-                    <button id="save-btn">Save Changes</button>
+                    <label>Bio Beschreibung</label>
+                    <textarea id="bio-text" rows="3"></textarea>
                 </div>
 
-                <div>
-                    <div class="panel-box">
-                        <h3>Cosmetic & Products</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Deine hochgeladenen Clips und Bilder werden ohne Qualitätsverlust direkt im Hintergrund gerendert!</p>
-                    </div>
+                <div class="panel-box">
+                    <h3>Media Uploads</h3>
+                    <label>Profilbild / Web-Icon</label>
+                    <div class="upload-zone"><p>📁 Bild auswählen</p><input type="file" id="file-avatar" class="file-input" accept="image/*"></div>
+                    <span id="status-avatar" class="preview-status">Keine Datei ausgewählt</span>
+
+                    <label>Hintergrundvideo (.mp4)</label>
+                    <div class="upload-zone"><p>🎥 Video auswählen (Max 50MB)</p><input type="file" id="file-video" class="file-input" accept="video/mp4"></div>
+                    <span id="status-video" class="preview-status">Keine Datei ausgewählt</span>
+                </div>
+                
+                <button id="save-btn">Save Changes</button>
+            </div>
+
+            <div>
+                <div class="panel-box">
+                    <h3>Custom Navigation Links</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Erstelle unendlich viele Buttons für deine Seite.</p>
+                    
+                    <div id="links-list-manager"></div>
+                    <button id="add-link-btn" style="background: #27272a; border: 1px solid #3f3f46; margin-top: 1rem;">+ Neuen Link hinzufügen</button>
                 </div>
             </div>
         </div>
@@ -119,24 +79,17 @@
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
-        const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let rowId = null, existingAvatarUrl = "", existingVideoUrl = "";
 
-        let rowId = null;
-        let existingAvatarUrl = "";
-        let existingVideoUrl = "";
-
-        // URL-Parameter Check (?admin=123)
         const params = new URLSearchParams(window.location.search);
         if (params.get('admin') !== '123') {
-            document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; color:#ef4444;'>Zugriff verweigert! Falscher Admin-Schlüssel.</h1>";
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; color:#ef4444;'>Zugriff verweigert!</h1>";
         } else {
             loadUserData();
         }
 
-        // Event-Listener für Dateiauswahl-Texte
         document.getElementById('file-avatar').addEventListener('change', (e) => {
             if(e.target.files[0]) document.getElementById('status-avatar').innerText = "Bereit: " + e.target.files[0].name;
         });
@@ -144,88 +97,90 @@
             if(e.target.files[0]) document.getElementById('status-video').innerText = "Bereit: " + e.target.files[0].name;
         });
 
-        // Daten laden
+        // Link hinzufügen im Manager
+        document.getElementById('add-link-btn').addEventListener('click', () => {
+            createLinkRow('', '');
+        });
+
+        function createLinkRow(name, url) {
+            const container = document.getElementById('links-list-manager');
+            const row = document.createElement('div');
+            row.className = "link-row";
+            row.innerHTML = `
+                <input type="text" class="link-name" placeholder="z.B. Discord" value="${name}" style="flex:1;">
+                <input type="text" class="link-url" placeholder="z.B. discord.gg/..." value="${url}" style="flex:2;">
+                <button class="remove-btn">X</button>
+            `;
+            row.querySelector('.remove-btn').addEventListener('click', () => row.remove());
+            container.appendChild(row);
+        }
+
         async function loadUserData() {
             const { data } = await supabase.from('user_bios').select('*').limit(1).single();
             if (data) {
-                rowId = data.id;
-                existingAvatarUrl = data.avatar_url || '';
-                existingVideoUrl = data.video_url || '';
-                
+                rowId = data.id; existingAvatarUrl = data.avatar_url || ''; existingVideoUrl = data.video_url || '';
                 document.getElementById('display-name').value = data.display_name || '';
                 document.getElementById('bio-text').value = data.bio_text || '';
-                document.getElementById('github-link').value = data.github_link || '';
-                document.getElementById('discord-link').value = data.discord_link || '';
+                
+                if(existingAvatarUrl) document.getElementById('status-avatar').innerText = "Bild vorhanden";
+                if(existingVideoUrl) document.getElementById('status-video').innerText = "Video vorhanden";
 
-                if(existingAvatarUrl) document.getElementById('status-avatar').innerText = "Aktuell hochgeladen: Bild vorhanden";
-                if(existingVideoUrl) document.getElementById('status-video').innerText = "Aktuell hochgeladen: Video vorhanden";
+                // Bestehende Links rendern
+                document.getElementById('links-list-manager').innerHTML = "";
+                (data.products || []).forEach(l => createLinkRow(l.name, l.url));
             }
         }
 
-        // Daten und Dateien speichern
         document.getElementById('save-btn').addEventListener('click', async () => {
             const avatarFile = document.getElementById('file-avatar').files[0];
             const videoFile = document.getElementById('file-video').files[0];
             
-            document.getElementById('save-btn').innerText = "Wird gespeichert... Bitte warten...";
+            document.getElementById('save-btn').innerText = "Wird gespeichert...";
             document.getElementById('save-btn').disabled = true;
 
-            let finalAvatarUrl = existingAvatarUrl;
-            let finalVideoUrl = existingVideoUrl;
+            let finalAvatarUrl = existingAvatarUrl, finalVideoUrl = existingVideoUrl;
 
-            // 1. Avatar hochladen falls neu ausgewählt
             if (avatarFile) {
-                const fileExt = avatarFile.name.split('.').pop();
-                const fileName = `avatar_${Date.now()}.${fileExt}`;
-                const { data, error } = await supabase.storage.from('media').upload(fileName, avatarFile, { upsert: true });
-                if (!error) {
-                    finalAvatarUrl = `${SUPABASE_URL}/storage/v1/object/public/media/${fileName}`;
-                } else {
-                    alert("Bild-Upload Fehler: " + error.message);
-                }
+                const fileName = `avatar_${Date.now()}.${avatarFile.name.split('.').pop()}`;
+                const { error } = await supabase.storage.from('media').upload(fileName, avatarFile);
+                if (!error) finalAvatarUrl = `https://pdyrfnbjegsyjmcmbqck.supabase.co/storage/v1/object/public/media/${fileName}`;
             }
 
-            // 2. Video hochladen falls neu ausgewählt
             if (videoFile) {
-                const fileExt = videoFile.name.split('.').pop();
-                const fileName = `video_${Date.now()}.${fileExt}`;
-                const { data, error } = await supabase.storage.from('media').upload(fileName, videoFile, { upsert: true });
-                if (!error) {
-                    finalVideoUrl = `${SUPABASE_URL}/storage/v1/object/public/media/${fileName}`;
-                } else {
-                    alert("Video-Upload Fehler: " + error.message);
-                }
+                const fileName = `video_${Date.now()}.${videoFile.name.split('.').pop()}`;
+                const { error } = await supabase.storage.from('media').upload(fileName, videoFile);
+                if (!error) finalVideoUrl = `https://pdyrfnbjegsyjmcmbqck.supabase.co/storage/v1/object/public/media/${fileName}`;
             }
 
-            // 3. In der Datenbank speichern
+            // Links aus dem Manager auslesen
+            const customLinks = [];
+            document.querySelectorAll('.link-row').forEach(row => {
+                const name = row.querySelector('.link-name').value.trim();
+                const url = row.querySelector('.link-url').value.trim();
+                if(name && url) customLinks.push({ name, url });
+            });
+
             const updates = {
                 display_name: document.getElementById('display-name').value,
                 bio_text: document.getElementById('bio-text').value,
                 avatar_url: finalAvatarUrl,
                 video_url: finalVideoUrl,
-                github_link: document.getElementById('github-link').value,
-                discord_link: document.getElementById('discord-link').value,
+                products: customLinks, // Speichert das Array direkt in Supabase
                 updated_at: new Date()
             };
 
             let error;
             if (rowId) {
-                const { error: err } = await supabase.from('user_bios').update(updates).eq('id', rowId);
-                error = err;
+                const { error: err } = await supabase.from('user_bios').update(updates).eq('id', rowId); error = err;
             } else {
-                const { error: err } = await supabase.from('user_bios').insert([updates]);
-                error = err;
+                const { error: err } = await supabase.from('user_bios').insert([updates]); error = err;
             }
 
             document.getElementById('save-btn').innerText = "Save Changes";
             document.getElementById('save-btn').disabled = false;
 
-            if (error) {
-                alert('Fehler beim Speichern: ' + error.message);
-            } else {
-                alert('Erfolgreich gespeichert!');
-                loadUserData();
-            }
+            if (error) alert('Fehler: ' + error.message);
+            else { alert('Erfolgreich gespeichert!'); loadUserData(); }
         });
     </script>
 </body>
