@@ -69,6 +69,16 @@
                     <textarea id="bio-text" rows="3"></textarea>
                     <label>Startbildschirm Text</label>
                     <input type="text" id="cfg-enter-text">
+                    <label>Scrollender Tab Text (Browser-Titel)</label>
+                    <input type="text" id="tab-text" placeholder="z.B. UpperEchelon ✝ ✝Upper">
+                </div>
+
+                <div class="panel-box">
+                    <h3>Discord Integrations</h3>
+                    <label>Deine Discord User ID (für Live-Status)</label>
+                    <input type="text" id="discord-id" placeholder="z.B. 123456789012345678">
+                    <label>Discord Server Invite Link (für Server-Banner)</label>
+                    <input type="text" id="discord-invite" placeholder="z.B. https://discord.gg/dein-code">
                 </div>
 
                 <div class="panel-box">
@@ -110,15 +120,16 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="panel-box">
-                    <h3>Navigation Links</h3>
-                    <div id="links-list-manager"></div>
-                    <button id="add-link-btn" style="background: #27272a; border: 1px solid #3f3f46; margin-top: 1rem;">+ Link hinzufügen</button>
-                </div>
             </div>
 
             <div>
+                <div class="panel-box">
+                    <h3>Navigation Links / Social Media</h3>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:1rem;">Tipp: Links zu instagram.com, github.com, youtube.com oder discord.gg werden automatisch als stylische Icons oben angezeigt!</p>
+                    <div id="links-list-manager"></div>
+                    <button id="add-link-btn" style="background: #27272a; border: 1px solid #3f3f46; margin-top: 1rem;">+ Link hinzufügen</button>
+                </div>
+
                 <div class="panel-box">
                     <h3>Cosmetic Theme Settings</h3>
                     <label>Colors</label>
@@ -206,6 +217,11 @@
                 document.getElementById('display-name').value = data.display_name || '';
                 document.getElementById('bio-text').value = data.bio_text || '';
                 
+                // NEUE Felder laden
+                document.getElementById('tab-text').value = data.tab_text || '';
+                document.getElementById('discord-id').value = data.discord_id || '';
+                document.getElementById('discord-invite').value = data.discord_invite || '';
+                
                 const toggleDelBtn = (ext, id) => document.getElementById(id).style.display = ext ? 'block' : 'none';
                 if(extAvatar) { document.getElementById('status-avatar').innerText = "Datei vorhanden"; toggleDelBtn(extAvatar, 'del-avatar'); }
                 if(extBanner) { document.getElementById('status-banner').innerText = "Datei vorhanden"; toggleDelBtn(extBanner, 'del-banner'); }
@@ -276,7 +292,11 @@
             };
 
             const updates = {
-                display_name: document.getElementById('display-name').value, bio_text: document.getElementById('bio-text').value,
+                display_name: document.getElementById('display-name').value, 
+                bio_text: document.getElementById('bio-text').value,
+                tab_text: document.getElementById('tab-text').value,
+                discord_id: document.getElementById('discord-id').value.trim(),
+                discord_invite: document.getElementById('discord-invite').value.trim(),
                 avatar_url: avatarUrl, banner_url: bannerUrl, video_url: videoUrl, song_url: songUrl, cursor_url: cursorUrl,
                 products: customLinks, settings: configJson, updated_at: new Date()
             };
