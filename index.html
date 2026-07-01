@@ -8,221 +8,177 @@
     
     <style>
         :root {
-            --bg-blur: rgba(10, 10, 12, 0.55);
-            --card-bg: rgba(20, 20, 25, 0.6);
+            --bg-blur: rgba(10, 10, 12, 0.45);
+            --card-bg: rgba(18, 18, 24, 0.65);
             --accent-color: #a855f7;
             --text-color: #f4f4f5;
             --text-muted: #a1a1aa;
-            --border-color: rgba(255, 255, 255, 0.08);
+            --border-color: rgba(255, 255, 255, 0.06);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         
         body, html { 
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: #050507; 
-            color: var(--text-color); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            overflow: hidden;
-            position: relative;
+            width: 100%; height: 100%; margin: 0; padding: 0;
+            background-color: #050507; color: var(--text-color); 
+            display: flex; justify-content: center; align-items: center; 
+            overflow: hidden; position: relative;
         }
 
         .video-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            overflow: hidden;
-            background: #050507;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 1; overflow: hidden; background: #050507;
         }
-
-        .video-background video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
+        .video-background video { width: 100%; height: 100%; object-fit: cover; }
         .video-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.45);
-            z-index: -1;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
+            z-index: 2;
         }
 
+        /* High-End Container im e-z.bio Look */
         .container { 
-            width: 100%; 
-            max-width: 480px; 
-            text-align: center; 
+            width: 100%; max-width: 460px; text-align: center; 
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 3rem 2rem;
-            border-radius: 24px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            padding: 3.5rem 2.5rem;
+            border-radius: 28px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 60px rgba(168, 85, 247, 0.05);
             z-index: 10;
+            transition: transform 0.4s ease;
         }
         
         .hidden { display: none !important; }
 
         .profile-img { 
-            width: 100px; 
-            height: 100px; 
-            border-radius: 50%; 
-            border: 2px solid var(--accent-color); 
-            object-fit: cover; 
-            margin-bottom: 1.25rem; 
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); 
+            width: 105px; height: 105px; border-radius: 50%; 
+            border: 2px solid var(--accent-color); object-fit: cover; 
+            margin-bottom: 1.5rem; 
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.5);
+            transition: transform 0.3s ease;
         }
+        .profile-img:hover { transform: rotate(5deg) scale(1.03); }
 
-        h1 { font-size: 1.65rem; font-weight: 700; margin-bottom: 0.35rem; letter-spacing: -0.5px; }
-        .bio { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
+        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .bio { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2.5rem; line-height: 1.6; }
 
-        .links-container { display: flex; flex-direction: column; gap: 0.8rem; }
+        /* Dynamische Custom Links */
+        .links-container { display: flex; flex-direction: column; gap: 0.9rem; width: 100%; }
+        
         .bio-link { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background-color: rgba(255, 255, 255, 0.03); 
-            color: var(--text-color); 
-            text-decoration: none; 
-            padding: 0.95rem; 
-            border-radius: 14px; 
+            display: flex; align-items: center; justify-content: center; 
+            background: rgba(255, 255, 255, 0.03); 
+            color: var(--text-color); text-decoration: none; 
+            padding: 1.1rem; border-radius: 16px; 
             border: 1px solid var(--border-color); 
-            font-weight: 600; 
-            transition: all 0.2s ease-in-out; 
+            font-weight: 600; font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .bio-link:hover { 
-            border-color: var(--accent-color); 
-            background-color: rgba(168, 85, 247, 0.08);
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.15); 
+            border-color: rgba(168, 85, 247, 0.5); 
+            background: rgba(168, 85, 247, 0.1);
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 25px rgba(168, 85, 247, 0.2); 
+            letter-spacing: 0.3px;
         }
 
-        .audio-control {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
+        /* Volume-Slider */
+        .volume-box {
+            position: fixed; top: 20px; left: 20px; z-index: 100;
+            background: rgba(10, 10, 12, 0.7); border: 1px solid var(--border-color);
+            padding: 10px 16px; border-radius: 30px; display: none; align-items: center; gap: 10px;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .audio-control:hover { background: rgba(168, 85, 247, 0.2); }
-        .audio-control svg { width: 20px; height: 20px; fill: #fff; }
+        .volume-box svg { width: 16px; height: 16px; fill: #fff; }
+        .volume-slider {
+            -webkit-appearance: none; appearance: none; width: 75px; height: 4px;
+            background: #3f3f46; border-radius: 2px; outline: none; cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
+            border-radius: 50%; background: var(--accent-color); box-shadow: 0 0 10px var(--accent-color);
+        }
 
         #status-msg { color: var(--text-muted); font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-    <div id="mute-toggle" class="audio-control">
-        <svg id="volume-icon" viewBox="0 0 24 24">
-            <path id="icon-path" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM4 9v6h4l5 5V4L8 9H4zm12.5 3c0 2.21-1.29 4.12-3.12 5.01v2.04c2.94-.97 5.12-3.73 5.12-7.05s-2.18-6.08-5.12-7.05v2.04c1.83.89 3.12 2.8 3.12 5.01z"/>
-        </svg>
+    <div id="volume-container" class="volume-box">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+        <input type="range" id="volume-control" class="volume-slider" min="0" max="1" step="0.05" value="0.15">
     </div>
 
-    <div class="video-background">
-        <!-- preload="auto" zwingt den Browser das Video sauber vorzuladen -->
-        <video id="bg-video" loop playsinline muted preload="auto"></video>
-    </div>
+    <div class="video-background"><video id="bg-video" loop playsinline muted preload="auto"></video></div>
     <div class="video-overlay"></div>
 
-    <div id="loading-profile" class="container">
-        <p id="status-msg">Vengeance Utilities wird geladen...</p>
-    </div>
+    <div id="loading-profile" class="container"><p id="status-msg">Vengeance Utilities wird geladen...</p></div>
 
     <div id="main-profile" class="container hidden">
         <img id="user-avatar" class="profile-img" src="" alt="Logo">
         <h1 id="user-name">Vengeance Utilities</h1>
         <p id="user-bio" class="bio"></p>
 
-        <div class="links-container">
-            <a id="link-github" href="#" target="_blank" class="bio-link hidden">GitHub Profile</a>
-            <a id="link-discord" href="#" target="_blank" class="bio-link hidden">Discord Server</a>
-        </div>
+        <div id="custom-links" class="links-container"></div>
     </div>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-
-        const SUPABASE_URL = "https://pdyrfnbjegsyjmcmbqck.supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
 
         async function loadBio() {
             const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
-
             if (error || !data) {
-                document.getElementById('status-msg').innerText = "Fehler beim Laden oder noch keine Daten eingetragen.";
-                return;
+                document.getElementById('status-msg').innerText = "Fehler beim Laden."; return;
             }
 
             document.getElementById('user-name').innerText = data.display_name || "Vengeance Utilities";
             document.getElementById('user-bio').innerText = data.bio_text || '';
-            
             if (data.avatar_url) {
                 document.getElementById('user-avatar').src = data.avatar_url;
                 document.getElementById('favicon').href = data.avatar_url;
             }
 
-            if (data.github_link) {
-                const gh = document.getElementById('link-github');
-                gh.href = data.github_link;
-                gh.classList.remove('hidden');
-            }
-            if (data.discord_link) {
-                const dc = document.getElementById('link-discord');
-                dc.href = data.discord_link;
-                dc.classList.remove('hidden');
-            }
+            // Custom Links generieren
+            const linksContainer = document.getElementById('custom-links');
+            linksContainer.innerHTML = "";
+            
+            const linksList = data.products || [];
+            linksList.forEach(linkObj => {
+                if(linkObj.name && linkObj.url) {
+                    const a = document.createElement('a');
+                    a.className = "bio-link";
+                    // Automatischer HTTPS-Fix, falls man es vergisst einzutippen
+                    a.href = linkObj.url.startsWith('http') ? linkObj.url : `https://${linkObj.url}`;
+                    a.target = "_blank";
+                    a.innerText = linkObj.name;
+                    linksContainer.appendChild(a);
+                }
+            });
 
+            // Video-Handling
             if (data.video_url) {
                 const video = document.getElementById('bg-video');
-                const muteToggle = document.getElementById('mute-toggle');
+                const volumeContainer = document.getElementById('volume-container');
+                const volumeSlider = document.getElementById('volume-control');
                 
                 video.src = data.video_url;
-                muteToggle.style.display = 'flex';
+                volumeContainer.style.display = 'flex';
+                video.volume = volumeSlider.value;
 
-                // Sicheres Abspielen über den im Google-Link empfohlenen Promise-Check
-                const playPromise = video.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log("Wiedergabe erfolgreich im Hintergrund gestartet.");
-                    }).catch(err => {
-                        console.log("Autoplay temporär verzögert:", err);
-                    });
-                }
+                video.play().catch(err => console.log("Autoplay blockiert"));
 
-                // Sound-Steuerung über den Button
-                muteToggle.addEventListener('click', () => {
-                    if (video.muted) {
-                        video.muted = false;
-                        document.getElementById('icon-path').setAttribute('d', 'M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z');
-                    } else {
-                        video.muted = true;
-                        document.getElementById('icon-path').setAttribute('d', 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM4 9v6h4l5 5V4L8 9H4zm12.5 3c0 2.21-1.29 4.12-3.12 5.01v2.04c2.94-.97 5.12-3.73 5.12-7.05s-2.18-6.08-5.12-7.05v2.04c1.83.89 3.12 2.8 3.12 5.01z');
-                    }
+                volumeSlider.addEventListener('input', (e) => {
+                    video.volume = e.target.value;
+                    video.muted = e.target.value == 0;
                 });
 
-                // Globaler Klick-Listener um Ton sofort zu aktivieren sobald der User interagiert
-                document.body.addEventListener('click', (e) => {
-                    if (video.muted && e.target !== muteToggle && !muteToggle.contains(e.target)) {
-                        video.muted = false;
-                        document.getElementById('icon-path').setAttribute('d', 'M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z');
+                document.body.addEventListener('click', () => {
+                    if (video.muted || video.volume === 0.15) {
+                        video.muted = false; video.volume = volumeSlider.value;
                     }
                 }, { once: true });
             }
@@ -230,7 +186,6 @@
             document.getElementById('loading-profile').classList.add('hidden');
             document.getElementById('main-profile').classList.remove('hidden');
         }
-
         loadBio();
     </script>
 </body>
