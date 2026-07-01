@@ -32,7 +32,6 @@
             position: relative;
         }
 
-        /* Fullscreen Video-Hintergrund */
         .video-background {
             position: fixed;
             top: 0;
@@ -57,7 +56,6 @@
             z-index: -1;
         }
 
-        /* Profilkarte */
         .container { 
             width: 100%; 
             max-width: 480px; 
@@ -108,7 +106,6 @@
             box-shadow: 0 8px 25px rgba(168, 85, 247, 0.15); 
         }
 
-        /* Sound-Button oben links */
         .audio-control {
             position: fixed;
             top: 20px;
@@ -139,7 +136,8 @@
     </div>
 
     <div class="video-background">
-        <video id="bg-video" loop playsinline muted></video>
+        <!-- preload="auto" zwingt den Browser das Video sauber vorzuladen -->
+        <video id="bg-video" loop playsinline muted preload="auto"></video>
     </div>
     <div class="video-overlay"></div>
 
@@ -199,8 +197,17 @@
                 video.src = data.video_url;
                 muteToggle.style.display = 'flex';
 
-                video.play().catch(err => console.log("Autoplay blockiert:", err));
+                // Sicheres Abspielen über den im Google-Link empfohlenen Promise-Check
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log("Wiedergabe erfolgreich im Hintergrund gestartet.");
+                    }).catch(err => {
+                        console.log("Autoplay temporär verzögert:", err);
+                    });
+                }
 
+                // Sound-Steuerung über den Button
                 muteToggle.addEventListener('click', () => {
                     if (video.muted) {
                         video.muted = false;
@@ -211,6 +218,7 @@
                     }
                 });
 
+                // Globaler Klick-Listener um Ton sofort zu aktivieren sobald der User interagiert
                 document.body.addEventListener('click', (e) => {
                     if (video.muted && e.target !== muteToggle && !muteToggle.contains(e.target)) {
                         video.muted = false;
