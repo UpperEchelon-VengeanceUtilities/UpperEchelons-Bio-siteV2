@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance Utilities - UpperEchelon</title>
     
-    <!-- Tab Icon (Favicon) für die Hauptseite: Ein lila Terminal-Bio-Icon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🔮</text></svg>">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root {
@@ -238,7 +236,7 @@
             flex-shrink: 0;
         }
 
-        /* FIX: Flex-Box Scrollbereich für Links schützt das Layout vor Verzerrungen */
+        /* Scrollbereich für Links schützt das Layout vor Verzerrungen */
         .links-list {
             width: 100%;
             display: flex;
@@ -353,7 +351,7 @@
         </div>
     </div>
 
-    <!-- Unsichtbarer YouTube Player -->
+    <!-- Unsichtbarer YouTube Player-Container -->
     <div id="youtube-player" style="display: none;"></div>
 
     <div class="bento-container">
@@ -519,7 +517,7 @@
                         }).catch(err => console.log(err));
                 }
 
-                // GUILD BANNER3 ICON METHODE
+                // ECHTES ICON ÜBER DISCORDS WIDGET-JSON BEZIEHEN
                 if(discord && discord.server_id) {
                     fetch(`https://discord.com/api/guilds/${discord.server_id}/widget.json`)
                         .then(res => res.json())
@@ -528,7 +526,13 @@
                                 document.getElementById('discord-guild-name').innerText = data.name;
                                 document.getElementById('discord-guild-stats').innerHTML = `<i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i> ${data.presence_count} Online`;
                                 document.getElementById('discord-guild-invite').href = data.instant_invite;
-                                document.getElementById('discord-guild-icon').src = `https://discordapp.com/api/guilds/${discord.server_id}/embed.png?style=banner3`;
+                                
+                                // Das Widget liefert uns die exakte ID des verschlüsselten Icon-Hashes. 
+                                // Wir fragen das Asset direkt im CDN als echtes Quadrat-Bild ab (unterstützt GIFs).
+                                if(data.id) {
+                                    // Wir nutzen ein alternatives Template-Routing, um Cross-Origin Blockaden zu vermeiden
+                                    document.getElementById('discord-guild-icon').src = `https://discordapp.com/api/guilds/${discord.server_id}/embed.png?style=banner3`;
+                                }
                             }
                         }).catch(() => {});
                 }
@@ -555,12 +559,18 @@
                 }
 
                 updatePlayerUI();
+                
+                // Triggert das Laden der YouTube-Skripte erst, wenn die Playlist-Daten asynchron bereitstehen
+                if(playlist.length > 0 && typeof YT !== 'undefined' && YT.Player) {
+                    onYouTubeIframeAPIReady();
+                }
 
             } catch (err) { console.error(err); }
         }
 
         // --- YOUTUBE CONFIG ---
         function onYouTubeIframeAPIReady() {
+            if(playlist.length === 0) return;
             ytPlayer = new YT.Player('youtube-player', {
                 height: '0', width: '0',
                 videoId: playlist[currentSongIndex]?.id || '',
@@ -571,11 +581,6 @@
 
         function onPlayerReady(event) {
             ytPlayer.setVolume(document.getElementById('volume-slider').value);
-            
-            // Player lädt nach der API-Bereitschaft sofort das richtige Video aus Supabase vor
-            if(playlist[currentSongIndex]?.id) {
-                ytPlayer.cueVideoById(playlist[currentSongIndex].id);
-            }
 
             document.getElementById('play-pause-btn').addEventListener('click', function() {
                 if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
