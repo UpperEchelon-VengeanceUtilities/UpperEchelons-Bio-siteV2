@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vengeance Utilities - UpperEchelon</title>
     
+    <!-- Tab Icon (Favicon) für die Hauptseite: Ein lila Terminal-Bio-Icon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🔮</text></svg>">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root {
@@ -19,6 +21,7 @@
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
             
+            /* Theme Variables (Default: Purple) */
             --accent: #7c3aed;
             --accent-glow: rgba(124, 58, 237, 0.25);
             --bg-grad-1: #090514;
@@ -30,6 +33,7 @@
             --stat-blue: rgba(59, 130, 246, 0.1);
         }
 
+        /* THEME STYLES */
         body.theme-v-red {
             --accent: #ef4444;
             --accent-glow: rgba(239, 68, 68, 0.3);
@@ -146,9 +150,13 @@
 
         @media (min-width: 900px) {
             .bento-container {
-                /* Festgelegte Höhenstrukturen für perfekte Symmetrie */
                 grid-template-columns: 300px 1fr 300px;
-                grid-template-rows: 320px auto; 
+                align-items: stretch;
+            }
+            .bento-container > .card, 
+            .bento-container > .main-content, 
+            .bento-container > .stats-container {
+                min-height: 330px; /* Erzwingt eine einheitliche und perfekt symmetrische Höhe */
             }
         }
 
@@ -174,7 +182,6 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            height: 100%; /* Füllt die Zeilenhöhe perfekt aus */
         }
 
         .avatar-wrapper {
@@ -231,13 +238,14 @@
             flex-shrink: 0;
         }
 
-        /* FIX: Flex-Grow sorgt dafür, dass die Liste den restlichen Platz nutzt */
+        /* FIX: Flex-Box Scrollbereich für Links schützt das Layout vor Verzerrungen */
         .links-list {
             width: 100%;
             display: flex;
             flex-direction: column;
             gap: 8px;
             flex-grow: 1;
+            max-height: 130px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -269,7 +277,7 @@
         }
 
         /* SPALTE 2: Musik-Player & Widgets */
-        .main-content { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .main-content { display: flex; flex-direction: column; gap: 20px; }
         .music-player { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
         .track-info-container { display: flex; gap: 20px; align-items: center; }
         
@@ -312,7 +320,7 @@
         .btn-discord-join { background: #5865F2; color: white; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
 
         /* SPALTE 3: Stats Stacks */
-        .stats-container { display: flex; flex-direction: column; gap: 12px; height: 100%; justify-content: space-between; }
+        .stats-container { display: flex; flex-direction: column; gap: 12px; justify-content: space-between; }
         .stat-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-radius: 14px; height: 100%; border: 1px solid rgba(255,255,255,0.01); }
 
         .stat-card.green { background: var(--stat-green); }
@@ -344,6 +352,9 @@
             <button class="theme-opt" data-theme="void">Void</button>
         </div>
     </div>
+
+    <!-- Unsichtbarer YouTube Player -->
+    <div id="youtube-player" style="display: none;"></div>
 
     <div class="bento-container">
         
@@ -391,7 +402,6 @@
 
                 <div class="discord-guild-box">
                     <div class="discord-guild-info">
-                        <!-- FIX: Holt das echte Server-Avatar Icon über ein alternatives API-Widget-Template -->
                         <img id="discord-guild-icon" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Server Icon" class="discord-icon">
                         <div>
                             <div id="discord-guild-name" style="font-weight: 600; font-size: 0.9rem;">Mein Discord Server</div>
@@ -509,7 +519,7 @@
                         }).catch(err => console.log(err));
                 }
 
-                // ADVANCED ANIMATED GUILD ICON LOGIK
+                // GUILD BANNER3 ICON METHODE
                 if(discord && discord.server_id) {
                     fetch(`https://discord.com/api/guilds/${discord.server_id}/widget.json`)
                         .then(res => res.json())
@@ -518,8 +528,6 @@
                                 document.getElementById('discord-guild-name').innerText = data.name;
                                 document.getElementById('discord-guild-stats').innerHTML = `<i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i> ${data.presence_count} Online`;
                                 document.getElementById('discord-guild-invite').href = data.instant_invite;
-                                
-                                // Direct-Query Route, um das echte (auch animierte GIF) Server Icon zu laden
                                 document.getElementById('discord-guild-icon').src = `https://discordapp.com/api/guilds/${discord.server_id}/embed.png?style=banner3`;
                             }
                         }).catch(() => {});
@@ -547,7 +555,6 @@
                 }
 
                 updatePlayerUI();
-                if (ytPlayer && playlist[currentSongIndex]?.id) ytPlayer.cueVideoById(playlist[currentSongIndex].id);
 
             } catch (err) { console.error(err); }
         }
@@ -564,6 +571,11 @@
 
         function onPlayerReady(event) {
             ytPlayer.setVolume(document.getElementById('volume-slider').value);
+            
+            // Player lädt nach der API-Bereitschaft sofort das richtige Video aus Supabase vor
+            if(playlist[currentSongIndex]?.id) {
+                ytPlayer.cueVideoById(playlist[currentSongIndex].id);
+            }
 
             document.getElementById('play-pause-btn').addEventListener('click', function() {
                 if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
