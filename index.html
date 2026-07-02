@@ -482,105 +482,16 @@
     </div>
 
     <script>
-        // --- 1. YOUTUBE PLAYER LOGIK ---
-        
-        // Platzhalter-Playlist (Ersetzen wir später mit den Supabase-Daten)
-        const playlist = [
-            { title: "Song 1", artist: "Artist A", id: "dQw4w9WgXcQ", cover: "https://via.placeholder.com/150" },
-            { title: "Song 2", artist: "Artist B", id: "3JZ_D3ELwOQ", cover: "https://via.placeholder.com/150" }
-        ];
-        
-        let currentSongIndex = 0;
-        let ytPlayer;
-
-        // Wird von der YouTube API aufgerufen, sobald sie geladen ist
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('youtube-player', {
-                height: '0', 
-                width: '0',
-                videoId: playlist[currentSongIndex].id,
-                playerVars: { 'autoplay': 0, 'controls': 0 },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-            updatePlayerUI();
-        }
-
-        function onPlayerReady(event) {
-            // Play/Pause Button
-            document.getElementById('play-pause-btn').addEventListener('click', function() {
-                const state = ytPlayer.getPlayerState();
-                const icon = this.querySelector('i');
-                if (state === YT.PlayerState.PLAYING) {
-                    ytPlayer.pauseVideo();
-                    icon.className = 'fas fa-play';
-                } else {
-                    ytPlayer.playVideo();
-                    icon.className = 'fas fa-pause';
-                }
-            });
-
-            // Next / Prev Buttons
-            document.getElementById('next-btn').addEventListener('click', () => changeSong(1));
-            document.getElementById('prev-btn').addEventListener('click', () => changeSong(-1));
-            
-            // Progress Bar Update Loop (jede Sekunde)
-            setInterval(() => {
-                if (ytPlayer && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-                    const current = ytPlayer.getCurrentTime();
-                    const total = ytPlayer.getDuration();
-                    
-                    // Verhindert NaN Fehler ganz am Anfang
-                    if (total > 0) {
-                        document.getElementById('yt-progress').style.width = (current / total) * 100 + '%';
-                    }
-                    
-                    const formatTime = (time) => Math.floor(time / 60) + ':' + ('0' + Math.floor(time % 60)).slice(-2);
-                    document.getElementById('yt-current-time').innerText = formatTime(current);
-                    document.getElementById('yt-duration').innerText = formatTime(total);
-                }
-            }, 1000);
-        }
-
-        function changeSong(direction) {
-            currentSongIndex += direction;
-            if (currentSongIndex >= playlist.length) currentSongIndex = 0;
-            if (currentSongIndex < 0) currentSongIndex = playlist.length - 1;
-            
-            ytPlayer.loadVideoById(playlist[currentSongIndex].id);
-            updatePlayerUI();
-            
-            // Icon auf Pause setzen, da Video lädt/spielt
-            document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
-        }
-
-        function updatePlayerUI() {
-            document.getElementById('yt-title').innerText = playlist[currentSongIndex].title;
-            document.getElementById('yt-artist').innerText = playlist[currentSongIndex].artist;
-            document.getElementById('yt-cover').src = playlist[currentSongIndex].cover;
-            document.getElementById('yt-progress').style.width = '0%';
-        }
-
-        function onPlayerStateChange(event) {
-            // Wenn der Song vorbei ist, automatisch den nächsten spielen
-            if (event.data === YT.PlayerState.ENDED) {
-                changeSong(1); 
-            }
-        }
-
-
-      <script>
         // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0'; // Füge hier deinen echten Key ein
+        const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
         const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- GLOBAL PLAYLIST ---
         let playlist = [
             { title: "Silence", artist: "No Music", id: "", cover: "https://via.placeholder.com/150" }
         ];
+        
         let currentSongIndex = 0;
         let ytPlayer;
 
@@ -609,7 +520,6 @@
                 // 3. Discord Config & Lanyard API für Live-Status
                 const { data: discord } = await sbClient.from('discord_config').select('*').eq('id', 1).maybeSingle();
                 if (discord && discord.user_id) {
-                    // Optionale Lanyard API Einbindung für echten Discord Online-Status
                     fetch(`https://api.lanyard.rest/v1/users/${discord.user_id}`)
                         .then(res => res.json())
                         .then(response => {
@@ -618,7 +528,6 @@
                                 const statusDot = document.querySelector('.status-dot');
                                 const statusText = document.getElementById('discord-presence');
                                 
-                                // Status Farbe setzen
                                 statusDot.className = 'status-dot ' + (data.discord_status !== 'offline' ? 'online' : '');
                                 
                                 if (data.listening_to_spotify && data.spotify) {
@@ -669,6 +578,7 @@
         }
 
         function onPlayerReady(event) {
+            // Play/Pause Button
             document.getElementById('play-pause-btn').addEventListener('click', function() {
                 if (!ytPlayer || !playlist[currentSongIndex].id) return;
                 const state = ytPlayer.getPlayerState();
@@ -682,9 +592,11 @@
                 }
             });
 
+            // Next / Prev Buttons
             document.getElementById('next-btn').addEventListener('click', () => changeSong(1));
             document.getElementById('prev-btn').addEventListener('click', () => changeSong(-1));
             
+            // Progress Bar Update Loop (jede Sekunde)
             setInterval(() => {
                 if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     const current = ytPlayer.getCurrentTime();
@@ -709,6 +621,7 @@
             
             ytPlayer.loadVideoById(playlist[currentSongIndex].id);
             updatePlayerUI();
+            
             document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
         }
 
