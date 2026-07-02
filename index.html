@@ -6,7 +6,6 @@
     <title>Vengeance Bio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root {
@@ -16,13 +15,37 @@
             --card-border: rgba(255, 255, 255, 0.05);
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
-            --accent-purple: #7c3aed;
             
-            /* Stats Card Colors (angepasst aus dem Screenshot) */
+            /* Theme Variables (Default: Purple) */
+            --accent: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.25);
+            --bg-grad-1: #090514;
+            --bg-grad-2: #0b0b0c;
+
             --stat-green: rgba(52, 211, 153, 0.1);
             --stat-pink: rgba(244, 63, 94, 0.1);
             --stat-yellow: rgba(251, 191, 36, 0.1);
             --stat-blue: rgba(59, 130, 246, 0.1);
+        }
+
+        /* THEME STYLES */
+        body.theme-v-red {
+            --accent: #ef4444;
+            --accent-glow: rgba(239, 68, 68, 0.3);
+            --bg-grad-1: #1a0505;
+            --bg-grad-2: #0b0b0c;
+        }
+        body.theme-v-green {
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.25);
+            --bg-grad-1: #03140e;
+            --bg-grad-2: #0b0b0c;
+        }
+        body.theme-v-void {
+            --accent: #ffffff;
+            --accent-glow: rgba(255, 255, 255, 0.15);
+            --bg-grad-1: #111113;
+            --bg-grad-2: #050505;
         }
 
         * {
@@ -36,8 +59,9 @@
             background-color: var(--bg-color);
             background-image: 
                 linear-gradient(var(--grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+                linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2));
+            background-size: 40px 40px, 40px 40px, 400% 400%;
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -45,7 +69,72 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow-x: hidden;
+            animation: gradientMove 15s ease infinite;
+            transition: background 0.5s ease;
         }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 0%, 0% 0%, 0% 50%; }
+            50% { background-position: 0% 0%, 0% 0%, 100% 50%; }
+            100% { background-position: 0% 0%, 0% 0%, 0% 50%; }
+        }
+
+        /* THEME SELECTOR BUTTON */
+        .theme-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .theme-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .theme-btn:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .theme-dropdown {
+            position: absolute;
+            top: 45px;
+            right: 0;
+            background: #121214;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            width: 150px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .theme-dropdown.show { display: flex; }
+
+        .theme-opt {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            padding: 8px 12px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .theme-opt:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
 
         /* Bento Grid Container */
         .bento-container {
@@ -63,7 +152,7 @@
             }
         }
 
-        /* Basis Card Styling */
+        /* Basis Card Styling mit Subtle Glow */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -71,12 +160,13 @@
             -webkit-backdrop-filter: blur(12px);
             border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(255,255,255,0.01);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
             border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
         }
 
         /* SPALTE 1: Profil & Socials */
@@ -87,20 +177,41 @@
             text-align: center;
         }
 
+        /* ANIMATED AVATAR BORDER */
         .avatar-wrapper {
             position: relative;
-            width: 110px;
-            height: 110px;
+            width: 120px;
+            height: 120px;
             margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-wrapper::before {
+            content: '';
+            position: absolute;
+            width: 104%;
+            height: 104%;
+            border-radius: 28px;
+            background: linear-gradient(90deg, var(--accent), transparent, var(--accent));
+            animation: rotateBorder 4s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes rotateBorder {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 24px;
+            width: 94%;
+            height: 94%;
+            border-radius: 26px;
             object-fit: cover;
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            padding: 4px;
+            background: #161619;
+            padding: 2px;
+            z-index: 2;
         }
 
         .username {
@@ -108,6 +219,7 @@
             font-weight: 700;
             margin-bottom: 8px;
             letter-spacing: 0.5px;
+            text-shadow: 0 0 10px var(--accent-glow);
         }
 
         .bio {
@@ -128,8 +240,8 @@
             display: flex;
             align-items: center;
             padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 10px;
             color: var(--text-main);
             text-decoration: none;
@@ -145,63 +257,32 @@
         }
 
         .social-link:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent);
             transform: translateX(4px);
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
         /* SPALTE 2: Musik-Player & Widgets */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .music-player {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .track-info-container {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
+        .main-content { display: flex; flex-direction: column; gap: 20px; }
+        .music-player { display: flex; flex-direction: column; gap: 20px; }
+        .track-info-container { display: flex; gap: 20px; align-items: center; }
+        
         .album-art {
             width: 120px;
             height: 120px;
             border-radius: 12px;
             object-fit: cover;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .track-details {
-            flex-image: 1;
-        }
-
-        .track-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .track-artist {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* Player Controls */
-        .player-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .progress-bar-container {
-            width: 100%;
-        }
-
+        .track-details { flex-grow: 1; }
+        .track-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+        .track-artist { color: var(--text-muted); font-size: 0.95rem; }
+        .player-controls { display: flex; flex-direction: column; gap: 12px; }
+        .progress-bar-container { width: 100%; }
+        
         .time-info {
             display: flex;
             justify-content: space-between;
@@ -212,10 +293,11 @@
 
         .progress-bar {
             width: 100%;
-            height: 4px;
+            height: 6px;
             background: rgba(255,255,255,0.1);
-            border-radius: 2px;
+            border-radius: 3px;
             position: relative;
+            cursor: pointer;
         }
 
         .progress-fill {
@@ -225,7 +307,8 @@
             height: 100%;
             width: 0%;
             background: var(--text-main);
-            border-radius: 2px;
+            box-shadow: 0 0 8px var(--text-main);
+            border-radius: 3px;
             transition: width 0.1s linear;
         }
 
@@ -237,6 +320,35 @@
             margin-top: 5px;
         }
 
+        .volume-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 5px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--text-main);
+            cursor: pointer;
+        }
+
         .btn-control {
             background: none;
             border: none;
@@ -246,9 +358,7 @@
             transition: color 0.2s;
         }
 
-        .btn-control:hover {
-            color: var(--text-main);
-        }
+        .btn-control:hover { color: var(--text-main); }
 
         .btn-play {
             width: 42px;
@@ -262,39 +372,24 @@
             font-size: 1.1rem;
         }
 
-        .btn-play:hover {
-            transform: scale(1.05);
-            color: var(--bg-color);
-        }
+        .btn-play:hover { transform: scale(1.05); color: var(--bg-color); }
 
         /* Discord Widget Box */
         .discord-guild-box {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(88, 101, 242, 0.05);
-            border: 1px solid rgba(88, 101, 242, 0.1);
+            background: rgba(88, 101, 242, 0.03);
+            border: 1px solid rgba(88, 101, 242, 0.08);
             padding: 16px;
             border-radius: 12px;
+            transition: border-color 0.3s;
         }
+        .discord-guild-box:hover { border-color: #5865F2; }
 
-        .discord-guild-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .discord-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-        }
-
-        .discord-stats {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+        .discord-guild-info { display: flex; align-items: center; gap: 12px; }
+        .discord-icon { width: 40px; height: 40px; border-radius: 10px; background: #1e1e22; object-fit: cover; }
+        .discord-stats { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
 
         .btn-discord-join {
             background: #5865F2;
@@ -304,75 +399,29 @@
             text-decoration: none;
             font-size: 0.85rem;
             font-weight: 600;
-            transition: background 0.2s;
+            transition: background 0.2s, box-shadow 0.2s;
         }
+        .btn-discord-join:hover { background: #4752c4; box-shadow: 0 0 12px rgba(88, 101, 242, 0.4); }
 
-        .btn-discord-join:hover {
-            background: #4752c4;
-        }
+        /* SPALTE 3: Stats Stacks */
+        .stats-container { display: flex; flex-direction: column; gap: 15px; }
+        .stat-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.01); }
 
-        /* SPALTE 3: Stats Cards Stacks */
-        .stats-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .stat-card.green { background: var(--stat-green); }
+        .stat-card.pink { background: var(--stat-pink); }
+        .stat-card.yellow { background: var(--stat-yellow); }
+        .stat-card.blue { background: var(--stat-blue); }
 
-        .stat-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-
-        .stat-card.green { background: var(--stat-green); border-color: rgba(52, 211, 153, 0.1); }
-        .stat-card.pink { background: var(--stat-pink); border-color: rgba(244, 63, 94, 0.1); }
-        .stat-card.yellow { background: var(--stat-yellow); border-color: rgba(251, 191, 36, 0.1); }
-        .stat-card.blue { background: var(--stat-blue); border-color: rgba(59, 130, 246, 0.1); }
-
-        .stat-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            font-weight: 700;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            font-family: 'Georgia', serif; 
-        }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; font-family: 'Georgia', serif; }
 
         /* ZEILE UNTEN: Discord Status Banner */
-        .status-banner {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 0.9rem;
-            padding: 16px 24px;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: #94a3b8;
-            border-radius: 50%;
-            position: relative;
-        }
-
+        .status-banner { grid-column: 1 / -1; display: flex; align-items: center; gap: 15px; font-size: 0.9rem; padding: 16px 24px; }
+        .status-dot { width: 10px; height: 10px; background: #94a3b8; border-radius: 50%; position: relative; }
         .status-dot.online { background: #22c55e; }
+        
         .status-dot.online::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: inherit;
-            border-radius: inherit;
-            animation: pulse 2s infinite;
+            content: ''; position: absolute; width: 100%; height: 100%; background: inherit; border-radius: inherit; animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
@@ -381,39 +430,40 @@
         }
 
         .footer-text {
-            grid-column: 1 / -1;
-            text-align: center;
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.15);
-            letter-spacing: 2px;
-            margin-top: 10px;
-            text-transform: uppercase;
+            grid-column: 1 / -1; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.15); letter-spacing: 2px; margin-top: 10px; text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-    <!-- Unsichtbarer YouTube Player -->
+    <!-- THEME DROP DOWN -->
+    <div class="theme-selector">
+        <button class="theme-btn" id="theme-trigger"><i class="fas fa-palette"></i> Themes</button>
+        <div class="theme-dropdown" id="theme-menu">
+            <button class="theme-opt" data-theme="purple">Ametyst</button>
+            <button class="theme-opt" data-theme="red">Vengeance</button>
+            <button class="theme-opt" data-theme="green">Cyber</button>
+            <button class="theme-opt" data-theme="void">Void</button>
+        </div>
+    </div>
+
     <div id="youtube-player" style="display: none;"></div>
 
     <div class="bento-container">
         
         <div class="card profile-card">
             <div class="avatar-wrapper">
-                <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
+                <img id="avatar" src="https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" alt="Avatar" class="avatar">
             </div>
             <h1 id="username" class="username">Loading...</h1>
             <p id="bio" class="bio">...</p>
-            
-            <div id="links-container" class="links-list">
-                <!-- Dynamische Links kommen hier rein -->
-            </div>
+            <div id="links-container" class="links-list"></div>
         </div>
 
         <div class="main-content">
             <div class="card music-player">
                 <div class="track-info-container">
-                    <img id="yt-cover" src="https://via.placeholder.com/150" alt="Album Art" class="album-art">
+                    <img id="yt-cover" src="https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" alt="Album Art" class="album-art">
                     <div class="track-details">
                         <div id="yt-title" class="track-title">Loading...</div>
                         <div id="yt-artist" class="track-artist">Silence</div>
@@ -422,7 +472,7 @@
                 
                 <div class="player-controls">
                     <div class="progress-bar-container">
-                        <div class="progress-bar">
+                        <div class="progress-bar" id="progress-timeline">
                             <div id="yt-progress" class="progress-fill"></div>
                         </div>
                         <div class="time-info">
@@ -430,26 +480,28 @@
                             <span id="yt-duration">0:00</span>
                         </div>
                     </div>
+                    
                     <div class="control-buttons">
                         <button class="btn-control" id="prev-btn"><i class="fas fa-backward"></i></button>
                         <button class="btn-control btn-play" id="play-pause-btn"><i class="fas fa-play"></i></button>
                         <button class="btn-control" id="next-btn"><i class="fas fa-forward"></i></button>
                     </div>
-                    <!-- Liste der Songs -->
-                    <div id="song-list" style="margin-top: 15px; font-size: 0.85rem; color: var(--text-gray);">
-                        <!-- Wird später per JS befüllt -->
+
+                    <div class="volume-container">
+                        <i class="fas fa-volume-down"></i>
+                        <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
                     </div>
                 </div>
 
                 <div class="discord-guild-box">
                     <div class="discord-guild-info">
-                        <img src="https://via.placeholder.com/40" alt="Server Icon" class="discord-icon">
+                        <img id="discord-guild-icon" src="" alt="Server Icon" class="discord-icon">
                         <div>
-                            <div style="font-weight: 600; font-size: 0.9rem;">Mein Discord Server</div>
-                            <div class="discord-stats"><i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i> 16 Online &bull; 106 Members</div>
+                            <div id="discord-guild-name" style="font-weight: 600; font-size: 0.9rem;">Mein Discord Server</div>
+                            <div id="discord-guild-stats" class="discord-stats"><i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i> 0 Online &bull; 0 Members</div>
                         </div>
                     </div>
-                    <a href="#" class="btn-discord-join">Join <i class="fas fa-sign-in-alt"></i></a>
+                    <a id="discord-guild-invite" href="#" target="_blank" class="btn-discord-join">Join <i class="fas fa-sign-in-alt"></i></a>
                 </div>
             </div>
         </div>
@@ -482,33 +534,41 @@
     </div>
 
     <script>
-        // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
         const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- GLOBAL PLAYLIST ---
-        let playlist = [
-            { title: "Silence", artist: "No Music", id: "", cover: "https://via.placeholder.com/150" }
-        ];
-        
+        let playlist = [];
         let currentSongIndex = 0;
         let ytPlayer;
 
-        // --- 1. DATEN VON SUPABASE LADEN ---
+        // --- THEME ENGINE ---
+        const trigger = document.getElementById('theme-trigger');
+        const menu = document.getElementById('theme-menu');
+        trigger.addEventListener('click', () => menu.classList.toggle('show'));
+        
+        document.querySelectorAll('.theme-opt').forEach(opt => {
+            opt.addEventListener('click', () => {
+                const theme = opt.getAttribute('data-theme');
+                document.body.className = ''; 
+                if(theme !== 'purple') document.body.classList.add('theme-v-' + theme);
+                localStorage.setItem('vengeance-theme', theme);
+                menu.classList.remove('show');
+            });
+        });
+        const savedTheme = localStorage.getItem('vengeance-theme');
+        if(savedTheme && savedTheme !== 'purple') document.body.classList.add('theme-v-' + savedTheme);
+
+        // --- LIVE DATA FETCH ---
         async function loadWebsiteData() {
             try {
-                // 1. Profil laden
                 const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
                 if (profile) {
                     document.getElementById('username').innerText = profile.username || 'Unknown';
                     document.getElementById('bio').innerText = profile.bio || '';
-                    if (profile.avatar_url) {
-                        document.getElementById('avatar').src = profile.avatar_url;
-                    }
+                    if (profile.avatar_url) document.getElementById('avatar').src = profile.avatar_url;
                 }
 
-                // 2. Stats laden
                 const { data: stats } = await sbClient.from('stats').select('*').eq('id', 1).maybeSingle();
                 if (stats) {
                     document.getElementById('stat-1').innerText = stats.years_coding || '0+';
@@ -517,7 +577,6 @@
                     document.getElementById('stat-4').innerText = stats.views || '0';
                 }
 
-                // 3. Discord Config & Lanyard API für Live-Status
                 const { data: discord } = await sbClient.from('discord_config').select('*').eq('id', 1).maybeSingle();
                 if (discord && discord.user_id) {
                     fetch(`https://api.lanyard.rest/v1/users/${discord.user_id}`)
@@ -527,100 +586,112 @@
                                 const data = response.data;
                                 const statusDot = document.querySelector('.status-dot');
                                 const statusText = document.getElementById('discord-presence');
-                                
                                 statusDot.className = 'status-dot ' + (data.discord_status !== 'offline' ? 'online' : '');
-                                
                                 if (data.listening_to_spotify && data.spotify) {
                                     statusText.innerText = `Listening to Spotify: ${data.spotify.song} - ${data.spotify.artist}`;
                                 } else if (data.activities && data.activities.length > 0) {
                                     statusText.innerText = `Playing: ${data.activities[0].name}`;
                                 } else {
-                                    statusText.innerText = data.discord_status.toUpperCase() + ` — In Discord active.`;
+                                    statusText.innerText = data.discord_status.toUpperCase() + ` — Active on Discord.`;
                                 }
                             }
-                        }).catch(err => console.log("Lanyard Error:", err));
+                        }).catch(err => console.log(err));
                 }
 
-                // 4. YouTube Playlist laden
+                // Echte Discord Gilde / Server Widget Daten abrufen
+                if(discord && discord.server_id) {
+                    fetch(`https://discord.com/api/guilds/${discord.server_id}/widget.json`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data) {
+                                document.getElementById('discord-guild-name').innerText = data.name;
+                                document.getElementById('discord-guild-stats').innerHTML = `<i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i> ${data.presence_count} Online`;
+                                document.getElementById('discord-guild-invite').href = data.instant_invite;
+                                // Versuche das Server Icon zu laden (andernfalls Fallback)
+                                document.getElementById('discord-guild-icon').src = `https://cdn.discordapp.com/icons/${discord.server_id}/${data.id}.png?size=64`;
+                            }
+                        }).catch(() => {
+                            // Fallback wenn Widget deaktiviert ist
+                            document.getElementById('discord-guild-icon').src = "https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png";
+                        });
+                }
+
                 const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*');
                 if (dbPlaylist && dbPlaylist.length > 0) {
                     playlist = dbPlaylist.map(song => ({
                         title: song.song_title,
                         artist: song.artist,
                         id: song.youtube_id,
-                        cover: song.cover_url || "https://via.placeholder.com/150"
+                        cover: song.cover_url
                     }));
+                } else {
+                    playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];
                 }
 
-                // 5. Links live aus Supabase laden (HIER GEHÖRT ES HIN!)
                 const { data: dbLinks } = await sbClient.from('links').select('*');
                 const linksContainer = document.getElementById('links-container');
                 if (dbLinks && dbLinks.length > 0 && linksContainer) {
-                    linksContainer.innerHTML = ''; // Container leeren
+                    linksContainer.innerHTML = '';
                     dbLinks.forEach(link => {
                         const a = document.createElement('a');
-                        a.href = link.url;
-                        a.target = '_blank';
-                        a.className = 'social-link';
+                        a.href = link.url; a.target = '_blank'; a.className = 'social-link';
                         a.innerHTML = `<i class="${link.icon}"></i> ${link.name}`;
                         linksContainer.appendChild(a);
                     });
                 }
 
-                // Player UI initialisieren, falls API schon bereit war
-                if (ytPlayer && playlist.length > 0) {
-                    updatePlayerUI();
-                }
+                updatePlayerUI();
+                if (ytPlayer && playlist[currentSongIndex]?.id) ytPlayer.cueVideoById(playlist[currentSongIndex].id);
 
             } catch (err) {
-                console.error("Fehler beim Laden der Live-Daten:", err);
+                console.error(err);
             }
         }
 
-        // --- 2. YOUTUBE PLAYER LOGIK ---
+        // --- YOUTUBE CONTROLS ---
         function onYouTubeIframeAPIReady() {
             ytPlayer = new YT.Player('youtube-player', {
-                height: '0', 
-                width: '0',
+                height: '0', width: '0',
                 videoId: playlist[currentSongIndex]?.id || '',
                 playerVars: { 'autoplay': 0, 'controls': 0 },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
-            updatePlayerUI();
         }
 
         function onPlayerReady(event) {
-            // Play/Pause Button
+            ytPlayer.setVolume(document.getElementById('volume-slider').value);
+
             document.getElementById('play-pause-btn').addEventListener('click', function() {
-                if (!ytPlayer || !playlist[currentSongIndex].id) return;
+                if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
                 const state = ytPlayer.getPlayerState();
                 const icon = this.querySelector('i');
                 if (state === YT.PlayerState.PLAYING) {
-                    ytPlayer.pauseVideo();
-                    icon.className = 'fas fa-play';
+                    ytPlayer.pauseVideo(); icon.className = 'fas fa-play';
                 } else {
-                    ytPlayer.playVideo();
-                    icon.className = 'fas fa-pause';
+                    ytPlayer.playVideo(); icon.className = 'fas fa-pause';
                 }
             });
 
-            // Next / Prev Buttons
             document.getElementById('next-btn').addEventListener('click', () => changeSong(1));
             document.getElementById('prev-btn').addEventListener('click', () => changeSong(-1));
             
-            // Progress Bar Update Loop (jede Sekunde)
+            document.getElementById('progress-timeline').addEventListener('click', function(e) {
+                if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
+                const rect = this.getBoundingClientRect();
+                const clickPosition = (e.clientX - rect.left) / rect.width;
+                const totalDuration = ytPlayer.getDuration();
+                if (totalDuration > 0) ytPlayer.seekTo(totalDuration * clickPosition, true);
+            });
+
+            document.getElementById('volume-slider').addEventListener('input', function() {
+                if (ytPlayer) ytPlayer.setVolume(this.value);
+            });
+            
             setInterval(() => {
                 if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     const current = ytPlayer.getCurrentTime();
                     const total = ytPlayer.getDuration();
-                    
-                    if (total > 0) {
-                        document.getElementById('yt-progress').style.width = (current / total) * 100 + '%';
-                    }
-                    
+                    if (total > 0) document.getElementById('yt-progress').style.width = (current / total) * 100 + '%';
                     const formatTime = (time) => Math.floor(time / 60) + ':' + ('0' + Math.floor(time % 60)).slice(-2);
                     document.getElementById('yt-current-time').innerText = formatTime(current);
                     document.getElementById('yt-duration').innerText = formatTime(total);
@@ -629,14 +700,12 @@
         }
 
         function changeSong(direction) {
-            if (playlist.length <= 1 && !playlist[0].id) return;
+            if (playlist.length <= 1 && !playlist[0]?.id) return;
             currentSongIndex += direction;
             if (currentSongIndex >= playlist.length) currentSongIndex = 0;
             if (currentSongIndex < 0) currentSongIndex = playlist.length - 1;
-            
             ytPlayer.loadVideoById(playlist[currentSongIndex].id);
             updatePlayerUI();
-            
             document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
         }
 
@@ -644,17 +713,26 @@
             if (!playlist[currentSongIndex]) return;
             document.getElementById('yt-title').innerText = playlist[currentSongIndex].title;
             document.getElementById('yt-artist').innerText = playlist[currentSongIndex].artist;
-            document.getElementById('yt-cover').src = playlist[currentSongIndex].cover;
             document.getElementById('yt-progress').style.width = '0%';
-        }
+            
+            const imgElement = document.getElementById('yt-cover');
+            const targetCover = playlist[currentSongIndex].cover;
 
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                changeSong(1); 
+            if (targetCover.includes('maxresdefault.jpg')) {
+                imgElement.src = targetCover;
+                imgElement.onerror = function() {
+                    this.src = targetCover.replace('maxresdefault.jpg', 'hqdefault.jpg');
+                    this.onerror = null; 
+                };
+            } else {
+                imgElement.src = targetCover;
             }
         }
 
-        // Sobald die Seite geladen ist, Supabase abfragen
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) changeSong(1); 
+        }
+
         window.addEventListener('DOMContentLoaded', loadWebsiteData);
     </script>
 </body>
