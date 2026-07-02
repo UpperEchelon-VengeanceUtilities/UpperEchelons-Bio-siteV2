@@ -293,9 +293,11 @@
         .volume-slider { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; cursor: pointer; }
         .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--text-main); }
 
-        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: color 0.2s; }
+        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease; }
+        .btn-control:hover { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.5); transform: scale(1.1); }
         .btn-control:hover { color: var(--text-main); }
-        .btn-play { width: 38px; height: 38px; background: var(--text-main); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .btn-play { width: 38px; height: 38px; background: var(--text-main); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s ease; }
+        .btn-play:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); transform: scale(1.05); }
 
         /* NEUES MINIMALISTISCHES DISCORD WIDGET */
         .discord-guild-box {
@@ -303,7 +305,8 @@
         }
         .discord-guild-info { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; }
         .btn-discord-join { background: #5865F2; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; }
-        .btn-discord-join:hover { background: #4752c4; }
+        .btn-discord-join:hover { background: #4752c4; box-shadow: 0 0 15px rgba(88, 101, 242, 0.4); transform: translateY(-1px); } 
+        .btn-discord-join { transition: all 0.2s ease; }
 
         /* SPALTE 3: Stats Stacks */
         .stats-container { display: flex; flex-direction: column; gap: 12px; }
@@ -506,7 +509,7 @@
                         .then(res => res.json())
                         .then(data => {
                             if(data) {
-                                document.getElementById('discord-guild-stats').innerText = `${data.presence_count} Members Online`;
+                                document.getElementById('discord-guild-stats').innerText = data.name || `${data.presence_count} Members Online`;
                                 document.getElementById('discord-guild-invite').href = data.instant_invite;
                             }
                         }).catch(() => {});
