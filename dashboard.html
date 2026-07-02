@@ -7,10 +7,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Gleiches CSS wie vorher, nur erweitert um Tab-Logik */
         :root {
-            --bg-dark: #0f0f11; --panel-bg: #161619; --border-color: rgba(255,255,255,0.06);
-            --input-bg: #1e1e22; --text-light: #f3f4f6; --text-gray: #9ca3af; --accent: #7c3aed;
+            --bg-dark: #0f0f11; 
+            --panel-bg: #161619; 
+            --border-color: rgba(255,255,255,0.06);
+            --input-bg: #1e1e22; 
+            --text-light: #f3f4f6; 
+            --text-gray: #9ca3af; 
+            --accent: #7c3aed;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-light); display: flex; min-height: 100vh; }
@@ -46,6 +50,8 @@
             <li class="nav-item active" data-target="tab-profile"><i class="fas fa-user-cog"></i> Profile Settings</li>
             <li class="nav-item" data-target="tab-links"><i class="fas fa-link"></i> Link Manager</li>
             <li class="nav-item" data-target="tab-stats"><i class="fas fa-chart-bar"></i> Stats Adjuster</li>
+            <li class="nav-item" data-target="tab-youtube"><i class="fab fa-youtube"></i> YouTube Player</li>
+            <li class="nav-item" data-target="tab-discord"><i class="fab fa-discord"></i> Discord Config</li>
         </ul>
     </div>
 
@@ -90,6 +96,33 @@
                 </form>
             </div>
         </div>
+
+        <!-- TAB 4: YOUTUBE -->
+        <div id="tab-youtube" class="tab-content">
+            <div class="admin-card" style="max-width: 600px;">
+                <div class="card-title"><i class="fab fa-youtube"></i> Manage YouTube Playlist</div>
+                <form id="youtube-form">
+                    <div class="form-group"><label>Song Title</label><input type="text" id="yt-input-title" placeholder="z.B. High And Dry"></div>
+                    <div class="form-group"><label>Artist</label><input type="text" id="yt-input-artist" placeholder="z.B. Radiohead"></div>
+                    <div class="form-group"><label>YouTube Video ID</label><input type="text" id="yt-input-id" placeholder="z.B. dQw4w9WgXcQ"></div>
+                    <div class="form-group"><label>Cover Image URL</label><input type="text" id="yt-input-cover" placeholder="https://..."></div>
+                    <button type="submit" class="btn-save">Add Song to DB</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 5: DISCORD -->
+        <div id="tab-discord" class="tab-content">
+            <div class="admin-card" style="max-width: 600px;">
+                <div class="card-title"><i class="fab fa-discord"></i> Discord Integration</div>
+                <form id="discord-form">
+                    <div class="form-group"><label>Personal Discord ID (Für Live-Status via Lanyard)</label><input type="text" id="discord-user-id" placeholder="123456789012345678"></div>
+                    <div class="form-group"><label>Discord Server ID (Für das Widget in der Mitte)</label><input type="text" id="discord-server-id" placeholder="Server ID einfügen"></div>
+                    <button type="submit" class="btn-save">Save Discord Settings</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -109,6 +142,8 @@
                 document.getElementById(targetId).classList.add('active');
             });
         });
+        
+        // Supabase DB Logic kommt dann hier rein
     </script>
 </body>
 </html>
