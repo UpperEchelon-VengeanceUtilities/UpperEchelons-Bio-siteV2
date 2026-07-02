@@ -123,7 +123,6 @@
                 </form>
             </div>
             
-            <!-- NEU: Übersicht über die aktuelle Playlist -->
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fas fa-music"></i> Current Playlist Entries</div>
                 <div id="dashboard-playlist-list"></div>
@@ -205,7 +204,7 @@
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
-                    <div class="list-info"><i class="${link.icon}"></i><div><strong>${link.name}</strong><div style="font-size:0.75rem;color:var(--text-gray);">${link.url}</div></div></div>
+                    <div class="link-info"><i class="${link.icon}"></i><div><strong>${link.name}</strong><div style="font-size:0.75rem;color:var(--text-gray);">${link.url}</div></div></div>
                     <button class="btn-delete" onclick="deleteLink(${link.id})"><i class="fas fa-trash"></i></button>`;
                 container.appendChild(div);
             });
@@ -230,22 +229,16 @@
         async function loadPlaylistEntries() {
             const container = document.getElementById('dashboard-playlist-list');
             container.innerHTML = 'Loading...';
-            
             const { data: tracks, error } = await sbClient.from('youtube_playlist').select('*');
             if(error) { container.innerHTML = 'Fehler beim Laden.'; return; }
-            
             if(!tracks || tracks.length === 0) {
                 container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Die Playlist ist aktuell leer.</p>'; return;
             }
-            
             container.innerHTML = '';
             tracks.forEach(track => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                
-                // Fallback, falls das maxresdefault Bild ein 404 wirft, hqdefault anzeigen
                 const thumbUrl = track.cover_url || `https://img.youtube.com/vi/${track.youtube_id}/hqdefault.jpg`;
-                
                 div.innerHTML = `
                     <div class="list-info">
                         <img class="list-thumb" src="${thumbUrl}" alt="Cover">
@@ -254,8 +247,7 @@
                             <div style="font-size:0.75rem;color:var(--text-gray);">${track.artist} &bull; ID: ${track.youtube_id}</div>
                         </div>
                     </div>
-                    <button class="btn-delete" onclick="deleteTrack(${track.id})"><i class="fas fa-trash"></i></button>
-                `;
+                    <button class="btn-delete" onclick="deleteTrack(${track.id})"><i class="fas fa-trash"></i></button>`;
                 container.appendChild(div);
             });
         }
@@ -294,22 +286,48 @@
             e.preventDefault();
             let rawIdInput = document.getElementById('yt-input-id').value.trim();
             let videoId = rawIdInput;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/|live\/)([^#\&\?]*).*/;
             const match = rawIdInput.match(regExp);
-            if (match && match[2].length === 11) videoId = match[2];
+            if (match && match[2].length === 11) {
+                videoId = match[2];
+            } else {
+                videoId = videoId.split('?')[0].split('&')[0];
+            }
 
-            const autoCoverUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            if (videoId.length !== 11) {
+                alert('Ungültige YouTube-URL oder Video-ID! Die ID muss exakt 11 Zeichen lang sein.');
+                return;
+            }
+
+            const maxResUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            const hqResUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+            const checkImageExists = (url) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        if (img.naturalWidth === 120) resolve(false);
+                        else resolve(true);
+                    };
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                });
+            };
+
+            const hasMaxRes = await checkImageExists(maxResUrl);
+            const finalCoverUrl = hasMaxRes ? maxResUrl : hqResUrl;
+
             const { error } = await sbClient.from('youtube_playlist').insert([{
                 song_title: document.getElementById('yt-input-title').value,
                 artist: document.getElementById('yt-input-artist').value,
                 youtube_id: videoId,
-                cover_url: autoCoverUrl
+                cover_url: finalCoverUrl
             }]);
             
             if(!error) { 
-                alert('Song hinzugefügt! 🎧'); 
+                alert('Song hinzugefügt! Das Cover wurde validiert und gespeichert. 🎧'); 
                 document.getElementById('youtube-form').reset(); 
-                loadPlaylistEntries(); // Liste sofort aktualisieren
+                loadPlaylistEntries(); 
             } else { 
                 alert(error.message); 
             }
