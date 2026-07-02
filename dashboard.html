@@ -37,7 +37,6 @@
         input:focus, textarea:focus { border-color: var(--accent); }
         .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         
-        /* Tabellen Styling für Links */
         .link-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; }
         .link-info { display: flex; align-items: center; gap: 12px; }
         .btn-delete { background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 1rem; transition: color 0.2s; }
@@ -84,18 +83,15 @@
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fas fa-plus-circle"></i> Add New Social Link</div>
                 <form id="link-form">
-                    <div class="form-group"><label>Link Name (z.B. GitHub)</label><input type="text" id="link-name" required></div>
-                    <div class="form-group"><label>URL (z.B. https://github.com/...)</label><input type="text" id="link-url" required></div>
+                    <div class="form-group"><label>Link Name</label><input type="text" id="link-name" required></div>
+                    <div class="form-group"><label>URL</label><input type="text" id="link-url" required></div>
                     <div class="form-group"><label>FontAwesome Icon Class (z.B. fab fa-github)</label><input type="text" id="link-icon" value="fas fa-link"></div>
                     <button type="submit" class="btn-save"><i class="fas fa-plus"></i> Add Link</button>
                 </form>
             </div>
-
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fas fa-list"></i> Current Links</div>
-                <div id="dashboard-links-list">
-                    <!-- Wird dynamisch geladen -->
-                </div>
+                <div id="dashboard-links-list"></div>
             </div>
         </div>
 
@@ -118,9 +114,9 @@
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fab fa-youtube"></i> Manage YouTube Playlist</div>
                 <form id="youtube-form">
-                    <div class="form-group"><label>Song Title</label><input type="text" id="yt-input-title" placeholder="z.B. High And Dry"></div>
-                    <div class="form-group"><label>Artist</label><input type="text" id="yt-input-artist" placeholder="z.B. Radiohead"></div>
-                    <div class="form-group"><label>YouTube Video ID</label><input type="text" id="yt-input-id" placeholder="z.B. 7qFfFVSerQo"></div>     
+                    <div class="form-group"><label>Song Title</label><input type="text" id="yt-input-title" required></div>
+                    <div class="form-group"><label>Artist</label><input type="text" id="yt-input-artist" required></div>
+                    <div class="form-group"><label>YouTube URL oder Video ID</label><input type="text" id="yt-input-id" placeholder="ID oder vollständigen Link reinkopieren" required></div>
                     <button type="submit" class="btn-save">Add Song to DB</button>
                 </form>
             </div>
@@ -131,13 +127,12 @@
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fab fa-discord"></i> Discord Integration</div>
                 <form id="discord-form">
-                    <div class="form-group"><label>Personal Discord ID (Für Live-Status via Lanyard)</label><input type="text" id="discord-user-id" placeholder="123456789012345678"></div>
-                    <div class="form-group"><label>Discord Server ID (Für das Widget in der Mitte)</label><input type="text" id="discord-server-id" placeholder="Server ID einfügen"></div>
+                    <div class="form-group"><label>Personal Discord ID (Lanyard API)</label><input type="text" id="discord-user-id"></div>
+                    <div class="form-group"><label>Discord Server ID (Widget API)</label><input type="text" id="discord-server-id"></div>
                     <button type="submit" class="btn-save">Save Discord Settings</button>
                 </form>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -151,33 +146,27 @@
             dbStatus.innerHTML = '<i class="fas fa-database"></i> Connected to Supabase';
         }
 
-        // --- TAB SWITCHING LOGIK ---
+        // --- TAB NAVIGATION ---
         const navItems = document.querySelectorAll('.nav-item');
         const tabContents = document.querySelectorAll('.tab-content');
-
         navItems.forEach(item => {
             item.addEventListener('click', () => {
                 navItems.forEach(nav => nav.classList.remove('active'));
                 tabContents.forEach(tab => tab.classList.remove('active'));
-                
                 item.classList.add('active');
-                const targetId = item.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
+                document.getElementById(item.getAttribute('data-target')).classList.add('active');
             });
         });
 
-        // --- DATEN BEIM LADEN ABRAFEN ---
+        // --- FETCH DB ON LOAD ---
         async function loadDashboardData() {
             try {
-                // 1. Profil laden
                 const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
                 if (profile) {
                     document.getElementById('input-username').value = profile.username || '';
                     document.getElementById('input-avatar').value = profile.avatar_url || '';
                     document.getElementById('input-bio').value = profile.bio || '';
                 }
-
-                // 2. Stats laden
                 const { data: stats } = await sbClient.from('stats').select('*').eq('id', 1).maybeSingle();
                 if (stats) {
                     document.getElementById('stat-val-1').value = stats.years_coding || '';
@@ -185,156 +174,96 @@
                     document.getElementById('stat-val-3').value = stats.projects || '';
                     document.getElementById('stat-val-4').value = stats.views || 0;
                 }
-
-                // 3. Discord laden
                 const { data: discord } = await sbClient.from('discord_config').select('*').eq('id', 1).maybeSingle();
                 if (discord) {
                     document.getElementById('discord-user-id').value = discord.user_id || '';
                     document.getElementById('discord-server-id').value = discord.server_id || '';
                 }
-
-                // 4. Links laden
                 loadLinksList();
-
-            } catch (err) {
-                console.error("Fehler beim Laden:", err);
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // --- LINKS LOGIK ---
+        // --- LINK MANAGER ---
         async function loadLinksList() {
             const container = document.getElementById('dashboard-links-list');
             container.innerHTML = 'Loading...';
-            
-            const { data: links, error } = await sbClient.from('links').select('*');
-            if(error) {
-                container.innerHTML = 'Fehler beim Laden der Links.';
-                return;
-            }
-            
+            const { data: links } = await sbClient.from('links').select('*');
             if(!links || links.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-gray); font-size:0.9rem;">Keine Links vorhanden.</p>';
-                return;
+                container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Keine Links vorhanden.</p>'; return;
             }
-            
             container.innerHTML = '';
             links.forEach(link => {
                 const div = document.createElement('div');
                 div.className = 'link-item';
                 div.innerHTML = `
-                    <div class="link-info">
-                        <i class="${link.icon}"></i>
-                        <div>
-                            <strong>${link.name}</strong>
-                            <div style="font-size:0.75rem; color: var(--text-gray);">${link.url}</div>
-                        </div>
-                    </div>
-                    <button class="btn-delete" onclick="deleteLink(${link.id})"><i class="fas fa-trash"></i></button>
-                `;
+                    <div class="link-info"><i class="${link.icon}"></i><div><strong>${link.name}</strong><div style="font-size:0.75rem;color:var(--text-gray);">${link.url}</div></div></div>
+                    <button class="btn-delete" onclick="deleteLink(${link.id})"><i class="fas fa-trash"></i></button>`;
                 container.appendChild(div);
             });
         }
 
-        // Link hinzufügen
         document.getElementById('link-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const { error } = await sbClient.from('links').insert([{
+            await sbClient.from('links').insert([{
                 name: document.getElementById('link-name').value,
                 url: document.getElementById('link-url').value,
                 icon: document.getElementById('link-icon').value
             }]);
-
-            if(error) {
-                alert('Fehler: ' + error.message);
-            } else {
-                document.getElementById('link-form').reset();
-                document.getElementById('link-icon').value = 'fas fa-link';
-                loadLinksList();
-            }
+            document.getElementById('link-form').reset(); document.getElementById('link-icon').value = 'fas fa-link';
+            loadLinksList();
         });
 
-        // Link löschen
         window.deleteLink = async (id) => {
-            if(!confirm('Link wirklich löschen?')) return;
-            const { error } = await sbClient.from('links').delete().eq('id', id);
-            if(error) alert('Fehler: ' + error.message);
-            loadLinksList();
+            if(confirm('Link löschen?')) { await sbClient.from('links').delete().eq('id', id); loadLinksList(); }
         };
 
-        // --- SPEICHER-LOGIKEN ---
-
-        // Profile Update
+        // --- SAVE ACTIONS ---
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const { error } = await sbClient.from('profile').update({
+            await sbClient.from('profile').update({
                 username: document.getElementById('input-username').value,
                 avatar_url: document.getElementById('input-avatar').value,
                 bio: document.getElementById('input-bio').value
             }).eq('id', 1);
-
-            alert(error ? 'Fehler: ' + error.message : 'Profil erfolgreich aktualisiert! 🔥');
+            alert('Profil aktualisiert! 🔥');
         });
 
-        // Stats Update
         document.getElementById('stats-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const { error } = await sbClient.from('stats').update({
+            await sbClient.from('stats').update({
                 years_coding: document.getElementById('stat-val-1').value,
                 languages: document.getElementById('stat-val-2').value,
                 projects: document.getElementById('stat-val-3').value,
                 views: parseInt(document.getElementById('stat-val-4').value) || 0
             }).eq('id', 1);
-
-            alert(error ? 'Fehler: ' + error.message : 'Statistiken gespeichert! 📊');
+            alert('Statistiken gespeichert! 📊');
         });
 
-        // YouTube Add Song
-       // YouTube Add Song (Mit automatischer ID- & Cover-Erkennung)
         document.getElementById('youtube-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             let rawIdInput = document.getElementById('yt-input-id').value.trim();
             let videoId = rawIdInput;
-
-            // Extrahiert die reine Video-ID aus fast jeder denkbaren YouTube-URL
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
             const match = rawIdInput.match(regExp);
+            if (match && match[2].length === 11) videoId = match[2];
 
-            if (match && match[2].length === 11) {
-                videoId = match[2];
-            } else if (videoId.length !== 11) {
-                alert('Ungültige YouTube-URL oder Video-ID! Bitte überprüfe die Eingabe.');
-                return;
-            }
-
-            // Generiert automatisch das hochauflösende Cover von den YouTube-Servern
             const autoCoverUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-
-            // Absenden an Supabase (ohne manuelle ID für die Tabelle, damit es keine Constraint-Fehler gibt)
             const { error } = await sbClient.from('youtube_playlist').insert([{
                 song_title: document.getElementById('yt-input-title').value,
                 artist: document.getElementById('yt-input-artist').value,
                 youtube_id: videoId,
                 cover_url: autoCoverUrl
             }]);
-
-            if (!error) {
-                alert('Song erfolgreich zur Playlist hinzugefügt! Das Cover wurde automatisch generiert. 🎧');
-                document.getElementById('youtube-form').reset();
-            } else {
-                alert('Fehler beim Speichern: ' + error.message);
-            }
+            if(!error) { alert('Song hinzugefügt! 🎧'); document.getElementById('youtube-form').reset(); } else { alert(error.message); }
         });
 
-        // Discord Update
         document.getElementById('discord-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const { error } = await sbClient.from('discord_config').update({
+            await sbClient.from('discord_config').update({
                 user_id: document.getElementById('discord-user-id').value,
                 server_id: document.getElementById('discord-server-id').value
             }).eq('id', 1);
-
-            alert(error ? 'Fehler: ' + error.message : 'Discord-Config gesichert! 💬');
+            alert('Discord-Config gesichert! 💬');
         });
 
         window.addEventListener('DOMContentLoaded', loadDashboardData);
