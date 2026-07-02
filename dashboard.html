@@ -7,220 +7,108 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Gleiches CSS wie vorher, nur erweitert um Tab-Logik */
         :root {
-            --bg-dark: #0f0f11;
-            --panel-bg: #161619;
-            --border-color: rgba(255,255,255,0.06);
-            --input-bg: #1e1e22;
-            --text-light: #f3f4f6;
-            --text-gray: #9ca3af;
-            --accent: #7c3aed;
+            --bg-dark: #0f0f11; --panel-bg: #161619; --border-color: rgba(255,255,255,0.06);
+            --input-bg: #1e1e22; --text-light: #f3f4f6; --text-gray: #9ca3af; --accent: #7c3aed;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Layout */
-        .sidebar {
-            width: 260px;
-            background-color: var(--panel-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .logo {
-            font-size: 1.2rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: var(--text-light);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .nav-item a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            color: var(--text-gray);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .nav-item.active a, .nav-item a:hover {
-            color: var(--text-light);
-            background: rgba(255,255,255,0.04);
-        }
-
-        /* Main Workspace */
-        .main-workspace {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        .header {
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
-        }
-
-        @media (min-width: 1000px) {
-            .panel-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        .admin-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        /* Forms Elements */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-gray);
-            margin-bottom: 6px;
-        }
-
-        input[type="text"], textarea {
-            width: 100%;
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px 14px;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, textarea:focus {
-            border-color: var(--accent);
-        }
-
-        .btn-save {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: opacity 0.2s;
-        }
-
-        .btn-save:hover { opacity: 0.9; }
+        body { background-color: var(--bg-dark); color: var(--text-light); display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 260px; background-color: var(--panel-bg); border-right: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; gap: 30px; }
+        .logo { font-size: 1.2rem; font-weight: bold; color: var(--text-light); display: flex; align-items: center; gap: 10px; }
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; color: var(--text-gray); cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+        .nav-item.active, .nav-item:hover { color: var(--text-light); background: rgba(255,255,255,0.04); }
+        
+        .main-workspace { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .admin-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
+        .card-title { font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-size: 0.85rem; color: var(--text-gray); margin-bottom: 6px; }
+        input[type="text"], textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; color: var(--text-light); font-size: 0.9rem; outline: none; }
+        input:focus, textarea:focus { border-color: var(--accent); }
+        .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        
+        /* TAB LOGIK */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="logo">
-            <i class="fas fa-terminal" style="color: var(--accent);"></i> Vengeance OS
-        </div>
+        <div class="logo"><i class="fas fa-terminal" style="color: var(--accent);"></i> Vengeance OS</div>
         <ul class="nav-list">
-            <li class="nav-item active"><a href="#"><i class="fas fa-user-cog"></i> Profile Settings</a></li>
-            <li class="nav-item"><a href="#"><i class="fas fa-link"></i> Link Manager</a></li>
-            <li class="nav-item"><a href="#"><i class="fas fa-chart-bar"></i> Stats Adjuster</a></li>
+            <li class="nav-item active" data-target="tab-profile"><i class="fas fa-user-cog"></i> Profile Settings</li>
+            <li class="nav-item" data-target="tab-links"><i class="fas fa-link"></i> Link Manager</li>
+            <li class="nav-item" data-target="tab-stats"><i class="fas fa-chart-bar"></i> Stats Adjuster</li>
         </ul>
     </div>
 
     <div class="main-workspace">
         <div class="header">
             <h2>Dashboard Control Center</h2>
-            <div id="db-status" style="font-size: 0.85rem; color: #22c55e;"><i class="fas fa-database"></i> Connected to Supabase</div>
+            <div style="font-size: 0.85rem; color: #22c55e;"><i class="fas fa-database"></i> Connected to Supabase</div>
         </div>
 
-        <div class="panel-grid">
-            
-            <div class="admin-card">
+        <!-- TAB 1: PROFILE -->
+        <div id="tab-profile" class="tab-content active">
+            <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fas fa-id-card"></i> Main Profile Details</div>
                 <form id="profile-form">
-                    <div class="form-group">
-                        <label for="input-username">Username Display Name</label>
-                        <input type="text" id="input-username" value="UpperEchelondev">
-                    </div>
-                    <div class="form-group">
-                        <label for="input-avatar">Avatar Image URL</label>
-                        <input type="text" id="input-avatar" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label for="input-bio">Biography / Sub-text</label>
-                        <textarea id="input-bio" rows="4">C++ Developer for Various Projects and Apps</textarea>
-                    </div>
+                    <div class="form-group"><label>Username</label><input type="text" id="input-username"></div>
+                    <div class="form-group"><label>Avatar URL</label><input type="text" id="input-avatar"></div>
+                    <div class="form-group"><label>Bio</label><textarea id="input-bio" rows="4"></textarea></div>
                     <button type="submit" class="btn-save">Update Profile</button>
                 </form>
             </div>
+        </div>
 
-            <div class="admin-card">
-                <div class="card-title"><i class="fas fa-sort-numeric-up-alt"></i> Grid Statistics Counters</div>
+        <!-- TAB 2: LINKS -->
+        <div id="tab-links" class="tab-content">
+            <div class="admin-card" style="max-width: 600px;">
+                <div class="card-title"><i class="fas fa-link"></i> Social Links</div>
+                <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 20px;">Hier kommt später die Liste deiner Links hin, die aus Supabase geladen wird.</p>
+                <button class="btn-save">+ Add New Link</button>
+            </div>
+        </div>
+
+        <!-- TAB 3: STATS -->
+        <div id="tab-stats" class="tab-content">
+            <div class="admin-card" style="max-width: 600px;">
+                <div class="card-title"><i class="fas fa-sort-numeric-up-alt"></i> Grid Statistics</div>
                 <form id="stats-form">
-                    <div class="form-group">
-                        <label for="stat-val-1">Card 1 Value (e.g., Years Coding)</label>
-                        <input type="text" id="stat-val-1" value="6+">
-                    </div>
-                    <div class="form-group">
-                        <label for="stat-val-2">Card 2 Value (e.g., Languages Known)</label>
-                        <input type="text" id="stat-val-2" value="12+">
-                    </div>
-                    <div class="form-group">
-                        <label for="stat-val-3">Card 3 Value (e.g., Projects Built)</label>
-                        <input type="text" id="stat-val-3" value="100+">
-                    </div>
-                    <div class="form-group">
-                        <label for="stat-val-4">Card 4 Value (e.g., Profile Views)</label>
-                        <input type="text" id="stat-val-4" value="1988">
-                    </div>
-                    <button type="submit" class="btn-save">Save Counter Values</button>
+                    <div class="form-group"><label>Years Coding</label><input type="text" id="stat-val-1"></div>
+                    <div class="form-group"><label>Languages</label><input type="text" id="stat-val-2"></div>
+                    <div class="form-group"><label>Projects Built</label><input type="text" id="stat-val-3"></div>
+                    <div class="form-group"><label>Profile Views</label><input type="text" id="stat-val-4"></div>
+                    <button type="submit" class="btn-save">Save Stats</button>
                 </form>
             </div>
-
         </div>
     </div>
 
     <script>
-        // Supabase Logik zum Senden der Updates wird hier eingebunden.
+        // Tab Switching Logic
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all
+                navItems.forEach(nav => nav.classList.remove('active'));
+                tabContents.forEach(tab => tab.classList.remove('active'));
+                
+                // Add active class to clicked
+                item.classList.add('active');
+                const targetId = item.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
     </script>
 </body>
 </html>
