@@ -37,8 +37,10 @@
         input:focus, textarea:focus { border-color: var(--accent); }
         .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         
-        .link-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; }
-        .link-info { display: flex; align-items: center; gap: 12px; }
+        /* List Items für Links & Songs */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; }
+        .list-info { display: flex; align-items: center; gap: 12px; }
+        .list-thumb { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.05); }
         .btn-delete { background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 1rem; transition: color 0.2s; }
         .btn-delete:hover { color: var(--danger); }
 
@@ -120,6 +122,12 @@
                     <button type="submit" class="btn-save">Add Song to DB</button>
                 </form>
             </div>
+            
+            <!-- NEU: Übersicht über die aktuelle Playlist -->
+            <div class="admin-card" style="max-width: 600px;">
+                <div class="card-title"><i class="fas fa-music"></i> Current Playlist Entries</div>
+                <div id="dashboard-playlist-list"></div>
+            </div>
         </div>
 
         <!-- TAB 5: DISCORD -->
@@ -180,6 +188,7 @@
                     document.getElementById('discord-server-id').value = discord.server_id || '';
                 }
                 loadLinksList();
+                loadPlaylistEntries();
             } catch (err) { console.error(err); }
         }
 
@@ -194,9 +203,9 @@
             container.innerHTML = '';
             links.forEach(link => {
                 const div = document.createElement('div');
-                div.className = 'link-item';
+                div.className = 'list-item';
                 div.innerHTML = `
-                    <div class="link-info"><i class="${link.icon}"></i><div><strong>${link.name}</strong><div style="font-size:0.75rem;color:var(--text-gray);">${link.url}</div></div></div>
+                    <div class="list-info"><i class="${link.icon}"></i><div><strong>${link.name}</strong><div style="font-size:0.75rem;color:var(--text-gray);">${link.url}</div></div></div>
                     <button class="btn-delete" onclick="deleteLink(${link.id})"><i class="fas fa-trash"></i></button>`;
                 container.appendChild(div);
             });
@@ -215,6 +224,48 @@
 
         window.deleteLink = async (id) => {
             if(confirm('Link löschen?')) { await sbClient.from('links').delete().eq('id', id); loadLinksList(); }
+        };
+
+        // --- PLAYLIST LOGIK (LADEN & LÖSCHEN) ---
+        async function loadPlaylistEntries() {
+            const container = document.getElementById('dashboard-playlist-list');
+            container.innerHTML = 'Loading...';
+            
+            const { data: tracks, error } = await sbClient.from('youtube_playlist').select('*');
+            if(error) { container.innerHTML = 'Fehler beim Laden.'; return; }
+            
+            if(!tracks || tracks.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Die Playlist ist aktuell leer.</p>'; return;
+            }
+            
+            container.innerHTML = '';
+            tracks.forEach(track => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                
+                // Fallback, falls das maxresdefault Bild ein 404 wirft, hqdefault anzeigen
+                const thumbUrl = track.cover_url || `https://img.youtube.com/vi/${track.youtube_id}/hqdefault.jpg`;
+                
+                div.innerHTML = `
+                    <div class="list-info">
+                        <img class="list-thumb" src="${thumbUrl}" alt="Cover">
+                        <div>
+                            <strong>${track.song_title}</strong>
+                            <div style="font-size:0.75rem;color:var(--text-gray);">${track.artist} &bull; ID: ${track.youtube_id}</div>
+                        </div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteTrack(${track.id})"><i class="fas fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.deleteTrack = async (id) => {
+            if(confirm('Song wirklich aus der Playlist löschen?')) {
+                const { error } = await sbClient.from('youtube_playlist').delete().eq('id', id);
+                if(error) alert('Fehler: ' + error.message);
+                loadPlaylistEntries();
+            }
         };
 
         // --- SAVE ACTIONS ---
@@ -254,7 +305,14 @@
                 youtube_id: videoId,
                 cover_url: autoCoverUrl
             }]);
-            if(!error) { alert('Song hinzugefügt! 🎧'); document.getElementById('youtube-form').reset(); } else { alert(error.message); }
+            
+            if(!error) { 
+                alert('Song hinzugefügt! 🎧'); 
+                document.getElementById('youtube-form').reset(); 
+                loadPlaylistEntries(); // Liste sofort aktualisieren
+            } else { 
+                alert(error.message); 
+            }
         });
 
         document.getElementById('discord-form').addEventListener('submit', async (e) => {
