@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vengeance Admin Dashboard</title>
+    <title>Vengeance OS - Admin Control</title>
+    
+    <!-- Tab Icon (Favicon) für das Dashboard: Ein rot/oranger Zahnrad-Control-Key -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚙️</text></svg>">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -37,7 +41,6 @@
         input:focus, textarea:focus { border-color: var(--accent); }
         .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         
-        /* List Items für Links & Songs */
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; }
         .list-info { display: flex; align-items: center; gap: 12px; }
         .list-thumb { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.05); }
@@ -105,7 +108,7 @@
                     <div class="form-group"><label>Years Coding</label><input type="text" id="stat-val-1"></div>
                     <div class="form-group"><label>Languages</label><input type="text" id="stat-val-2"></div>
                     <div class="form-group"><label>Projects Built</label><input type="text" id="stat-val-3"></div>
-                    <div class="form-group"><label>Profile Views</label><input type="text" id="stat-val-4"></div>
+                    <div class="form-group"><label>Profile Views (Kann hier manuell überschrieben werden)</label><input type="text" id="stat-val-4"></div>
                     <button type="submit" class="btn-save">Save Stats</button>
                 </form>
             </div>
@@ -122,7 +125,6 @@
                     <button type="submit" class="btn-save">Add Song to DB</button>
                 </form>
             </div>
-            
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fas fa-music"></i> Current Playlist Entries</div>
                 <div id="dashboard-playlist-list"></div>
@@ -225,7 +227,7 @@
             if(confirm('Link löschen?')) { await sbClient.from('links').delete().eq('id', id); loadLinksList(); }
         };
 
-        // --- PLAYLIST LOGIK (LADEN & LÖSCHEN) ---
+        // --- PLAYLIST LOGIK ---
         async function loadPlaylistEntries() {
             const container = document.getElementById('dashboard-playlist-list');
             container.innerHTML = 'Loading...';
@@ -328,9 +330,7 @@
                 alert('Song hinzugefügt! Das Cover wurde validiert und gespeichert. 🎧'); 
                 document.getElementById('youtube-form').reset(); 
                 loadPlaylistEntries(); 
-            } else { 
-                alert(error.message); 
-            }
+            } else { alert(error.message); }
         });
 
         document.getElementById('discord-form').addEventListener('submit', async (e) => {
