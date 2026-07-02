@@ -3,362 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading...</title>
-    <link id="favicon" rel="icon" type="image/png" href="">
-    <style id="dynamic-theme"></style>
-    
+    <title>Vengeance Bio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #050507; }
-
-        #enter-bypass-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #050507; z-index: 9999; display: flex; justify-content: center; 
-            align-items: center; cursor: pointer; transition: opacity 0.8s ease, visibility 0.8s;
+        :root {
+            --bg-color: #0b0b0c;
+            --grid-line: rgba(255, 255, 255, 0.03);
+            --card-bg: rgba(18, 18, 20, 0.6);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-purple: #7c3aed;
+            
+            /* Stats Card Colors (angepasst aus dem Screenshot) */
+            --stat-green: rgba(52, 211, 153, 0.1);
+            --stat-pink: rgba(244, 63, 94, 0.1);
+            --stat-yellow: rgba(251, 191, 36, 0.1);
+            --stat-blue: rgba(59, 130, 246, 0.1);
         }
-        #enter-text-prompt { font-size: 1.2rem; color: #a1a1aa; font-weight: 500; letter-spacing: 2px; animation: pulse-glow 2s infinite ease-in-out; }
-        @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-        .video-background { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; overflow: hidden; }
-        .video-background video { width: 100%; height: 100%; object-fit: cover; }
-        .video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; background: rgba(0,0,0,0.3); }
-
-        .card-wrapper { 
-            position: relative; 
-            z-index: 10; 
-            padding: 2px; 
-            opacity: 0; 
-            transform: scale(0.96); 
-            transition: opacity 0.8s, transform 0.8s; 
-            background: transparent; 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-        .card-wrapper.loaded { opacity: 1; transform: scale(1); }
 
-        .card-wrapper.glow-active::before {
-            content: "";
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Bento Grid Container */
+        .bento-container {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .bento-container {
+                grid-template-columns: 300px 1fr 300px;
+                grid-template-rows: auto auto;
+            }
+        }
+
+        /* Basis Card Styling */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* SPALTE 1: Profil & Socials */
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin-bottom: 16px;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            object-fit: cover;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            padding: 4px;
+        }
+
+        .username {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .bio {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .links-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .social-link i {
+            width: 24px;
+            font-size: 1.1rem;
+            margin-right: 12px;
+            color: var(--text-muted);
+        }
+
+        .social-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        /* SPALTE 2: Musik-Player & Widgets */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .music-player {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .track-info-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .album-art {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .track-details {
+            flex-image: 1;
+        }
+
+        .track-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .track-artist {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Player Controls */
+        .player-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .progress-fill {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(0deg, var(--accent), transparent, var(--accent));
-            background-size: 400% 400%;
-            animation: border-dance 4s linear infinite;
-            pointer-events: none;
-            z-index: -1;
-            padding: 2px; 
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 35%;
+            background: var(--text-main);
+            border-radius: 2px;
         }
-        @keyframes border-dance { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .container { 
-            width: 444px; text-align: center; display: flex; flex-direction: column; overflow-y: auto; max-height: 85vh;
-            position: relative; z-index: 2;
-            scrollbar-width: none;
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 5px;
         }
-        .container::-webkit-scrollbar { display: none; }
 
-        .card-banner { width: 100%; height: 110px; background-size: cover; background-position: center; display: none; flex-shrink: 0; }
-        
-        .profile-content { padding: 0 2rem 2.5rem 2rem; position: relative; margin-top: -50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .profile-content.no-banner { margin-top: 2.5rem; }
-
-        .profile-img { width: 95px; height: 95px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; position: relative; z-index: 3; }
-
-        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; position: relative; display: block; text-align: center; width: 100%; }
-        h1.sparkle-active {
-            background: linear-gradient(90deg, #fff, var(--accent), #fff);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shine 2.5s linear infinite;
+        .btn-control {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s;
         }
-        @keyframes shine { to { background-position: 200% center; } }
 
-        .bio { font-size: 0.95rem; margin-bottom: 1.2rem; line-height: 1.5; text-align: center; width: 100%; }
-        
-        .views-badge { position: absolute; top: 15px; right: 20px; font-size: 0.75rem; color: #a1a1aa; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: none; z-index: 20; }
+        .btn-control:hover {
+            color: var(--text-main);
+        }
 
-        .social-icons-row { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 1.5rem; width: 100%; flex-wrap: wrap; }
-        .social-icon-btn { font-size: 1.4rem; color: #a1a1aa; transition: color 0.25s, transform 0.25s; text-decoration: none; }
-        .social-icon-btn:hover { color: var(--accent); transform: scale(1.15); }
+        .btn-play {
+            width: 42px;
+            height: 42px;
+            background: var(--text-main);
+            color: var(--bg-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
 
-        .links-container { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; }
-        .bio-link { display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.03); text-decoration: none; padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
+        .btn-play:hover {
+            transform: scale(1.05);
+            color: var(--bg-color);
+        }
 
-        .discord-integration-box { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; margin-top: 0.85rem; }
-        .dc-card { display: flex; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.06); padding: 0.85rem 1.2rem; border-radius: 12px; text-decoration: none; position: relative; text-align: left; }
-        .dc-avatar-wrapper { position: relative; width: 44px; height: 44px; margin-right: 12px; }
-        .dc-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .dc-status-dot { position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid #18181b; background: #747f8d; }
-        .dc-status-dot.online { background: #23a55a; }
-        .dc-status-dot.idle { background: #f0b232; }
-        .dc-status-dot.dnd { background: #f23f43; }
-        .dc-info { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-        .dc-name { font-weight: 600; font-size: 0.95rem; }
-        .dc-custom-status { font-size: 0.8rem; color: #a1a1aa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-        .dc-action-text { font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-left: auto; display: flex; align-items: center; gap: 4px; }
+        /* Discord Widget Box */
+        .discord-guild-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(88, 101, 242, 0.05);
+            border: 1px solid rgba(88, 101, 242, 0.1);
+            padding: 16px;
+            border-radius: 12px;
+        }
 
-        .volume-box { position: fixed; top: 20px; left: 20px; z-index: 100; background: rgba(10, 10, 12, 0.7); border: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; border-radius: 30px; display: none; align-items: center; gap: 10px; backdrop-filter: blur(15px); }
-        .volume-box.visible { display: flex; }
-        .volume-box svg { width: 16px; height: 16px; fill: #fff; }
-        .volume-slider { -webkit-appearance: none; appearance: none; width: 75px; height: 4px; background: #3f3f46; border-radius: 2px; outline: none; cursor: pointer; }
-        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; }
+        .discord-guild-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .discord-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+        }
+
+        .discord-stats {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-discord-join {
+            background: #5865F2;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-discord-join:hover {
+            background: #4752c4;
+        }
+
+        /* SPALTE 3: Stats Cards Stacks */
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .stat-card.green { background: var(--stat-green); border-color: rgba(52, 211, 153, 0.1); }
+        .stat-card.pink { background: var(--stat-pink); border-color: rgba(244, 63, 94, 0.1); }
+        .stat-card.yellow { background: var(--stat-yellow); border-color: rgba(251, 191, 36, 0.1); }
+        .stat-card.blue { background: var(--stat-blue); border-color: rgba(59, 130, 246, 0.1); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Georgia', serif; /* Serif-Look für Nummern wie im Bild */
+        }
+
+        /* ZEILE UNTEN: Discord Status Banner */
+        .status-banner {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+            padding: 16px 24px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #94a3b8;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .status-dot.online { background: #22c55e; }
+        .status-dot.online::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: inherit;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        .footer-text {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.15);
+            letter-spacing: 2px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
 
-    <div id="enter-bypass-screen"><div id="enter-text-prompt">[ click to bypass ]</div></div>
+    <div class="bento-container">
+        
+        <div class="card profile-card">
+            <div class="avatar-wrapper">
+                <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
+            </div>
+            <h1 id="username" class="username">Loading...</h1>
+            <p id="bio" class="bio">...</p>
+            
+            <div id="links-container" class="links-list">
+                </div>
+        </div>
 
-    <div id="volume-container" class="volume-box">
-        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L8 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-        <input type="range" id="volume-control" class="volume-slider" min="0" max="1" step="0.05" value="0.15">
-    </div>
-
-    <div class="video-background"><video id="bg-video" loop playsinline muted preload="auto"></video></div>
-    <div class="video-overlay"></div>
-
-    <div id="card-frame" class="card-wrapper">
-        <div class="container" id="main-card-container">
-            <div id="v-count" class="views-badge">👁️ 0</div>
-            <div id="user-banner" class="card-banner"></div>
-            <div id="profile-content-wrapper" class="profile-content">
-                <img id="user-avatar" class="profile-img" src="" alt="Logo">
-                <h1 id="user-name"></h1>
-                <p id="user-bio" class="bio"></p>
+        <div class="main-content">
+            <div class="card music-player">
+                <div class="track-info-container">
+                    <img id="album-art" src="https://via.placeholder.com/150" alt="Album Art" class="album-art">
+                    <div class="track-details">
+                        <div id="track-title" class="track-title">Not Playing</div>
+                        <div id="track-artist" class="track-artist">Silence</div>
+                    </div>
+                </div>
                 
-                <div id="social-icons" class="social-icons-row"></div>
-                <div id="custom-links" class="links-container"></div>
-                <div id="discord-box" class="discord-integration-box"></div>
+                <div class="player-controls">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="time-info">
+                            <span>0:00</span>
+                            <span>3:38</span>
+                        </div>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="btn-control"><i class="fas fa-backward"></i></button>
+                        <button class="btn-control btn-play"><i class="fas fa-play"></i></button>
+                        <button class="btn-control"><i class="fas fa-forward"></i></button>
+                    </div>
+                </div>
+
+                <div class="discord-guild-box">
+                    <div class="discord-guild-info">
+                        <img src="https://via.placeholder.com/40" alt="Server Icon" class="discord-icon">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">Mein Discord Server</div>
+                            <div class="discord-stats"><i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i> 16 Online &bull; 106 Members</div>
+                        </div>
+                    </div>
+                    <a href="#" class="btn-discord-join">Join <i class="fas fa-sign-in-alt"></i></a>
+                </div>
             </div>
         </div>
+
+        <div class="stats-container">
+            <div class="card stat-card green">
+                <div class="stat-label">Years Coding</div>
+                <div id="stat-1" class="stat-value">0+</div>
+            </div>
+            <div class="card stat-card pink">
+                <div class="stat-label">Languages</div>
+                <div id="stat-2" class="stat-value">0+</div>
+            </div>
+            <div class="card stat-card yellow">
+                <div class="stat-label">Projects Built</div>
+                <div id="stat-3" class="stat-value">0+</div>
+            </div>
+            <div class="card stat-card blue">
+                <div class="stat-label">Profile Views</div>
+                <div id="stat-4" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div class="card status-banner">
+            <div class="status-dot online"></div>
+            <span id="discord-presence">Offline — Nothing going on right now.</span>
+        </div>
+
+        <div class="footer-text">Handcrafted from scratch &bull; Vengeance Utilities</div>
     </div>
 
-    <audio id="bg-music" loop></audio>
-
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-        const supabase = createClient("https://pdyrfnbjegsyjmcmbqck.supabase.co", "sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0");
-
-        function startTabTicker(text) {
-            let displayTitle = text + "   |   ";
-            setInterval(() => {
-                displayTitle = displayTitle.substring(1) + displayTitle.substring(0, 1);
-                document.title = displayTitle;
-            }, 300);
-        }
-
-        function getSocialIconClass(url) {
-            const l = url.toLowerCase();
-            if(l.includes('instagram.com')) return 'fa-brands fa-instagram';
-            if(l.includes('discord.gg') || l.includes('discord.com')) return 'fa-brands fa-discord';
-            if(l.includes('github.com')) return 'fa-brands fa-github';
-            if(l.includes('youtube.com') || l.includes('youtu.be')) return 'fa-brands fa-youtube';
-            if(l.includes('twitch.tv')) return 'fa-brands fa-twitch';
-            if(l.includes('steamcommunity.com')) return 'fa-brands fa-steam';
-            if(l.includes('tiktok.com')) return 'fa-brands fa-tiktok';
-            if(l.includes('shop') || l.includes('store')) return 'fa-solid fa-cart-shopping';
-            return 'fa-solid fa-link';
-        }
-
-        async function loadBio() {
-            // Zuerst die aktuellen Daten holen
-            const { data, error } = await supabase.from('user_bios').select('*').limit(1).single();
-            if (error || !data) return;
-
-            let currentViews = data.views || 0;
-            const storageKey = `v_visited_${data.id}`;
-            const lastVisit = localStorage.getItem(storageKey);
-            const now = Date.now();
-
-            // NEU: F5-Schutz. Wenn kein Eintrag existiert oder der letzte Besuch älter als 24 Stunden (86400000 ms) ist
-            if (!lastVisit || (now - parseInt(lastVisit)) > 86400000) {
-                currentViews += 1;
-                localStorage.setItem(storageKey, now.toString());
-                await supabase.from('user_bios').update({ views: currentViews }).eq('id', data.id);
-            }
-
-            const c = data.settings || {};
-            const styleTag = document.getElementById('dynamic-theme');
-            document.getElementById('enter-text-prompt').innerText = c.enter_text || '[ click to bypass ]';
-
-            startTabTicker(data.tab_text || "Vengeance Utilities");
-
-            const hexToRgb = (hex) => {
-                let s = hex.replace('#', '');
-                if (s.length === 3) s = s.split('').map(x => x + x).join('');
-                return {
-                    r: parseInt(s.substr(0, 2), 16),
-                    g: parseInt(s.substr(2, 2), 16),
-                    b: parseInt(s.substr(4, 2), 16)
-                };
-            };
-            
-            const rgb = c.background_color ? hexToRgb(c.background_color) : { r: 24, g: 24, b: 27 };
-            const op = c.opacity !== undefined ? (parseFloat(c.opacity) / 100) : 0.65;
-            const blurVal = c.blur !== undefined ? c.blur : 20;
-            const bRadius = c.border_radius || 24;
-
-            let cursorStyle = data.cursor_url ? `* { cursor: url('${data.cursor_url}'), auto !important; }` : "";
-
-            styleTag.innerHTML = `
-                ${cursorStyle}
-                :root { --accent: ${c.primary_color || '#a855f7'}; }
-                .card-wrapper, .card-wrapper::before { border-radius: ${bRadius}px; }
-                .container { 
-                    background: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${op}) !important; 
-                    backdrop-filter: blur(${blurVal}px) !important; 
-                    -webkit-backdrop-filter: blur(${blurVal}px) !important; 
-                    color: ${c.text_color || '#f4f4f5'}; 
-                    border-radius: ${bRadius - 2}px;
-                }
-                .profile-img { border: 2px solid ${c.primary_color || '#a855f7'}; }
-                .bio-link, .dc-card { color: ${c.text_color || '#f4f4f5'}; border: 1px solid rgba(255,255,255,0.06); transition: ${c.animations ? 'all 0.25s' : 'none'}; }
-                .bio-link:hover, .dc-card:hover { ${c.animations ? `border-color: ${c.primary_color || '#a855f7'}88; background: ${c.primary_color || '#a855f7'}14; transform: translateY(-2px);` : ''} }
-                .video-background video { filter: blur(${c.background_blur || 0}px) brightness(${(c.background_brightness || 100) / 100}); }
-                .volume-slider::-webkit-slider-thumb { background: ${c.primary_color || '#a855f7'}; }
-            `;
-
-            if(c.show_views !== false) {
-                const vb = document.getElementById('v-count');
-                vb.innerText = `👁️ ${currentViews}`;
-                vb.style.display = "block";
-            }
-
-            const uName = document.getElementById('user-name');
-            uName.innerText = data.display_name || "Vengeance Utilities";
-            if(c.sparkle) uName.classList.add('sparkle-active');
-
-            if(c.glow) {
-                document.getElementById('card-frame').classList.add('glow-active');
-            }
-
-            document.getElementById('user-bio').innerText = data.bio_text || '';
-            if (data.avatar_url) { document.getElementById('user-avatar').src = data.avatar_url; document.getElementById('favicon').href = data.avatar_url; }
-            
-            const bannerElement = document.getElementById('user-banner');
-            const wrapperElement = document.getElementById('profile-content-wrapper');
-            if (data.banner_url) { bannerElement.style.backgroundImage = `url('${data.banner_url}')`; bannerElement.style.display = "block"; wrapperElement.classList.remove('no-banner'); }
-            else { bannerElement.style.display = "none"; wrapperElement.classList.add('no-banner'); }
-
-            const iconContainer = document.getElementById('social-icons');
-            const linkContainer = document.getElementById('custom-links');
-            iconContainer.innerHTML = "";
-            linkContainer.innerHTML = "";
-
-            (data.products || []).forEach(l => {
-                const urlString = l.url.startsWith('http') ? l.url : `https://${l.url}`;
-                const iconClass = getSocialIconClass(l.url);
-
-                if(iconClass !== 'fa-solid fa-link' && !l.name.toLowerCase().includes('shop') && !l.name.toLowerCase().includes('website')) {
-                    const a = document.createElement('a'); a.className = "social-icon-btn";
-                    a.href = urlString; a.target = "_blank"; a.title = l.name;
-                    a.innerHTML = `<i class="${iconClass}"></i>`;
-                    iconContainer.appendChild(a);
-                } else {
-                    const a = document.createElement('a'); a.className = "bio-link";
-                    a.href = urlString; a.target = "_blank"; 
-                    a.innerHTML = `<i class="${iconClass}" style="margin-right:10px; color:var(--accent);"></i> ${l.name}`;
-                    linkContainer.appendChild(a);
-                }
-            });
-
-            const dcBox = document.getElementById('discord-box');
-            dcBox.innerHTML = "";
-
-            if(data.discord_id) {
-                const userCard = document.createElement('div');
-                userCard.className = "dc-card";
-                userCard.innerHTML = `
-                    <div class="dc-avatar-wrapper">
-                        <img id="dc-user-img" class="dc-avatar" src="https://singlecolorimage.com/get/27272a/44x44" alt="DC">
-                        <div id="dc-status-indicator" class="dc-status-dot"></div>
-                    </div>
-                    <div class="dc-info">
-                        <div id="dc-user-name" class="dc-name">Loading Discord...</div>
-                        <div id="dc-user-status" class="dc-custom-status">Offline / Nicht erreichbar</div>
-                    </div>
-                    <div class="dc-action-text">Profile <i class="fa-solid fa-angle-right"></i></div>
-                `;
-                dcBox.appendChild(userCard);
-
-                fetch(`https://api.lanyard.rest/v1/users/${data.discord_id}`)
-                    .then(res => res.json())
-                    .then(resData => {
-                        if(resData.success && resData.data) {
-                            const d = resData.data;
-                            document.getElementById('dc-user-name').innerText = d.discord_user.global_name || d.discord_user.username;
-                            document.getElementById('dc-user-img').src = `https://cdn.discordapp.com/avatars/${d.discord_user.id}/${d.discord_user.avatar}.png`;
-                            
-                            const dot = document.getElementById('dc-status-indicator');
-                            dot.className = `dc-status-dot ${d.discord_status}`;
-
-                            if(d.activities && d.activities.length > 0) {
-                                const custom = d.activities.find(a => a.type === 4);
-                                if(custom) document.getElementById('dc-user-status').innerText = (custom.emoji ? custom.emoji.name + " " : "") + (custom.state || "");
-                                else document.getElementById('dc-user-status').innerText = `Spielt ${d.activities[0].name}`;
-                            } else {
-                                document.getElementById('dc-user-status').innerText = d.discord_status.toUpperCase();
-                            }
-                        }
-                    }).catch(() => {});
-            }
-
-            if(data.discord_invite) {
-                const inviteCode = data.discord_invite.split('/').pop();
-                const serverCard = document.createElement('a');
-                serverCard.className = "dc-card";
-                serverCard.href = `https://discord.gg/${inviteCode}`;
-                serverCard.target = "_blank";
-                serverCard.innerHTML = `
-                    <div class="dc-avatar-wrapper">
-                        <img id="dc-server-img" class="dc-avatar" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Server">
-                    </div>
-                    <div class="dc-info">
-                        <div id="dc-server-name" class="dc-name">Discord Server</div>
-                        <div id="dc-server-metrics" class="dc-custom-status">Klicke zum Beitreten</div>
-                    </div>
-                    <div class="dc-action-text" style="color:#5865F2;">Join <i class="fa-solid fa-arrow-right-to-bracket"></i></div>
-                `;
-                dcBox.appendChild(serverCard);
-
-                fetch(`https://discord.com/api/v9/invites/${inviteCode}?with_counts=true`)
-                    .then(res => res.json())
-                    .then(srv => {
-                        if(srv.guild) {
-                            document.getElementById('dc-server-name').innerText = srv.guild.name;
-                            if(srv.guild.icon) document.getElementById('dc-server-img').src = `https://cdn.discordapp.com/icons/${srv.guild.id}/${srv.guild.icon}.png`;
-                            document.getElementById('dc-server-metrics').innerHTML = `<span style="color:#23a55a;">●</span> ${srv.approximate_presence_count} Online &nbsp;&nbsp; <span style="color:#a1a1aa;">●</span> ${srv.approximate_member_count} Members`;
-                        }
-                    }).catch(() => {});
-            }
-
-            const video = document.getElementById('bg-video');
-            const audio = document.getElementById('bg-music');
-            const volumeContainer = document.getElementById('volume-container');
-            const volumeSlider = document.getElementById('volume-control');
-
-            if (data.video_url) video.src = data.video_url;
-            if (data.song_url) { audio.src = data.song_url; audio.volume = volumeSlider.value; }
-            video.volume = data.song_url ? 0 : volumeSlider.value;
-
-            document.getElementById('enter-bypass-screen').addEventListener('click', () => {
-                const bypassScreen = document.getElementById('enter-bypass-screen');
-                bypassScreen.style.opacity = "0"; setTimeout(() => bypassScreen.style.display = "none", 800);
-                if (data.video_url) video.play().catch(() => {});
-                if (data.song_url) { audio.muted = false; audio.play().catch(() => {}); }
-                if (data.video_url || data.song_url) volumeContainer.classList.add('visible');
-                setTimeout(() => document.getElementById('card-frame').classList.add('loaded'), 50);
-            });
-
-            volumeSlider.addEventListener('input', (e) => {
-                const val = e.target.value;
-                if(data.song_url) { audio.volume = val; audio.muted = val == 0; }
-                else { video.volume = val; video.muted = val == 0; }
-            });
-        }
-        loadBio();
+    <script>
+        // Hier kommt später dein Supabase Config Script rein, um die Daten live zu ziehen!
+        // Beispiel-Initialisierung Platzhalter:
+        // const supabase = supabase.createClient('YOUR_URL', 'YOUR_KEY');
     </script>
 </body>
 </html>
