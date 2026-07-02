@@ -120,8 +120,7 @@
                 <form id="youtube-form">
                     <div class="form-group"><label>Song Title</label><input type="text" id="yt-input-title" placeholder="z.B. High And Dry"></div>
                     <div class="form-group"><label>Artist</label><input type="text" id="yt-input-artist" placeholder="z.B. Radiohead"></div>
-                    <div class="form-group"><label>YouTube Video ID</label><input type="text" id="yt-input-id" placeholder="z.B. 7qFfFVSerQo"></div>
-                    <div class="form-group"><label>Cover Image URL</label><input type="text" id="yt-input-cover" placeholder="https://..."></div>
+                    <div class="form-group"><label>YouTube Video ID</label><input type="text" id="yt-input-id" placeholder="z.B. 7qFfFVSerQo"></div>     
                     <button type="submit" class="btn-save">Add Song to DB</button>
                 </form>
             </div>
@@ -290,20 +289,40 @@
         });
 
         // YouTube Add Song
+       // YouTube Add Song (Mit automatischer ID- & Cover-Erkennung)
         document.getElementById('youtube-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            let rawIdInput = document.getElementById('yt-input-id').value.trim();
+            let videoId = rawIdInput;
+
+            // Extrahiert die reine Video-ID aus fast jeder denkbaren YouTube-URL
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+            const match = rawIdInput.match(regExp);
+
+            if (match && match[2].length === 11) {
+                videoId = match[2];
+            } else if (videoId.length !== 11) {
+                alert('Ungültige YouTube-URL oder Video-ID! Bitte überprüfe die Eingabe.');
+                return;
+            }
+
+            // Generiert automatisch das hochauflösende Cover von den YouTube-Servern
+            const autoCoverUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
+            // Absenden an Supabase (ohne manuelle ID für die Tabelle, damit es keine Constraint-Fehler gibt)
             const { error } = await sbClient.from('youtube_playlist').insert([{
                 song_title: document.getElementById('yt-input-title').value,
                 artist: document.getElementById('yt-input-artist').value,
-                youtube_id: document.getElementById('yt-input-id').value,
-                cover_url: document.getElementById('yt-input-cover').value
+                youtube_id: videoId,
+                cover_url: autoCoverUrl
             }]);
 
             if (!error) {
-                alert('Song zur Playlist hinzugefügt! 🎧');
+                alert('Song erfolgreich zur Playlist hinzugefügt! Das Cover wurde automatisch generiert. 🎧');
                 document.getElementById('youtube-form').reset();
             } else {
-                alert('Fehler: ' + error.message);
+                alert('Fehler beim Speichern: ' + error.message);
             }
         });
 
