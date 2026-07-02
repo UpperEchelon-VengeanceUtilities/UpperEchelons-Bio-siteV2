@@ -562,6 +562,20 @@
             }
         }
 
+        // 5. Links live aus Supabase laden
+                const { data: dbLinks } = await sbClient.from('links').select('*');
+                const linksContainer = document.getElementById('links-container');
+                if (dbLinks && dbLinks.length > 0 && linksContainer) {
+                    linksContainer.innerHTML = ''; // Container leeren
+                    dbLinks.forEach(link => {
+                        const a = document.createElement('a');
+                        a.href = link.url;
+                        a.target = '_blank';
+                        a.className = 'social-link';
+                        a.innerHTML = `<i class="${link.icon}"></i> ${link.name}`;
+                        linksContainer.appendChild(a);
+                    });
+                }
         // --- 2. YOUTUBE PLAYER LOGIK ---
         function onYouTubeIframeAPIReady() {
             ytPlayer = new YT.Player('youtube-player', {
