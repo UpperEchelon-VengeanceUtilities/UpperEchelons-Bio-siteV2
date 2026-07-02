@@ -571,9 +571,163 @@
         }
 
 
-        // --- 2. SUPABASE LOGIK (PLATZHALTER) ---
-        // Hier kommt später dein Supabase Config Script rein, um die Daten live zu ziehen!
-        // Beispiel: const supabase = supabase.createClient('YOUR_URL', 'YOUR_KEY');
+      <script>
+        // --- SUPABASE CONFIG ---
+        const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0'; // Füge hier deinen echten Key ein
+        const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- GLOBAL PLAYLIST ---
+        let playlist = [
+            { title: "Silence", artist: "No Music", id: "", cover: "https://via.placeholder.com/150" }
+        ];
+        let currentSongIndex = 0;
+        let ytPlayer;
+
+        // --- 1. DATEN VON SUPABASE LADEN ---
+        async function loadWebsiteData() {
+            try {
+                // 1. Profil laden
+                const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
+                if (profile) {
+                    document.getElementById('username').innerText = profile.username || 'Unknown';
+                    document.getElementById('bio').innerText = profile.bio || '';
+                    if (profile.avatar_url) {
+                        document.getElementById('avatar').src = profile.avatar_url;
+                    }
+                }
+
+                // 2. Stats laden
+                const { data: stats } = await sbClient.from('stats').select('*').eq('id', 1).maybeSingle();
+                if (stats) {
+                    document.getElementById('stat-1').innerText = stats.years_coding || '0+';
+                    document.getElementById('stat-2').innerText = stats.languages || '0+';
+                    document.getElementById('stat-3').innerText = stats.projects || '0+';
+                    document.getElementById('stat-4').innerText = stats.views || '0';
+                }
+
+                // 3. Discord Config & Lanyard API für Live-Status
+                const { data: discord } = await sbClient.from('discord_config').select('*').eq('id', 1).maybeSingle();
+                if (discord && discord.user_id) {
+                    // Optionale Lanyard API Einbindung für echten Discord Online-Status
+                    fetch(`https://api.lanyard.rest/v1/users/${discord.user_id}`)
+                        .then(res => res.json())
+                        .then(response => {
+                            if (response.success && response.data) {
+                                const data = response.data;
+                                const statusDot = document.querySelector('.status-dot');
+                                const statusText = document.getElementById('discord-presence');
+                                
+                                // Status Farbe setzen
+                                statusDot.className = 'status-dot ' + (data.discord_status !== 'offline' ? 'online' : '');
+                                
+                                if (data.listening_to_spotify && data.spotify) {
+                                    statusText.innerText = `Listening to Spotify: ${data.spotify.song} - ${data.spotify.artist}`;
+                                } else if (data.activities && data.activities.length > 0) {
+                                    statusText.innerText = `Playing: ${data.activities[0].name}`;
+                                } else {
+                                    statusText.innerText = data.discord_status.toUpperCase() + ` — In Discord active.`;
+                                }
+                            }
+                        }).catch(err => console.log("Lanyard Error:", err));
+                }
+
+                // 4. YouTube Playlist laden
+                const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*');
+                if (dbPlaylist && dbPlaylist.length > 0) {
+                    playlist = dbPlaylist.map(song => ({
+                        title: song.song_title,
+                        artist: song.artist,
+                        id: song.youtube_id,
+                        cover: song.cover_url || "https://via.placeholder.com/150"
+                    }));
+                }
+
+                // Player UI initialisieren, falls API schon bereit war
+                if (ytPlayer && playlist.length > 0) {
+                    updatePlayerUI();
+                }
+
+            } catch (err) {
+                console.error("Fehler beim Laden der Live-Daten:", err);
+            }
+        }
+
+        // --- 2. YOUTUBE PLAYER LOGIK ---
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-player', {
+                height: '0', 
+                width: '0',
+                videoId: playlist[currentSongIndex]?.id || '',
+                playerVars: { 'autoplay': 0, 'controls': 0 },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+            updatePlayerUI();
+        }
+
+        function onPlayerReady(event) {
+            document.getElementById('play-pause-btn').addEventListener('click', function() {
+                if (!ytPlayer || !playlist[currentSongIndex].id) return;
+                const state = ytPlayer.getPlayerState();
+                const icon = this.querySelector('i');
+                if (state === YT.PlayerState.PLAYING) {
+                    ytPlayer.pauseVideo();
+                    icon.className = 'fas fa-play';
+                } else {
+                    ytPlayer.playVideo();
+                    icon.className = 'fas fa-pause';
+                }
+            });
+
+            document.getElementById('next-btn').addEventListener('click', () => changeSong(1));
+            document.getElementById('prev-btn').addEventListener('click', () => changeSong(-1));
+            
+            setInterval(() => {
+                if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+                    const current = ytPlayer.getCurrentTime();
+                    const total = ytPlayer.getDuration();
+                    
+                    if (total > 0) {
+                        document.getElementById('yt-progress').style.width = (current / total) * 100 + '%';
+                    }
+                    
+                    const formatTime = (time) => Math.floor(time / 60) + ':' + ('0' + Math.floor(time % 60)).slice(-2);
+                    document.getElementById('yt-current-time').innerText = formatTime(current);
+                    document.getElementById('yt-duration').innerText = formatTime(total);
+                }
+            }, 1000);
+        }
+
+        function changeSong(direction) {
+            if (playlist.length <= 1 && !playlist[0].id) return;
+            currentSongIndex += direction;
+            if (currentSongIndex >= playlist.length) currentSongIndex = 0;
+            if (currentSongIndex < 0) currentSongIndex = playlist.length - 1;
+            
+            ytPlayer.loadVideoById(playlist[currentSongIndex].id);
+            updatePlayerUI();
+            document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
+        }
+
+        function updatePlayerUI() {
+            if (!playlist[currentSongIndex]) return;
+            document.getElementById('yt-title').innerText = playlist[currentSongIndex].title;
+            document.getElementById('yt-artist').innerText = playlist[currentSongIndex].artist;
+            document.getElementById('yt-cover').src = playlist[currentSongIndex].cover;
+            document.getElementById('yt-progress').style.width = '0%';
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                changeSong(1); 
+            }
+        }
+
+        // Sobald die Seite geladen ist, Supabase abfragen
+        window.addEventListener('DOMContentLoaded', loadWebsiteData);
     </script>
 </body>
 </html>
