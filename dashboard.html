@@ -1,149 +1,107 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vengeance Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --bg-dark: #0f0f11; 
-            --panel-bg: #161619; 
-            --border-color: rgba(255,255,255,0.06);
-            --input-bg: #1e1e22; 
-            --text-light: #f3f4f6; 
-            --text-gray: #9ca3af; 
-            --accent: #7c3aed;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-light); display: flex; min-height: 100vh; }
-        
-        .sidebar { width: 260px; background-color: var(--panel-bg); border-right: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; gap: 30px; }
-        .logo { font-size: 1.2rem; font-weight: bold; color: var(--text-light); display: flex; align-items: center; gap: 10px; }
-        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; color: var(--text-gray); cursor: pointer; border-radius: 8px; transition: all 0.2s; }
-        .nav-item.active, .nav-item:hover { color: var(--text-light); background: rgba(255,255,255,0.04); }
-        
-        .main-workspace { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        .header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .admin-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
-        .card-title { font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-size: 0.85rem; color: var(--text-gray); margin-bottom: 6px; }
-        input[type="text"], textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; color: var(--text-light); font-size: 0.9rem; outline: none; }
-        input:focus, textarea:focus { border-color: var(--accent); }
-        .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        
-        /* TAB LOGIK */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-    </style>
-</head>
-<body>
+<script>
+        // Supabase Konfiguration
+        const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <div class="sidebar">
-        <div class="logo"><i class="fas fa-terminal" style="color: var(--accent);"></i> Vengeance OS</div>
-        <ul class="nav-list">
-            <li class="nav-item active" data-target="tab-profile"><i class="fas fa-user-cog"></i> Profile Settings</li>
-            <li class="nav-item" data-target="tab-links"><i class="fas fa-link"></i> Link Manager</li>
-            <li class="nav-item" data-target="tab-stats"><i class="fas fa-chart-bar"></i> Stats Adjuster</li>
-            <li class="nav-item" data-target="tab-youtube"><i class="fab fa-youtube"></i> YouTube Player</li>
-            <li class="nav-item" data-target="tab-discord"><i class="fab fa-discord"></i> Discord Config</li>
-        </ul>
-    </div>
-
-    <div class="main-workspace">
-        <div class="header">
-            <h2>Dashboard Control Center</h2>
-            <div style="font-size: 0.85rem; color: #22c55e;"><i class="fas fa-database"></i> Connected to Supabase</div>
-        </div>
-
-        <!-- TAB 1: PROFILE -->
-        <div id="tab-profile" class="tab-content active">
-            <div class="admin-card" style="max-width: 600px;">
-                <div class="card-title"><i class="fas fa-id-card"></i> Main Profile Details</div>
-                <form id="profile-form">
-                    <div class="form-group"><label>Username</label><input type="text" id="input-username"></div>
-                    <div class="form-group"><label>Avatar URL</label><input type="text" id="input-avatar"></div>
-                    <div class="form-group"><label>Bio</label><textarea id="input-bio" rows="4"></textarea></div>
-                    <button type="submit" class="btn-save">Update Profile</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- TAB 2: LINKS -->
-        <div id="tab-links" class="tab-content">
-            <div class="admin-card" style="max-width: 600px;">
-                <div class="card-title"><i class="fas fa-link"></i> Social Links</div>
-                <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 20px;">Hier kommt später die Liste deiner Links hin, die aus Supabase geladen wird.</p>
-                <button class="btn-save">+ Add New Link</button>
-            </div>
-        </div>
-
-        <!-- TAB 3: STATS -->
-        <div id="tab-stats" class="tab-content">
-            <div class="admin-card" style="max-width: 600px;">
-                <div class="card-title"><i class="fas fa-sort-numeric-up-alt"></i> Grid Statistics</div>
-                <form id="stats-form">
-                    <div class="form-group"><label>Years Coding</label><input type="text" id="stat-val-1"></div>
-                    <div class="form-group"><label>Languages</label><input type="text" id="stat-val-2"></div>
-                    <div class="form-group"><label>Projects Built</label><input type="text" id="stat-val-3"></div>
-                    <div class="form-group"><label>Profile Views</label><input type="text" id="stat-val-4"></div>
-                    <button type="submit" class="btn-save">Save Stats</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- TAB 4: YOUTUBE -->
-        <div id="tab-youtube" class="tab-content">
-            <div class="admin-card" style="max-width: 600px;">
-                <div class="card-title"><i class="fab fa-youtube"></i> Manage YouTube Playlist</div>
-                <form id="youtube-form">
-                    <div class="form-group"><label>Song Title</label><input type="text" id="yt-input-title" placeholder="z.B. High And Dry"></div>
-                    <div class="form-group"><label>Artist</label><input type="text" id="yt-input-artist" placeholder="z.B. Radiohead"></div>
-                    <div class="form-group"><label>YouTube Video ID</label><input type="text" id="yt-input-id" placeholder="z.B. dQw4w9WgXcQ"></div>
-                    <div class="form-group"><label>Cover Image URL</label><input type="text" id="yt-input-cover" placeholder="https://..."></div>
-                    <button type="submit" class="btn-save">Add Song to DB</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- TAB 5: DISCORD -->
-        <div id="tab-discord" class="tab-content">
-            <div class="admin-card" style="max-width: 600px;">
-                <div class="card-title"><i class="fab fa-discord"></i> Discord Integration</div>
-                <form id="discord-form">
-                    <div class="form-group"><label>Personal Discord ID (Für Live-Status via Lanyard)</label><input type="text" id="discord-user-id" placeholder="123456789012345678"></div>
-                    <div class="form-group"><label>Discord Server ID (Für das Widget in der Mitte)</label><input type="text" id="discord-server-id" placeholder="Server ID einfügen"></div>
-                    <button type="submit" class="btn-save">Save Discord Settings</button>
-                </form>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        // Tab Switching Logic
+        // --- TAB SWITCHING LOGIK ---
         const navItems = document.querySelectorAll('.nav-item');
         const tabContents = document.querySelectorAll('.tab-content');
 
         navItems.forEach(item => {
             item.addEventListener('click', () => {
-                // Remove active class from all
                 navItems.forEach(nav => nav.classList.remove('active'));
                 tabContents.forEach(tab => tab.classList.remove('active'));
                 
-                // Add active class to clicked
                 item.classList.add('active');
                 const targetId = item.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
             });
         });
-        
-        // Supabase DB Logic kommt dann hier rein
+
+        // --- DATEN BEIM LADEN ABRAFEN ---
+        async function loadDashboardData() {
+            // 1. Profil laden
+            const { data: profile } = await supabase.from('profile').select('*').eq('id', 1).single();
+            if (profile) {
+                document.getElementById('input-username').value = profile.username || '';
+                document.getElementById('input-avatar').value = profile.avatar_url || '';
+                document.getElementById('input-bio').value = profile.bio || '';
+            }
+
+            // 2. Stats laden
+            const { data: stats } = await supabase.from('stats').select('*').eq('id', 1).single();
+            if (stats) {
+                document.getElementById('stat-val-1').value = stats.years_coding || '';
+                document.getElementById('stat-val-2').value = stats.languages || '';
+                document.getElementById('stat-val-3').value = stats.projects || '';
+                document.getElementById('stat-val-4').value = stats.views || 0;
+            }
+
+            // 3. Discord laden
+            const { data: discord } = await supabase.from('discord_config').select('*').eq('id', 1).single();
+            if (discord) {
+                document.getElementById('discord-user-id').value = discord.user_id || '';
+                document.getElementById('discord-server-id').value = discord.server_id || '';
+            }
+        }
+
+        // --- SPEICHER-LOGIKEN (SUBMITS) ---
+
+        // Profile Update
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { error } = await supabase.from('profile').update({
+                username: document.getElementById('input-username').value,
+                avatar_url: document.getElementById('input-avatar').value,
+                bio: document.getElementById('input-bio').value
+            }).eq('id', 1);
+
+            alert(error ? 'Fehler: ' + error.message : 'Profil erfolgreich aktualisiert! 🔥');
+        });
+
+        // Stats Update
+        document.getElementById('stats-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { error } = await supabase.from('stats').update({
+                years_coding: document.getElementById('stat-val-1').value,
+                languages: document.getElementById('stat-val-2').value,
+                projects: document.getElementById('stat-val-3').value,
+                views: parseInt(document.getElementById('stat-val-4').value) || 0
+            }).eq('id', 1);
+
+            alert(error ? 'Fehler: ' + error.message : 'Statistiken gespeichert! 📊');
+        });
+
+        // YouTube Add Song
+        document.getElementById('youtube-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { error } = await supabase.from('youtube_playlist').insert([{
+                song_title: document.getElementById('yt-input-title').value,
+                artist: document.getElementById('yt-input-artist').value,
+                youtube_id: document.getElementById('yt-input-id').value,
+                cover_url: document.getElementById('yt-input-cover').value
+            }]);
+
+            if (!error) {
+                alert('Song zur Playlist hinzugefügt! 🎧');
+                document.getElementById('youtube-form').reset();
+            } else {
+                alert('Fehler: ' + error.message);
+            }
+        });
+
+        // Discord Update
+        document.getElementById('discord-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { error } = await supabase.from('discord_config').update({
+                user_id: document.getElementById('discord-user-id').value,
+                server_id: document.getElementById('discord-server-id').value
+            }).eq('id', 1);
+
+            alert(error ? 'Fehler: ' + error.message : 'Discord-Config gesichert! 💬');
+        });
+
+        // Starten
+        loadDashboardData();
     </script>
-</body>
-</html>
