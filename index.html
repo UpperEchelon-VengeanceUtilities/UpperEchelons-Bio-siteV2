@@ -552,17 +552,7 @@
                     }));
                 }
 
-                // Player UI initialisieren, falls API schon bereit war
-                if (ytPlayer && playlist.length > 0) {
-                    updatePlayerUI();
-                }
-
-            } catch (err) {
-                console.error("Fehler beim Laden der Live-Daten:", err);
-            }
-        }
-
-        // 5. Links live aus Supabase laden
+                // 5. Links live aus Supabase laden (HIER GEHÖRT ES HIN!)
                 const { data: dbLinks } = await sbClient.from('links').select('*');
                 const linksContainer = document.getElementById('links-container');
                 if (dbLinks && dbLinks.length > 0 && linksContainer) {
@@ -576,6 +566,17 @@
                         linksContainer.appendChild(a);
                     });
                 }
+
+                // Player UI initialisieren, falls API schon bereit war
+                if (ytPlayer && playlist.length > 0) {
+                    updatePlayerUI();
+                }
+
+            } catch (err) {
+                console.error("Fehler beim Laden der Live-Daten:", err);
+            }
+        }
+
         // --- 2. YOUTUBE PLAYER LOGIK ---
         function onYouTubeIframeAPIReady() {
             ytPlayer = new YT.Player('youtube-player', {
