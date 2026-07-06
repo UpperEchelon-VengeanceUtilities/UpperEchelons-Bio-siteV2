@@ -227,119 +227,203 @@
             if(confirm('Link löschen?')) { await sbClient.from('links').delete().eq('id', id); loadLinksList(); }
         };
 
-        // --- PLAYLIST LOGIK ---
+        // --- PLAYLIST LOGIK MIT DRAG & DROP ---
+        let draggedItemId = null;
+
         async function loadPlaylistEntries() {
             const container = document.getElementById('dashboard-playlist-list');
             container.innerHTML = 'Loading...';
-            const { data: tracks, error } = await sbClient.from('youtube_playlist').select('*');
+            
+            const { data: tracks, error } = await sbClient
+                .from('youtube_playlist')
+                .select('*')
+                .order('position', { ascending: true });
+
             if(error) { container.innerHTML = 'Fehler beim Laden.'; return; }
             if(!tracks || tracks.length === 0) {
                 container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Die Playlist ist aktuell leer.</p>'; return;
             }
             container.innerHTML = '';
+            
             tracks.forEach(track => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                const thumbUrl = track.cover_url || `https://img.youtube.com/vi/${track.youtube_id}/hqdefault.jpg`;
+                div.setAttribute('draggable', 'true');
+                div.setAttribute('data-id', track.id);
+                
+                div.addEventListener('dragstart', (e) => {
+                    draggedItemId = track.id;
+                    div.style.opacity = '0.5';
+                });
+
+                div.addEventListener('dragend', () => {
+                    div.style.opacity = '1';
+                    draggedItemId = null;
+                });
+
+                div.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                div.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    if (draggedItemId && draggedItemId !== track.id) {
+                        await saveNewOrder();
+                    }
+                });
+
+                const thumbUrl = track.cover_url || `https://img.youtube.com/vi/${track.youtube_id}/hqdefault.jpg`;[cite: 2]
+                
                 div.innerHTML = `
-                    <div class="list-info">
+                    <div class="list-info" style="flex-grow: 1; display: flex; align-items: center;">
+                        <i class="fas fa-grip-lines" style="color: var(--text-gray); cursor: grab; margin-right: 15px; font-size: 1.1rem;"></i>
                         <img class="list-thumb" src="${thumbUrl}" alt="Cover">
                         <div>
                             <strong>${track.song_title}</strong>
                             <div style="font-size:0.75rem;color:var(--text-gray);">${track.artist} &bull; ID: ${track.youtube_id}</div>
                         </div>
                     </div>
-                    <button class="btn-delete" onclick="deleteTrack(${track.id})"><i class="fas fa-trash"></i></button>`;
+                    <button class="btn-delete" onclick="deleteTrack(${track.id})"><i class="fas fa-trash"></i></button>`;[cite: 2]
+                
                 container.appendChild(div);
+            });
+
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const draggable = container.querySelector('[style*="opacity: 0.5"]');
+                if (draggable) {
+                    if (afterElement == null) {
+                        container.appendChild(draggable);
+                    } else {
+                        container.insertBefore(draggable, afterElement);
+                    }
+                }
             });
         }
 
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.list-item:not([style*="opacity: 0.5"])')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        async function saveNewOrder() {
+            const container = document.getElementById('dashboard-playlist-list');
+            const items = [...container.querySelectorAll('.list-item')];
+            
+            const dbStatus = document.getElementById('db-status');
+            dbStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Speichere Reihenfolge...';
+
+            for (let i = 0; i < items.length; i++) {
+                const id = items[i].getAttribute('data-id');
+                await sbClient
+                    .from('youtube_playlist')
+                    .update({ position: i })
+                    .eq('id', id);
+            }
+
+            dbStatus.innerHTML = '<i class="fas fa-database"></i> Connected to Supabase';
+        }
+
         window.deleteTrack = async (id) => {
-            if(confirm('Song wirklich aus der Playlist löschen?')) {
-                const { error } = await sbClient.from('youtube_playlist').delete().eq('id', id);
-                if(error) alert('Fehler: ' + error.message);
-                loadPlaylistEntries();
+            if(confirm('Song wirklich aus der Playlist löschen?')) {[cite: 2]
+                const { error } = await sbClient.from('youtube_playlist').delete().eq('id', id);[cite: 2]
+                if(error) alert('Fehler: ' + error.message);[cite: 2]
+                loadPlaylistEntries();[cite: 2]
             }
         };
 
         // --- SAVE ACTIONS ---
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await sbClient.from('profile').update({
-                username: document.getElementById('input-username').value,
-                avatar_url: document.getElementById('input-avatar').value,
-                bio: document.getElementById('input-bio').value
-            }).eq('id', 1);
-            alert('Profil aktualisiert! 🔥');
+            e.preventDefault();[cite: 2]
+            await sbClient.from('profile').update({[cite: 2]
+                username: document.getElementById('input-username').value,[cite: 2]
+                avatar_url: document.getElementById('input-avatar').value,[cite: 2]
+                bio: document.getElementById('input-bio').value[cite: 2]
+            }).eq('id', 1);[cite: 2]
+            alert('Profil aktualisiert! 🔥');[cite: 2]
         });
 
         document.getElementById('stats-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await sbClient.from('stats').update({
-                years_coding: document.getElementById('stat-val-1').value,
-                languages: document.getElementById('stat-val-2').value,
-                projects: document.getElementById('stat-val-3').value,
-                views: parseInt(document.getElementById('stat-val-4').value) || 0
-            }).eq('id', 1);
-            alert('Statistiken gespeichert! 📊');
+            e.preventDefault();[cite: 2]
+            await sbClient.from('stats').update({[cite: 2]
+                years_coding: document.getElementById('stat-val-1').value,[cite: 2]
+                languages: document.getElementById('stat-val-2').value,[cite: 2]
+                projects: document.getElementById('stat-val-3').value,[cite: 2]
+                views: parseInt(document.getElementById('stat-val-4').value) || 0[cite: 2]
+            }).eq('id', 1);[cite: 2]
+            alert('Statistiken gespeichert! 📊');[cite: 2]
         });
 
         document.getElementById('youtube-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            let rawIdInput = document.getElementById('yt-input-id').value.trim();
-            let videoId = rawIdInput;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/|live\/)([^#\&\?]*).*/;
-            const match = rawIdInput.match(regExp);
-            if (match && match[2].length === 11) {
-                videoId = match[2];
+            e.preventDefault();[cite: 2]
+            let rawIdInput = document.getElementById('yt-input-id').value.trim();[cite: 2]
+            let videoId = rawIdInput;[cite: 2]
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/|live\/)([^#\&\?]*).*/;[cite: 2]
+            const match = rawIdInput.match(regExp);[cite: 2]
+            if (match && match[2].length === 11) {[cite: 2]
+                videoId = match[2];[cite: 2]
             } else {
-                videoId = videoId.split('?')[0].split('&')[0];
+                videoId = videoId.split('?')[0].split('&')[0];[cite: 2]
             }
 
-            if (videoId.length !== 11) {
-                alert('Ungültige YouTube-URL oder Video-ID! Die ID muss exakt 11 Zeichen lang sein.');
-                return;
+            if (videoId.length !== 11) {[cite: 2]
+                alert('Ungültige YouTube-URL oder Video-ID! Die ID muss exakt 11 Zeichen lang sein.');[cite: 2]
+                return;[cite: 2]
             }
 
-            const maxResUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-            const hqResUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            const maxResUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;[cite: 2]
+            const hqResUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;[cite: 2]
 
-            const checkImageExists = (url) => {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        if (img.naturalWidth === 120) resolve(false);
-                        else resolve(true);
-                    };
-                    img.onerror = () => resolve(false);
-                    img.src = url;
-                });
-            };
+            const checkImageExists = (url) => {[cite: 2]
+                return new Promise((resolve) => {[cite: 2]
+                    const img = new Image();[cite: 2]
+                    img.onload = () => {[cite: 2]
+                        if (img.naturalWidth === 120) resolve(false);[cite: 2]
+                        else resolve(true);[cite: 2]
+                    };[cite: 2]
+                    img.onerror = () => resolve(false);[cite: 2]
+                    img.src = url;[cite: 2]
+                });[cite: 2]
+            };[cite: 2]
 
-            const hasMaxRes = await checkImageExists(maxResUrl);
-            const finalCoverUrl = hasMaxRes ? maxResUrl : hqResUrl;
+            const hasMaxRes = await checkImageExists(maxResUrl);[cite: 2]
+            const finalCoverUrl = hasMaxRes ? maxResUrl : hqResUrl;[cite: 2]
+
+            const { count } = await sbClient
+                .from('youtube_playlist')
+                .select('*', { count: 'exact', head: true });
 
             const { error } = await sbClient.from('youtube_playlist').insert([{
-                song_title: document.getElementById('yt-input-title').value,
-                artist: document.getElementById('yt-input-artist').value,
-                youtube_id: videoId,
-                cover_url: finalCoverUrl
+                song_title: document.getElementById('yt-input-title').value,[cite: 2]
+                artist: document.getElementById('yt-input-artist').value,[cite: 2]
+                youtube_id: videoId,[cite: 2]
+                cover_url: finalCoverUrl,[cite: 2]
+                position: count || 0
             }]);
             
             if(!error) { 
-                alert('Song hinzugefügt! Das Cover wurde validiert und gespeichert. 🎧'); 
-                document.getElementById('youtube-form').reset(); 
-                loadPlaylistEntries(); 
-            } else { alert(error.message); }
+                alert('Song hinzugefügt! Das Cover wurde validiert und gespeichert. 🎧');[cite: 2]
+                document.getElementById('youtube-form').reset();[cite: 2]
+                loadPlaylistEntries();[cite: 2]
+            } else { alert(error.message); }[cite: 2]
         });
 
         document.getElementById('discord-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await sbClient.from('discord_config').update({
-                user_id: document.getElementById('discord-user-id').value,
-                server_id: document.getElementById('discord-server-id').value
-            }).eq('id', 1);
-            alert('Discord-Config gesichert!? 💬');
+            e.preventDefault();[cite: 2]
+            await sbClient.from('discord_config').update({[cite: 2]
+                user_id: document.getElementById('discord-user-id').value,[cite: 2]
+                server_id: document.getElementById('discord-server-id').value[cite: 2]
+            }).eq('id', 1);[cite: 2]
+            alert('Discord-Config gesichert!? 💬');[cite: 2]
         });
 
         window.addEventListener('DOMContentLoaded', loadDashboardData);
