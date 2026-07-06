@@ -515,13 +515,18 @@
                         }).catch(() => {});
                 }
 
-                const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*');
-                if (dbPlaylist && dbPlaylist.length > 0) {
-                    playlist = dbPlaylist.map(song => ({
-                        title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url
-                    }));
+                // Hier werden die Songs jetzt nach Position geladen
+                const { data: dbPlaylist } = await sbClient
+                    .from('youtube_playlist')
+                    .select('*')
+                    .order('position', { ascending: true });
+
+                if (dbPlaylist && dbPlaylist.length > 0) {[cite: 1]
+                    playlist = dbPlaylist.map(song => ({[cite: 1]
+                        title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url[cite: 1]
+                    }));[cite: 1]
                 } else {
-                    playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];
+                    playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];[cite: 1]
                 }
 
                 const { data: dbLinks } = await sbClient.from('links').select('*');
