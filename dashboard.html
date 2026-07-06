@@ -108,7 +108,7 @@
                     <div class="form-group"><label>Years Coding</label><input type="text" id="stat-val-1"></div>
                     <div class="form-group"><label>Languages</label><input type="text" id="stat-val-2"></div>
                     <div class="form-group"><label>Projects Built</label><input type="text" id="stat-val-3"></div>
-                    <div class="form-group"><label>Profile Views (Kann hier manuell überschrieben werden)</label><input type="text" id="stat-val-4"></div>
+                    <div class="form-group"><label>Profile Views</label><input type="text" id="stat-val-4"></div>
                     <button type="submit" class="btn-save">Save Stats</button>
                 </form>
             </div>
@@ -149,13 +149,16 @@
         const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
         const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let currentProfileId = 1;
+        let currentStatsId = 1;
+        let currentDiscordId = 1;
+
         if(sbClient) {
             const dbStatus = document.getElementById('db-status');
             dbStatus.style.color = '#22c55e';
             dbStatus.innerHTML = '<i class="fas fa-database"></i> Connected to Supabase';
         }
 
-        // --- TAB NAVIGATION ---
         const navItems = document.querySelectorAll('.nav-item');
         const tabContents = document.querySelectorAll('.tab-content');
         navItems.forEach(item => {
@@ -167,24 +170,26 @@
             });
         });
 
-        // --- FETCH DB ON LOAD ---
         async function loadDashboardData() {
             try {
-                const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
+                const { data: profile } = await sbClient.from('profile').select('*').limit(1).maybeSingle();
                 if (profile) {
+                    currentProfileId = profile.id;
                     document.getElementById('input-username').value = profile.username || '';
                     document.getElementById('input-avatar').value = profile.avatar_url || '';
                     document.getElementById('input-bio').value = profile.bio || '';
                 }
-                const { data: stats } = await sbClient.from('stats').select('*').eq('id', 1).maybeSingle();
+                const { data: stats } = await sbClient.from('stats').select('*').limit(1).maybeSingle();
                 if (stats) {
+                    currentStatsId = stats.id;
                     document.getElementById('stat-val-1').value = stats.years_coding || '';
                     document.getElementById('stat-val-2').value = stats.languages || '';
                     document.getElementById('stat-val-3').value = stats.projects || '';
                     document.getElementById('stat-val-4').value = stats.views || 0;
                 }
-                const { data: discord } = await sbClient.from('discord_config').select('*').eq('id', 1).maybeSingle();
+                const { data: discord } = await sbClient.from('discord_config').select('*').limit(1).maybeSingle();
                 if (discord) {
+                    currentDiscordId = discord.id;
                     document.getElementById('discord-user-id').value = discord.user_id || '';
                     document.getElementById('discord-server-id').value = discord.server_id || '';
                 }
@@ -193,7 +198,6 @@
             } catch (err) { console.error(err); }
         }
 
-        // --- LINK MANAGER ---
         async function loadLinksList() {
             const container = document.getElementById('dashboard-links-list');
             container.innerHTML = 'Loading...';
@@ -227,7 +231,6 @@
             if(confirm('Link löschen?')) { await sbClient.from('links').delete().eq('id', id); loadLinksList(); }
         };
 
-        // --- PLAYLIST LOGIK MIT DRAG & DROP ---
         let draggedItemId = null;
 
         async function loadPlaylistEntries() {
@@ -341,26 +344,29 @@
             }
         };
 
-        // --- SAVE ACTIONS ---
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();[cite: 2]
-            await sbClient.from('profile').update({[cite: 2]
+            const payload = {
                 username: document.getElementById('input-username').value,[cite: 2]
                 avatar_url: document.getElementById('input-avatar').value,[cite: 2]
                 bio: document.getElementById('input-bio').value[cite: 2]
-            }).eq('id', 1);[cite: 2]
-            alert('Profil aktualisiert! 🔥');[cite: 2]
+            };
+            const { error } = await sbClient.from('profile').update(payload).eq('id', currentProfileId);
+            if(!error) alert('Profil aktualisiert! 🔥');[cite: 2]
+            else alert(error.message);
         });
 
         document.getElementById('stats-form').addEventListener('submit', async (e) => {
             e.preventDefault();[cite: 2]
-            await sbClient.from('stats').update({[cite: 2]
+            const payload = {
                 years_coding: document.getElementById('stat-val-1').value,[cite: 2]
                 languages: document.getElementById('stat-val-2').value,[cite: 2]
                 projects: document.getElementById('stat-val-3').value,[cite: 2]
                 views: parseInt(document.getElementById('stat-val-4').value) || 0[cite: 2]
-            }).eq('id', 1);[cite: 2]
-            alert('Statistiken gespeichert! 📊');[cite: 2]
+            };
+            const { error } = await sbClient.from('stats').update(payload).eq('id', currentStatsId);
+            if(!error) alert('Statistiken gespeichert! 📊');[cite: 2]
+            else alert(error.message);
         });
 
         document.getElementById('youtube-form').addEventListener('submit', async (e) => {
@@ -393,7 +399,7 @@
                     img.onerror = () => resolve(false);[cite: 2]
                     img.src = url;[cite: 2]
                 });[cite: 2]
-            };[cite: 2]
+            };
 
             const hasMaxRes = await checkImageExists(maxResUrl);[cite: 2]
             const finalCoverUrl = hasMaxRes ? maxResUrl : hqResUrl;[cite: 2]
@@ -419,11 +425,13 @@
 
         document.getElementById('discord-form').addEventListener('submit', async (e) => {
             e.preventDefault();[cite: 2]
-            await sbClient.from('discord_config').update({[cite: 2]
+            const payload = {
                 user_id: document.getElementById('discord-user-id').value,[cite: 2]
                 server_id: document.getElementById('discord-server-id').value[cite: 2]
-            }).eq('id', 1);[cite: 2]
-            alert('Discord-Config gesichert!? 💬');[cite: 2]
+            };
+            const { error } = await sbClient.from('discord_config').update(payload).eq('id', currentDiscordId);
+            if(!error) alert('Discord-Config gesichert!? 💬');[cite: 2]
+            else alert(error.message);
         });
 
         window.addEventListener('DOMContentLoaded', loadDashboardData);
