@@ -462,16 +462,17 @@
         // LOAD LIVE DATA
         async function loadWebsiteData() {
             try {
-                const { data: profile } = await sbClient.from('profile').select('*').limit(1).maybeSingle();
+                // FIXED: .limit(1) entfernt, da maybeSingle() das alleine macht. Verhindert Supabase API Absturz.
+                const { data: profile } = await sbClient.from('profile').select('*').maybeSingle();
                 if (profile) {
                     document.getElementById('username').innerText = profile.username || 'Unknown';
                     document.getElementById('bio').innerText = profile.bio || '';
                     if (profile.avatar_url) document.getElementById('avatar').src = profile.avatar_url;
                 } else {
-                    document.getElementById('username').innerText = 'No profile found';
+                    document.getElementById('username').innerText = 'No Profile';
                 }
 
-                const { data: stats } = await sbClient.from('stats').select('*').limit(1).maybeSingle();
+                const { data: stats } = await sbClient.from('stats').select('*').maybeSingle();
                 if (stats) {
                     let currentViews = stats.views || 0;
                     if (!sessionStorage.getItem('vengeance_visited')) {
@@ -485,7 +486,7 @@
                     document.getElementById('stat-3').innerText = stats.projects || '0+';
                 }
 
-                const { data: discord } = await sbClient.from('discord_config').select('*').limit(1).maybeSingle();
+                const { data: discord } = await sbClient.from('discord_config').select('*').maybeSingle();
                 if (discord && discord.user_id) {
                     fetch(`https://api.lanyard.rest/v1/users/${discord.user_id}`)
                         .then(res => res.json())
@@ -517,6 +518,7 @@
                         }).catch(() => {});
                 }
 
+                // Songs nach der neuen Drag & Drop Spalte geordnet abfragen
                 const { data: dbPlaylist } = await sbClient
                     .from('youtube_playlist')
                     .select('*')
