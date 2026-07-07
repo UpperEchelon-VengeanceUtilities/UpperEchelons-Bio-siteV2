@@ -462,23 +462,20 @@
         // LOAD LIVE DATA
         async function loadWebsiteData() {
             try {
-                // FIXED: .limit(1) entfernt, da maybeSingle() das alleine macht. Verhindert Supabase API Absturz.
-                const { data: profile } = await sbClient.from('profile').select('*').maybeSingle();
+                const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
                 if (profile) {
                     document.getElementById('username').innerText = profile.username || 'Unknown';
                     document.getElementById('bio').innerText = profile.bio || '';
                     if (profile.avatar_url) document.getElementById('avatar').src = profile.avatar_url;
-                } else {
-                    document.getElementById('username').innerText = 'No Profile';
                 }
 
-                const { data: stats } = await sbClient.from('stats').select('*').maybeSingle();
+                const { data: stats } = await sbClient.from('stats').select('*').eq('id', 1).maybeSingle();
                 if (stats) {
                     let currentViews = stats.views || 0;
                     if (!sessionStorage.getItem('vengeance_visited')) {
                         sessionStorage.setItem('vengeance_visited', 'true');
                         currentViews += 1;
-                        await sbClient.from('stats').update({ views: currentViews }).eq('id', stats.id);
+                        await sbClient.from('stats').update({ views: currentViews }).eq('id', 1);
                     }
                     document.getElementById('stat-4').innerText = currentViews;
                     document.getElementById('stat-1').innerText = stats.years_coding || '0+';
@@ -486,7 +483,7 @@
                     document.getElementById('stat-3').innerText = stats.projects || '0+';
                 }
 
-                const { data: discord } = await sbClient.from('discord_config').select('*').maybeSingle();
+                const { data: discord } = await sbClient.from('discord_config').select('*').eq('id', 1).maybeSingle();
                 if (discord && discord.user_id) {
                     fetch(`https://api.lanyard.rest/v1/users/${discord.user_id}`)
                         .then(res => res.json())
@@ -518,18 +515,13 @@
                         }).catch(() => {});
                 }
 
-                // Songs nach der neuen Drag & Drop Spalte geordnet abfragen
-                const { data: dbPlaylist } = await sbClient
-                    .from('youtube_playlist')
-                    .select('*')
-                    .order('position', { ascending: true });
-
-                if (dbPlaylist && dbPlaylist.length > 0) {[cite: 1]
-                    playlist = dbPlaylist.map(song => ({[cite: 1]
-                        title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url[cite: 1]
-                    }));[cite: 1]
+                const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*');
+                if (dbPlaylist && dbPlaylist.length > 0) {
+                    playlist = dbPlaylist.map(song => ({
+                        title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url
+                    }));
                 } else {
-                    playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];[cite: 1]
+                    playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];
                 }
 
                 const { data: dbLinks } = await sbClient.from('links').select('*');
@@ -546,6 +538,7 @@
 
                 updatePlayerUI();
                 
+                // Triggert den Player direkt
                 if(playlist.length > 0) {
                     onYouTubeIframeAPIReady();
                 }
