@@ -144,297 +144,321 @@
         </div>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
-        const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+   <script>
+    const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
+    const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let currentProfileId = 1;
-        let currentStatsId = 1;
-        let currentDiscordId = 1;
+    let currentProfileId = 1;
+    let currentStatsId = 1;
+    let currentDiscordId = 1;
 
-        if(sbClient) {
-            const dbStatus = document.getElementById('db-status');
-            dbStatus.style.color = '#22c55e';
-            dbStatus.innerHTML = '<i class="fas fa-database"></i> Connected to Supabase';
-        }
+    if(sbClient) {
+        const dbStatus = document.getElementById('db-status');
+        dbStatus.style.color = '#22c55e';
+        dbStatus.innerHTML = '<i class="fas fa-database"></i> Connected to Supabase';
+    }
 
-        const navItems = document.querySelectorAll('.nav-item');
-        const tabContents = document.querySelectorAll('.tab-content');
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                navItems.forEach(nav => nav.classList.remove('active'));
-                tabContents.forEach(tab => tab.classList.remove('active'));
-                item.classList.add('active');
-                document.getElementById(item.getAttribute('data-target')).classList.add('active');
-            });
+    const navItems = document.querySelectorAll('.nav-item');
+    const tabContents = document.querySelectorAll('.tab-content');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            item.classList.add('active');
+            document.getElementById(item.getAttribute('data-target')).classList.add('active');
         });
+    });
 
-        async function loadDashboardData() {
-            try {
-                const { data: profile } = await sbClient.from('profile').select('*').limit(1).maybeSingle();
-                if (profile) {
-                    currentProfileId = profile.id;
-                    document.getElementById('input-username').value = profile.username || '';
-                    document.getElementById('input-avatar').value = profile.avatar_url || '';
-                    document.getElementById('input-bio').value = profile.bio || '';
-                }
-                const { data: stats } = await sbClient.from('stats').select('*').limit(1).maybeSingle();
-                if (stats) {
-                    currentStatsId = stats.id;
-                    document.getElementById('stat-val-1').value = stats.years_coding || '';
-                    document.getElementById('stat-val-2').value = stats.languages || '';
-                    document.getElementById('stat-val-3').value = stats.projects || '';
-                    document.getElementById('stat-val-4').value = stats.views || 0;
-                }
-                const { data: discord } = await sbClient.from('discord_config').select('*').limit(1).maybeSingle();
-                if (discord) {
-                    currentDiscordId = discord.id;
-                    document.getElementById('discord-user-id').value = discord.user_id || '';
-                    document.getElementById('discord-server-id').value = discord.server_id || '';
-                }
-                loadLinksList();
-                loadPlaylistEntries();
-            } catch (err) { console.error(err); }
-        }
-
-        async function loadLinksList() {
-            const container = document.getElementById('dashboard-links-list');
-            container.innerHTML = 'Loading...';
-            const { data: links } = await sbClient.from('links').select('*');
-            if(!links || links.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Keine Links vorhanden.</p>'; return;
+    async function loadDashboardData() {
+        try {
+            const { data: profile } = await sbClient.from('profile').select('*').limit(1).maybeSingle();
+            if (profile) {
+                currentProfileId = profile.id;
+                document.getElementById('input-username').value = profile.username || '';
+                document.getElementById('input-avatar').value = profile.avatar_url || '';
+                document.getElementById('input-bio').value = profile.bio || '';
             }
-            container.innerHTML = '';
-            links.forEach(link => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div class="link-info"><i class="${link.icon}"></i><div><strong>${link.name}</strong><div style="font-size:0.75rem;color:var(--text-gray);">${link.url}</div></div></div>
-                    <button class="btn-delete" onclick="deleteLink(${link.id})"><i class="fas fa-trash"></i></button>`;
-                container.appendChild(div);
-            });
+
+            const { data: stats } = await sbClient.from('stats').select('*').limit(1).maybeSingle();
+            if (stats) {
+                currentStatsId = stats.id;
+                document.getElementById('stat-val-1').value = stats.years_coding || '';
+                document.getElementById('stat-val-2').value = stats.languages || '';
+                document.getElementById('stat-val-3').value = stats.projects || '';
+                document.getElementById('stat-val-4').value = stats.views || 0;
+            }
+
+            const { data: discord } = await sbClient.from('discord_config').select('*').limit(1).maybeSingle();
+            if (discord) {
+                currentDiscordId = discord.id;
+                document.getElementById('discord-user-id').value = discord.user_id || '';
+                document.getElementById('discord-server-id').value = discord.server_id || '';
+            }
+
+            await loadLinksList();
+            await loadPlaylistEntries();
+        } catch (err) { 
+            console.error('Fehler beim Laden der Dashboard-Daten:', err); 
+        }
+    }
+
+    async function loadLinksList() {
+        const container = document.getElementById('dashboard-links-list');
+        container.innerHTML = 'Loading...';
+        const { data: links, error } = await sbClient.from('links').select('*');
+        
+        if (error) {
+            console.error('Links Error:', error);
+            container.innerHTML = '<p style="color:var(--danger); font-size:0.9rem;">Fehler beim Laden der Links.</p>';
+            return;
         }
 
-        document.getElementById('link-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await sbClient.from('links').insert([{
-                name: document.getElementById('link-name').value,
-                url: document.getElementById('link-url').value,
-                icon: document.getElementById('link-icon').value
-            }]);
-            document.getElementById('link-form').reset(); document.getElementById('link-icon').value = 'fas fa-link';
-            loadLinksList();
+        if(!links || links.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Keine Links vorhanden.</p>'; 
+            return;
+        }
+
+        container.innerHTML = '';
+        links.forEach(link => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `
+                <div class="link-info"><i class="${link.icon}"></i><div><strong>${link.name}</strong><div style="font-size:0.75rem;color:var(--text-gray);">${link.url}</div></div></div>
+                <button class="btn-delete" onclick="deleteLink(${link.id})"><i class="fas fa-trash"></i></button>`;
+            container.appendChild(div);
         });
+    }
 
-        window.deleteLink = async (id) => {
-            if(confirm('Link löschen?')) { await sbClient.from('links').delete().eq('id', id); loadLinksList(); }
-        };
+    document.getElementById('link-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await sbClient.from('links').insert([{
+            name: document.getElementById('link-name').value,
+            url: document.getElementById('link-url').value,
+            icon: document.getElementById('link-icon').value
+        }]);
+        document.getElementById('link-form').reset(); 
+        document.getElementById('link-icon').value = 'fas fa-link';
+        loadLinksList();
+    });
 
-        let draggedItemId = null;
+    window.deleteLink = async (id) => {
+        if(confirm('Link löschen?')) { 
+            await sbClient.from('links').delete().eq('id', id); 
+            loadLinksList(); 
+        }
+    };
 
-        async function loadPlaylistEntries() {
-            const container = document.getElementById('dashboard-playlist-list');
-            container.innerHTML = 'Loading...';
+    let draggedItemId = null;
+
+    async function loadPlaylistEntries() {
+        const container = document.getElementById('dashboard-playlist-list');
+        container.innerHTML = 'Loading...';
+        
+        const { data: tracks, error } = await sbClient
+            .from('youtube_playlist')
+            .select('*')
+            .order('position', { ascending: true });
+
+        if(error) { 
+            console.error('Playlist Error:', error);
+            container.innerHTML = '<p style="color:var(--danger); font-size:0.9rem;">Fehler beim Laden der Playlist.</p>'; 
+            return; 
+        }
+
+        if(!tracks || tracks.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Die Playlist ist aktuell leer.</p>'; 
+            return;
+        }
+
+        container.innerHTML = '';
+        
+        tracks.forEach(track => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.setAttribute('draggable', 'true');
+            div.setAttribute('data-id', track.id);
             
-            const { data: tracks, error } = await sbClient
-                .from('youtube_playlist')
-                .select('*')
-                .order('position', { ascending: true });
-
-            if(error) { container.innerHTML = 'Fehler beim Laden.'; return; }
-            if(!tracks || tracks.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-gray); font-size:0.9rem;">Die Playlist ist aktuell leer.</p>'; return;
-            }
-            container.innerHTML = '';
-            
-            tracks.forEach(track => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.setAttribute('draggable', 'true');
-                div.setAttribute('data-id', track.id);
-                
-                div.addEventListener('dragstart', (e) => {
-                    draggedItemId = track.id;
-                    div.style.opacity = '0.5';
-                });
-
-                div.addEventListener('dragend', () => {
-                    div.style.opacity = '1';
-                    draggedItemId = null;
-                });
-
-                div.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                });
-
-                div.addEventListener('drop', async (e) => {
-                    e.preventDefault();
-                    if (draggedItemId && draggedItemId !== track.id) {
-                        await saveNewOrder();
-                    }
-                });
-
-                const thumbUrl = track.cover_url || `https://img.youtube.com/vi/${track.youtube_id}/hqdefault.jpg`;[cite: 2]
-                
-                div.innerHTML = `
-                    <div class="list-info" style="flex-grow: 1; display: flex; align-items: center;">
-                        <i class="fas fa-grip-lines" style="color: var(--text-gray); cursor: grab; margin-right: 15px; font-size: 1.1rem;"></i>
-                        <img class="list-thumb" src="${thumbUrl}" alt="Cover">
-                        <div>
-                            <strong>${track.song_title}</strong>
-                            <div style="font-size:0.75rem;color:var(--text-gray);">${track.artist} &bull; ID: ${track.youtube_id}</div>
-                        </div>
-                    </div>
-                    <button class="btn-delete" onclick="deleteTrack(${track.id})"><i class="fas fa-trash"></i></button>`;[cite: 2]
-                
-                container.appendChild(div);
+            div.addEventListener('dragstart', (e) => {
+                draggedItemId = track.id;
+                div.style.opacity = '0.5';
             });
 
-            container.addEventListener('dragover', e => {
+            div.addEventListener('dragend', () => {
+                div.style.opacity = '1';
+                draggedItemId = null;
+            });
+
+            div.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                const afterElement = getDragAfterElement(container, e.clientY);
-                const draggable = container.querySelector('[style*="opacity: 0.5"]');
-                if (draggable) {
-                    if (afterElement == null) {
-                        container.appendChild(draggable);
-                    } else {
-                        container.insertBefore(draggable, afterElement);
-                    }
+            });
+
+            div.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                if (draggedItemId && draggedItemId !== track.id) {
+                    await saveNewOrder();
                 }
             });
-        }
 
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.list-item:not([style*="opacity: 0.5"])')];
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-
-        async function saveNewOrder() {
-            const container = document.getElementById('dashboard-playlist-list');
-            const items = [...container.querySelectorAll('.list-item')];
+            const thumbUrl = track.cover_url || `https://img.youtube.com/vi/${track.youtube_id}/hqdefault.jpg`;
             
-            const dbStatus = document.getElementById('db-status');
-            dbStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Speichere Reihenfolge...';
+            div.innerHTML = `
+                <div class="list-info" style="flex-grow: 1; display: flex; align-items: center;">
+                    <i class="fas fa-grip-lines" style="color: var(--text-gray); cursor: grab; margin-right: 15px; font-size: 1.1rem;"></i>
+                    <img class="list-thumb" src="${thumbUrl}" alt="Cover">
+                    <div>
+                        <strong>${track.song_title}</strong>
+                        <div style="font-size:0.75rem;color:var(--text-gray);">${track.artist} &bull; ID: ${track.youtube_id}</div>
+                    </div>
+                </div>
+                <button class="btn-delete" onclick="deleteTrack(${track.id})"><i class="fas fa-trash"></i></button>`;
+            
+            container.appendChild(div);
+        });
 
-            for (let i = 0; i < items.length; i++) {
-                const id = items[i].getAttribute('data-id');
-                await sbClient
-                    .from('youtube_playlist')
-                    .update({ position: i })
-                    .eq('id', id);
+        container.addEventListener('dragover', e => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(container, e.clientY);
+            const draggable = container.querySelector('[style*="opacity: 0.5"]');
+            if (draggable) {
+                if (afterElement == null) {
+                    container.appendChild(draggable);
+                } else {
+                    container.insertBefore(draggable, afterElement);
+                }
             }
+        });
+    }
 
-            dbStatus.innerHTML = '<i class="fas fa-database"></i> Connected to Supabase';
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.list-item:not([style*="opacity: 0.5"])')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    async function saveNewOrder() {
+        const container = document.getElementById('dashboard-playlist-list');
+        const items = [...container.querySelectorAll('.list-item')];
+        
+        const dbStatus = document.getElementById('db-status');
+        dbStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Speichere Reihenfolge...';
+
+        for (let i = 0; i < items.length; i++) {
+            const id = items[i].getAttribute('data-id');
+            await sbClient
+                .from('youtube_playlist')
+                .update({ position: i })
+                .eq('id', id);
         }
 
-        window.deleteTrack = async (id) => {
-            if(confirm('Song wirklich aus der Playlist löschen?')) {[cite: 2]
-                const { error } = await sbClient.from('youtube_playlist').delete().eq('id', id);[cite: 2]
-                if(error) alert('Fehler: ' + error.message);[cite: 2]
-                loadPlaylistEntries();[cite: 2]
-            }
+        dbStatus.innerHTML = '<i class="fas fa-database"></i> Connected to Supabase';
+    }
+
+    window.deleteTrack = async (id) => {
+        if(confirm('Song wirklich aus der Playlist löschen?')) {
+            const { error } = await sbClient.from('youtube_playlist').delete().eq('id', id);
+            if(error) alert('Fehler: ' + error.message);
+            loadPlaylistEntries();
+        }
+    };
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            username: document.getElementById('input-username').value,
+            avatar_url: document.getElementById('input-avatar').value,
+            bio: document.getElementById('input-bio').value
+        };
+        const { error } = await sbClient.from('profile').update(payload).eq('id', currentProfileId);
+        if(!error) alert('Profil aktualisiert! 🔥');
+        else alert(error.message);
+    });
+
+    document.getElementById('stats-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            years_coding: document.getElementById('stat-val-1').value,
+            languages: document.getElementById('stat-val-2').value,
+            projects: document.getElementById('stat-val-3').value,
+            views: parseInt(document.getElementById('stat-val-4').value) || 0
+        };
+        const { error } = await sbClient.from('stats').update(payload).eq('id', currentStatsId);
+        if(!error) alert('Statistiken gespeichert! 📊');
+        else alert(error.message);
+    });
+
+    document.getElementById('youtube-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let rawIdInput = document.getElementById('yt-input-id').value.trim();
+        let videoId = rawIdInput;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/|live\/)([^#\&\?]*).*/;
+        const match = rawIdInput.match(regExp);
+        if (match && match[2].length === 11) {
+            videoId = match[2];
+        } else {
+            videoId = videoId.split('?')[0].split('&')[0];
+        }
+
+        if (videoId.length !== 11) {
+            alert('Ungültige YouTube-URL oder Video-ID! Die ID muss exakt 11 Zeichen lang sein.');
+            return;
+        }
+
+        const maxResUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        const hqResUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+        const checkImageExists = (url) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    if (img.naturalWidth === 120) resolve(false);
+                    else resolve(true);
+                };
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
         };
 
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();[cite: 2]
-            const payload = {
-                username: document.getElementById('input-username').value,[cite: 2]
-                avatar_url: document.getElementById('input-avatar').value,[cite: 2]
-                bio: document.getElementById('input-bio').value[cite: 2]
-            };
-            const { error } = await sbClient.from('profile').update(payload).eq('id', currentProfileId);
-            if(!error) alert('Profil aktualisiert! 🔥');[cite: 2]
-            else alert(error.message);
-        });
+        const hasMaxRes = await checkImageExists(maxResUrl);
+        const finalCoverUrl = hasMaxRes ? maxResUrl : hqResUrl;
 
-        document.getElementById('stats-form').addEventListener('submit', async (e) => {
-            e.preventDefault();[cite: 2]
-            const payload = {
-                years_coding: document.getElementById('stat-val-1').value,[cite: 2]
-                languages: document.getElementById('stat-val-2').value,[cite: 2]
-                projects: document.getElementById('stat-val-3').value,[cite: 2]
-                views: parseInt(document.getElementById('stat-val-4').value) || 0[cite: 2]
-            };
-            const { error } = await sbClient.from('stats').update(payload).eq('id', currentStatsId);
-            if(!error) alert('Statistiken gespeichert! 📊');[cite: 2]
-            else alert(error.message);
-        });
+        const { count } = await sbClient
+            .from('youtube_playlist')
+            .select('*', { count: 'exact', head: true });
 
-        document.getElementById('youtube-form').addEventListener('submit', async (e) => {
-            e.preventDefault();[cite: 2]
-            let rawIdInput = document.getElementById('yt-input-id').value.trim();[cite: 2]
-            let videoId = rawIdInput;[cite: 2]
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/|live\/)([^#\&\?]*).*/;[cite: 2]
-            const match = rawIdInput.match(regExp);[cite: 2]
-            if (match && match[2].length === 11) {[cite: 2]
-                videoId = match[2];[cite: 2]
-            } else {
-                videoId = videoId.split('?')[0].split('&')[0];[cite: 2]
-            }
+        const { error } = await sbClient.from('youtube_playlist').insert([{
+            song_title: document.getElementById('yt-input-title').value,
+            artist: document.getElementById('yt-input-artist').value,
+            youtube_id: videoId,
+            cover_url: finalCoverUrl,
+            position: count || 0
+        }]);
+        
+        if(!error) { 
+            alert('Song hinzugefügt! Das Cover wurde validiert und gespeichert. 🎧');
+            document.getElementById('youtube-form').reset();
+            loadPlaylistEntries();
+        } else { alert(error.message); }
+    });
 
-            if (videoId.length !== 11) {[cite: 2]
-                alert('Ungültige YouTube-URL oder Video-ID! Die ID muss exakt 11 Zeichen lang sein.');[cite: 2]
-                return;[cite: 2]
-            }
+    document.getElementById('discord-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            user_id: document.getElementById('discord-user-id').value,
+            server_id: document.getElementById('discord-server-id').value
+        };
+        const { error } = await sbClient.from('discord_config').update(payload).eq('id', currentDiscordId);
+        if(!error) alert('Discord-Config gesichert! 💬');
+        else alert(error.message);
+    });
 
-            const maxResUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;[cite: 2]
-            const hqResUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;[cite: 2]
-
-            const checkImageExists = (url) => {[cite: 2]
-                return new Promise((resolve) => {[cite: 2]
-                    const img = new Image();[cite: 2]
-                    img.onload = () => {[cite: 2]
-                        if (img.naturalWidth === 120) resolve(false);[cite: 2]
-                        else resolve(true);[cite: 2]
-                    };[cite: 2]
-                    img.onerror = () => resolve(false);[cite: 2]
-                    img.src = url;[cite: 2]
-                });[cite: 2]
-            };
-
-            const hasMaxRes = await checkImageExists(maxResUrl);[cite: 2]
-            const finalCoverUrl = hasMaxRes ? maxResUrl : hqResUrl;[cite: 2]
-
-            const { count } = await sbClient
-                .from('youtube_playlist')
-                .select('*', { count: 'exact', head: true });
-
-            const { error } = await sbClient.from('youtube_playlist').insert([{
-                song_title: document.getElementById('yt-input-title').value,[cite: 2]
-                artist: document.getElementById('yt-input-artist').value,[cite: 2]
-                youtube_id: videoId,[cite: 2]
-                cover_url: finalCoverUrl,[cite: 2]
-                position: count || 0
-            }]);
-            
-            if(!error) { 
-                alert('Song hinzugefügt! Das Cover wurde validiert und gespeichert. 🎧');[cite: 2]
-                document.getElementById('youtube-form').reset();[cite: 2]
-                loadPlaylistEntries();[cite: 2]
-            } else { alert(error.message); }[cite: 2]
-        });
-
-        document.getElementById('discord-form').addEventListener('submit', async (e) => {
-            e.preventDefault();[cite: 2]
-            const payload = {
-                user_id: document.getElementById('discord-user-id').value,[cite: 2]
-                server_id: document.getElementById('discord-server-id').value[cite: 2]
-            };
-            const { error } = await sbClient.from('discord_config').update(payload).eq('id', currentDiscordId);
-            if(!error) alert('Discord-Config gesichert!? 💬');[cite: 2]
-            else alert(error.message);
-        });
-
-        window.addEventListener('DOMContentLoaded', loadDashboardData);
-    </script>
-</body>
-</html>
+    // Direkt ausführen beim Laden der Skripte
+    loadDashboardData();
+</script>
