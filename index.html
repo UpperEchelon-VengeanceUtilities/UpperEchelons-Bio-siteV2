@@ -67,6 +67,7 @@
             padding: 20px;
             overflow-x: hidden;
             position: relative;
+            perspective: 1200px;
         }
 
         /* DYNAMISCHER YOUTUBE BACKGROUND */
@@ -172,6 +173,7 @@
             }
         }
 
+        /* 3D TILT & MOUSE SPOTLIGHT CARDS */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -180,12 +182,37 @@
             border-radius: 16px;
             padding: 24px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, border-color 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(350px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.08), transparent 60%);
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .card:hover {
-            border-color: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+            border-color: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px var(--accent-glow);
+        }
+
+        .card > * {
+            position: relative;
+            z-index: 1;
         }
 
         /* SPALTE 1: Profil & Socials */
@@ -333,7 +360,34 @@
         .album-art:hover { transform: scale(1.03); }
 
         .track-details { flex-grow: 1; }
-        .track-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+        .track-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .track-title { font-size: 1.2rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px; }
+        
+        /* AUDIO EQUALIZER BARS */
+        .equalizer {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        .eq-bar {
+            width: 3px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: height 0.2s ease;
+        }
+        .equalizer.playing .eq-bar:nth-child(1) { animation: bounce 0.8s ease-in-out infinite alternate; }
+        .equalizer.playing .eq-bar:nth-child(2) { animation: bounce 1.1s ease-in-out 0.2s infinite alternate; }
+        .equalizer.playing .eq-bar:nth-child(3) { animation: bounce 0.9s ease-in-out 0.4s infinite alternate; }
+        .equalizer.playing .eq-bar:nth-child(4) { animation: bounce 1.2s ease-in-out 0.1s infinite alternate; }
+
+        @keyframes bounce {
+            0% { height: 4px; }
+            100% { height: 16px; }
+        }
+
         .track-artist { color: var(--text-muted); font-size: 0.9rem; }
         .player-controls { display: flex; flex-direction: column; gap: 8px; }
         .progress-bar-container { width: 100%; }
@@ -352,13 +406,37 @@
         .btn-play { width: 38px; height: 38px; background: var(--text-main); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s ease; }
         .btn-play:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); transform: scale(1.05); }
 
-        /* DISCORD WIDGET */
+        /* DISCORD WIDGET MIT CLICK-TO-COPY */
         .discord-guild-box {
             display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .discord-guild-box:hover {
+            background: rgba(88, 101, 242, 0.08);
+            border-color: rgba(88, 101, 242, 0.3);
         }
         .discord-guild-info { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; }
         .btn-discord-join { background: #5865F2; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
         .btn-discord-join:hover { background: #4752c4; box-shadow: 0 0 15px rgba(88, 101, 242, 0.4); transform: translateY(-1px); } 
+
+        .copy-toast {
+            position: absolute;
+            top: -26px;
+            right: 20px;
+            background: #22c55e;
+            color: #0b0b0c;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            transform: translateY(4px);
+        }
+        .copy-toast.show { opacity: 1; transform: translateY(0); }
 
         /* SPALTE 3: Stats Stacks */
         .stats-container { display: flex; flex-direction: column; gap: 12px; }
@@ -372,15 +450,22 @@
         .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
         .stat-value { font-size: 1.6rem; font-weight: 800; font-family: 'Georgia', serif; }
 
-        /* ZEILE UNTEN: Discord Status */
+        /* ZEILE UNTEN: Discord Status + Live Clock */
         .status-banner { 
             grid-column: 1 / -1; 
             display: flex; 
             align-items: center; 
-            gap: 15px; 
+            justify-content: space-between;
             font-size: 0.9rem; 
             padding: 16px 24px; 
             margin-top: 10px; 
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .status-content-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         .status-dot { 
             width: 12px; 
@@ -406,7 +491,6 @@
 
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
 
-        /* Game & Spotify Icons im Status Banner */
         .activity-icon {
             width: 22px;
             height: 22px;
@@ -416,6 +500,19 @@
             vertical-align: middle;
             box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
             display: inline-block;
+        }
+
+        .live-clock-badge {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: monospace;
         }
 
         .footer-text { grid-column: 1 / -1; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.2); letter-spacing: 2px; margin-top: 15px; text-transform: uppercase; }
@@ -446,7 +543,6 @@
             <div class="avatar-wrapper">
                 <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
             </div>
-            <!-- Hier wird der animierte Name gerendert -->
             <h1 id="username" class="username">Loading...</h1>
             <p id="bio" class="bio">...</p>
             <div id="links-container" class="links-list"></div>
@@ -457,7 +553,15 @@
                 <div class="track-info-container">
                     <img id="yt-cover" src="https://via.placeholder.com/150" alt="Album Art" class="album-art">
                     <div class="track-details">
-                        <div id="yt-title" class="track-title">Loading...</div>
+                        <div class="track-header">
+                            <div id="yt-title" class="track-title">Loading...</div>
+                            <div class="equalizer" id="equalizer">
+                                <span class="eq-bar"></span>
+                                <span class="eq-bar"></span>
+                                <span class="eq-bar"></span>
+                                <span class="eq-bar"></span>
+                            </div>
+                        </div>
                         <div id="yt-artist" class="track-artist">Silence</div>
                     </div>
                 </div>
@@ -474,18 +578,19 @@
                     </div>
                     
                     <div class="control-buttons">
-                        <button class="btn-control" id="prev-btn"><i class="fas fa-backward"></i></button>
-                        <button class="btn-control btn-play" id="play-pause-btn"><i class="fas fa-play"></i></button>
-                        <button class="btn-control" id="next-btn"><i class="fas fa-forward"></i></button>
+                        <button class="btn-control" id="prev-btn" title="Vorheriger Track (Pfeil links)"><i class="fas fa-backward"></i></button>
+                        <button class="btn-control btn-play" id="play-pause-btn" title="Play/Pause (Leertaste)"><i class="fas fa-play"></i></button>
+                        <button class="btn-control" id="next-btn" title="Nächster Track (Pfeil rechts)"><i class="fas fa-forward"></i></button>
                     </div>
 
                     <div class="volume-container">
-                        <i class="fas fa-volume-down"></i>
+                        <i class="fas fa-volume-down" id="mute-icon" style="cursor:pointer;" title="Mute (M)"></i>
                         <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
                     </div>
                 </div>
 
-                <div class="discord-guild-box">
+                <div class="discord-guild-box" id="discord-copy-box" title="Klicke um Discord-ID zu kopieren">
+                    <div class="copy-toast" id="copy-toast">Copied to Clipboard! ✓</div>
                     <div class="discord-guild-info">
                         <i class="fab fa-discord" style="color: #5865F2; font-size: 1.3rem;"></i>
                         <span id="discord-guild-stats">0 Online Members</span>
@@ -515,8 +620,13 @@
         </div>
 
         <div class="card status-banner">
-            <div class="status-dot"></div>
-            <span id="discord-presence">Connecting to Discord...</span>
+            <div class="status-content-left">
+                <div class="status-dot"></div>
+                <span id="discord-presence">Connecting to Discord...</span>
+            </div>
+            <div class="live-clock-badge" id="live-clock">
+                <i class="far fa-clock"></i> <span>--:--:--</span>
+            </div>
         </div>
 
         <div class="footer-text">Website Coded by &bull; Upperechelon/Vengeance Utilities</div>
@@ -540,6 +650,54 @@
             titleText = titleText.substring(1) + titleText.substring(0, 1);
             document.title = titleText;
         }, 300);
+
+        // LIVE-UHRZEIT ANZEIGE
+        function updateClock() {
+            const clockEl = document.querySelector('#live-clock span');
+            if (clockEl) {
+                const now = new Date();
+                clockEl.innerText = 'DE • ' + now.toLocaleTimeString('de-DE');
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 3D TILT & MOUSE-SPOTLIGHT EFFECT FÜR BENTO-CARDS
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+
+                // 3D Tilt Winkel berechnen (maximal 6 Grad Neigung)
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -5;
+                const rotateY = ((x - centerX) / centerX) * 5;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
+            });
+        });
+
+        // CLICK-TO-COPY FÜR DISCORD
+        const discordBox = document.getElementById('discord-copy-box');
+        const copyToast = document.getElementById('copy-toast');
+        if (discordBox) {
+            discordBox.addEventListener('click', (e) => {
+                if (e.target.closest('#discord-guild-invite')) return; // Invite Button klickt normal durch
+                navigator.clipboard.writeText(DEFAULT_DISCORD_USER_ID).then(() => {
+                    copyToast.classList.add('show');
+                    setTimeout(() => copyToast.classList.remove('show'), 2000);
+                });
+            });
+        }
 
         // WELLEN-NAME RENDERN
         function setAnimatedUsername(name) {
@@ -768,20 +926,27 @@
             });
         }
 
+        function togglePlayPause() {
+            if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
+            const state = ytPlayer.getPlayerState();
+            const icon = document.querySelector('#play-pause-btn i');
+            const eq = document.getElementById('equalizer');
+
+            if (state === YT.PlayerState.PLAYING) {
+                ytPlayer.pauseVideo();
+                icon.className = 'fas fa-play';
+                eq.classList.remove('playing');
+            } else {
+                ytPlayer.playVideo();
+                icon.className = 'fas fa-pause';
+                eq.classList.add('playing');
+            }
+        }
+
         function onPlayerReady(event) {
             ytPlayer.setVolume(document.getElementById('volume-slider').value);
 
-            document.getElementById('play-pause-btn').addEventListener('click', function() {
-                if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
-                const state = ytPlayer.getPlayerState();
-                const icon = this.querySelector('i');
-                if (state === YT.PlayerState.PLAYING) {
-                    ytPlayer.pauseVideo(); icon.className = 'fas fa-play';
-                } else {
-                    ytPlayer.playVideo(); icon.className = 'fas fa-pause';
-                }
-            });
-
+            document.getElementById('play-pause-btn').addEventListener('click', togglePlayPause);
             document.getElementById('next-btn').addEventListener('click', () => changeSong(1));
             document.getElementById('prev-btn').addEventListener('click', () => changeSong(-1));
             
@@ -793,10 +958,52 @@
                 if (totalDuration > 0) ytPlayer.seekTo(totalDuration * clickPosition, true);
             });
 
-            document.getElementById('volume-slider').addEventListener('input', function() {
+            const volumeSlider = document.getElementById('volume-slider');
+            volumeSlider.addEventListener('input', function() {
                 if (ytPlayer) ytPlayer.setVolume(this.value);
             });
+
+            // MUTE TOGGLE
+            document.getElementById('mute-icon').addEventListener('click', () => {
+                if (!ytPlayer) return;
+                if (ytPlayer.isMuted()) {
+                    ytPlayer.unMute();
+                    document.getElementById('mute-icon').className = 'fas fa-volume-down';
+                } else {
+                    ytPlayer.mute();
+                    document.getElementById('mute-icon').className = 'fas fa-volume-mute';
+                }
+            });
             
+            // KEYBOARD SHORTCUTS FÜR DEN PLAYER
+            window.addEventListener('keydown', (e) => {
+                if (['input', 'textarea'].includes(document.activeElement.tagName.toLowerCase())) return;
+
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlayPause();
+                } else if (e.code === 'ArrowRight') {
+                    e.preventDefault();
+                    changeSong(1);
+                } else if (e.code === 'ArrowLeft') {
+                    e.preventDefault();
+                    changeSong(-1);
+                } else if (e.code === 'KeyM') {
+                    e.preventDefault();
+                    document.getElementById('mute-icon').click();
+                } else if (e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    let v = Math.min(100, parseInt(volumeSlider.value) + 5);
+                    volumeSlider.value = v;
+                    if (ytPlayer) ytPlayer.setVolume(v);
+                } else if (e.code === 'ArrowDown') {
+                    e.preventDefault();
+                    let v = Math.max(0, parseInt(volumeSlider.value) - 5);
+                    volumeSlider.value = v;
+                    if (ytPlayer) ytPlayer.setVolume(v);
+                }
+            });
+
             setInterval(() => {
                 if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     const current = ytPlayer.getCurrentTime();
@@ -817,6 +1024,7 @@
             ytPlayer.loadVideoById(playlist[currentSongIndex].id);
             updatePlayerUI();
             document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
+            document.getElementById('equalizer').classList.add('playing');
         }
 
         function updatePlayerUI() {
@@ -846,6 +1054,15 @@
         }
 
         function onPlayerStateChange(event) {
+            const eq = document.getElementById('equalizer');
+            const icon = document.querySelector('#play-pause-btn i');
+            if (event.data === YT.PlayerState.PLAYING) {
+                eq.classList.add('playing');
+                icon.className = 'fas fa-pause';
+            } else {
+                eq.classList.remove('playing');
+                icon.className = 'fas fa-play';
+            }
             if (event.data === YT.PlayerState.ENDED) changeSong(1); 
         }
 
