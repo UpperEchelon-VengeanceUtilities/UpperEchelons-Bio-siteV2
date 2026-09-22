@@ -233,7 +233,7 @@
             z-index: 2;
         }
 
-        /* ANIMIERTER WECHSELNDER / WELLEN-NAME */
+        /* ANIMIERTER WELLEN-NAME */
         .username {
             font-size: 1.35rem;
             font-weight: 800;
@@ -256,12 +256,8 @@
         }
 
         @keyframes waveMotion {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-5px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         @keyframes colorFade {
@@ -334,9 +330,7 @@
             transition: transform 0.3s ease;
         }
 
-        .album-art:hover {
-            transform: scale(1.03);
-        }
+        .album-art:hover { transform: scale(1.03); }
 
         .track-details { flex-grow: 1; }
         .track-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
@@ -411,6 +405,19 @@
         }
 
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
+
+        /* Game & Spotify Icons im Status Banner */
+        .activity-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-right: 8px;
+            vertical-align: middle;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+            display: inline-block;
+        }
+
         .footer-text { grid-column: 1 / -1; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.2); letter-spacing: 2px; margin-top: 15px; text-transform: uppercase; }
     </style>
 </head>
@@ -520,7 +527,6 @@
         const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
         const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Deine Discord IDs als feste Fallbacks hinterlegt
         const DEFAULT_DISCORD_USER_ID = '935755290203283546';
         const DEFAULT_DISCORD_SERVER_ID = '1106609783680802886';
 
@@ -535,7 +541,7 @@
             document.title = titleText;
         }, 300);
 
-        // FUNKTION: WELLEN-NAME MIT BLAU-ROTEN EFFEKT RENDERN
+        // WELLEN-NAME RENDERN
         function setAnimatedUsername(name) {
             const container = document.getElementById('username');
             container.innerHTML = '';
@@ -567,7 +573,7 @@
         const savedTheme = localStorage.getItem('vengeance-theme');
         if(savedTheme && savedTheme !== 'purple') document.body.classList.add('theme-v-' + savedTheme);
 
-        // DISCORD PRESENCE UI UPDATE
+        // DISCORD STATUS UI MIT GAME-ICONS & SPOTIFY
         function updateDiscordPresenceUI(data) {
             const statusDot = document.querySelector('.status-dot');
             const statusText = document.getElementById('discord-presence');
@@ -578,13 +584,31 @@
 
             // 1. Spotify
             if (data.listening_to_spotify && data.spotify) {
-                statusText.innerHTML = `<i class="fab fa-spotify" style="color:#1ed760; margin-right:6px;"></i> Listening to Spotify: <strong>${data.spotify.song}</strong> by ${data.spotify.artist}`;
+                statusText.innerHTML = `
+                    <img src="${data.spotify.album_art_url}" class="activity-icon" alt="Spotify Art">
+                    Listening to Spotify: <strong>${data.spotify.song}</strong> by ${data.spotify.artist}
+                `;
                 return;
             }
 
             // 2. Spiele & Rich Presence Aktivitäten (Type 0 = Playing, Type 1 = Streaming)
             const gameActivity = (data.activities || []).find(act => act.type === 0 || act.type === 1);
             if (gameActivity) {
+                let iconHtml = '<i class="fas fa-gamepad" style="color:var(--accent); margin-right:8px;"></i>';
+
+                if (gameActivity.assets && gameActivity.assets.large_image) {
+                    let imgKey = gameActivity.assets.large_image;
+                    let iconUrl = '';
+
+                    if (imgKey.startsWith('mp:external/')) {
+                        iconUrl = `https://media.discordapp.net/${imgKey.replace('mp:', '')}`;
+                    } else {
+                        iconUrl = `https://cdn.discordapp.com/app-assets/${gameActivity.application_id}/${imgKey}.png`;
+                    }
+
+                    iconHtml = `<img src="${iconUrl}" class="activity-icon" alt="Game Icon" onerror="this.outerHTML='<i class=\\\'fas fa-gamepad\\\' style=\\\'color:var(--accent); margin-right:8px;\\\'></i>'">`;
+                }
+
                 let info = `Playing: <strong>${gameActivity.name}</strong>`;
                 if (gameActivity.details) {
                     info += ` — ${gameActivity.details}`;
@@ -592,11 +616,12 @@
                 if (gameActivity.state) {
                     info += ` (${gameActivity.state})`;
                 }
-                statusText.innerHTML = `<i class="fas fa-gamepad" style="color:var(--accent); margin-right:6px;"></i> ${info}`;
+
+                statusText.innerHTML = `${iconHtml} ${info}`;
                 return;
             }
 
-            // 3. Reiner Status (Online, Idle, DND, Offline)
+            // 3. Reiner Status
             const statusLabels = {
                 online: 'Online — Active on Discord',
                 idle: 'Idle — Weg / Abwesend',
@@ -606,7 +631,7 @@
             statusText.innerText = statusLabels[discordStatus] || 'Active on Discord';
         }
 
-        // LANYARD LIVE WEBSOCKET VERBINDUNG
+        // LANYARD WEBSOCKET LIVE STREAM
         let lanyardSocket = null;
         let lanyardHeartbeat = null;
 
@@ -616,7 +641,6 @@
                 clearInterval(lanyardHeartbeat);
             }
 
-            // Initiale REST Abfrage
             fetch(`https://api.lanyard.rest/v1/users/${userId}`)
                 .then(res => res.json())
                 .then(res => {
@@ -624,13 +648,11 @@
                 })
                 .catch(() => {});
 
-            // WebSocket für Realtime Events
             lanyardSocket = new WebSocket('wss://api.lanyard.rest/socket');
 
             lanyardSocket.onmessage = (event) => {
                 const message = JSON.parse(event.data);
 
-                // Opcode 1: Hello -> Heartbeat starten und Account subscriben
                 if (message.op === 1) {
                     const interval = message.d.heartbeat_interval;
                     lanyardHeartbeat = setInterval(() => {
@@ -645,7 +667,6 @@
                     }));
                 }
 
-                // Opcode 0: Event (INIT_STATE oder PRESENCE_UPDATE)
                 if (message.op === 0) {
                     updateDiscordPresenceUI(message.d);
                 }
@@ -653,7 +674,6 @@
 
             lanyardSocket.onclose = () => {
                 clearInterval(lanyardHeartbeat);
-                // Reconnect nach 5 Sekunden
                 setTimeout(() => connectLanyardSocket(userId), 5000);
             };
 
@@ -688,7 +708,6 @@
                     document.getElementById('stat-3').innerText = stats.projects || '0+';
                 }
 
-                // Discord Daten laden & Socket initialisieren
                 const { data: discord } = await sbClient.from('discord_config').select('*').eq('id', 1).maybeSingle();
                 const userId = (discord && discord.user_id) ? discord.user_id : DEFAULT_DISCORD_USER_ID;
                 const serverId = (discord && discord.server_id) ? discord.server_id : DEFAULT_DISCORD_SERVER_ID;
@@ -800,7 +819,6 @@
             document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
         }
 
-        // HINTERGRUND-BILD DYNAMISCH ANPASSEN
         function updatePlayerUI() {
             if (!playlist[currentSongIndex]) return;
             const currentSong = playlist[currentSongIndex];
