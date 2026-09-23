@@ -7,6 +7,11 @@
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🔮</text></svg>">
     
+    <!-- Google Fonts Imports -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&family=Roboto+Mono:wght@400;600;700&family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -19,8 +24,10 @@
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
             
+            /* Dynamic Accent - Will be overridden by DB */
             --accent: #7c3aed;
             --accent-glow: rgba(123, 58, 237, 0.25);
+            
             --bg-grad-1: #090514;
             --bg-grad-2: #0b0b0c;
 
@@ -28,18 +35,16 @@
             --stat-pink: rgba(244, 63, 94, 0.1);
             --stat-yellow: rgba(251, 191, 36, 0.1);
             --stat-blue: rgba(59, 130, 246, 0.1);
+            
+            --global-font: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-
-        body.theme-v-red { --accent: #ef4444; --accent-glow: rgba(239, 68, 68, 0.3); --bg-grad-1: #1a0505; --bg-grad-2: #0b0b0c; }
-        body.theme-v-green { --accent: #10b981; --accent-glow: rgba(16, 185, 129, 0.25); --bg-grad-1: #03140e; --bg-grad-2: #0b0b0c; }
-        body.theme-v-void { --accent: #ffffff; --accent-glow: rgba(255, 255, 255, 0.15); --bg-grad-1: #111113; --bg-grad-2: #050505; }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            cursor: default;
+            font-family: var(--global-font);
+            cursor: none; /* Hide default cursor everywhere */
         }
 
         /* ANTI-SCROLL & FIXED VIEWPORT SETUP */
@@ -48,7 +53,7 @@
             color: var(--text-main);
             width: 100vw;
             height: 100vh;
-            overflow: hidden !important; /* Verhindert jegliches Scrollen */
+            overflow: hidden !important; 
             position: relative;
             perspective: 1200px;
         }
@@ -69,29 +74,33 @@
         #boot-screen {
             position: fixed; inset: 0; background: #050505; z-index: 999999;
             display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
-            padding: 40px; color: var(--accent); font-family: 'Courier New', monospace;
+            padding: 40px; color: var(--accent); font-family: 'Roboto Mono', monospace;
             font-size: 1.1rem; text-shadow: 0 0 5px var(--accent-glow);
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            cursor: none;
         }
         .boot-line { margin: 4px 0; opacity: 0; }
 
-        /* CRT SCANLINES */
+        /* CRT SCANLINES - Dynamic Display */
         .scanlines {
             position: fixed; inset: 0; z-index: 9997; pointer-events: none;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
             background-size: 100% 4px;
+            display: none; /* Controlled via DB */
         }
 
-        /* CUSTOM CYBER CURSOR */
+        /* CUSTOM CYBER CURSOR - Fixed Offset */
         #custom-cursor {
             position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
             pointer-events: none; z-index: 9999; box-shadow: 0 0 10px var(--accent);
             transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background-color 0.2s;
+            will-change: left, top;
         }
         #cursor-trail {
             position: fixed; top: 0; left: 0; width: 24px; height: 24px; border: 1px solid var(--accent); border-radius: 50%;
             pointer-events: none; z-index: 9998; opacity: 0.5;
             transform: translate(-50%, -50%); transition: transform 0.08s ease-out, border-color 0.2s;
+            will-change: left, top;
         }
 
         /* PARTICLE & BG */
@@ -107,19 +116,19 @@
             background-size: 40px 40px; z-index: 1; pointer-events: none;
         }
 
+        /* Solid Dark Background mode */
+        .solid-bg-mode .yt-backdrop {
+            background-image: radial-gradient(circle at center, var(--bg-grad-1), var(--bg-grad-2)) !important;
+            filter: none;
+            transform: scale(1);
+        }
+
         .header-actions { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; align-items: center; gap: 10px; }
         .action-btn {
             background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); padding: 10px 14px;
-            border-radius: 10px; cursor: pointer; backdrop-filter: blur(10px); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s;
+            border-radius: 10px; cursor: none; backdrop-filter: blur(10px); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s;
         }
         .action-btn:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-        .theme-dropdown {
-            position: absolute; top: 45px; right: 0; background: #121214; border: 1px solid var(--card-border); border-radius: 10px;
-            padding: 6px; display: none; flex-direction: column; gap: 4px; width: 150px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 105;
-        }
-        .theme-dropdown.show { display: flex; }
-        .theme-opt { background: none; border: none; color: var(--text-muted); padding: 8px 12px; text-align: left; cursor: pointer; border-radius: 6px; font-size: 0.85rem; transition: all 0.2s; }
-        .theme-opt:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
 
         /* BENTO GRID (wird über JS skaliert) */
         .bento-container {
@@ -128,7 +137,7 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 20px;
-            transform-origin: center center; /* Wichtig für sauberes Auto-Scaling */
+            transform-origin: center center; 
         }
         @media (min-width: 900px) { .bento-container { grid-template-columns: 310px 1fr 300px; } }
 
@@ -155,24 +164,46 @@
         }
         @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .avatar { width: 94%; height: 94%; border-radius: 26px; object-fit: cover; background: #161619; padding: 2px; z-index: 2; }
+        
         .username { font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; display: inline-flex; justify-content: center; white-space: pre; }
-        .wave-char {
-            display: inline-block; background: linear-gradient(90deg, #3b82f6, #ef4444, #3b82f6); background-size: 200% auto;
+        
+        /* USERNAME EFFECTS */
+        /* Effect: Wave */
+        .effect-wave .wave-char {
+            display: inline-block; background: linear-gradient(90deg, #3b82f6, var(--accent), #3b82f6); background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: waveMotion 2.4s ease-in-out infinite, colorFade 4s ease-in-out infinite alternate; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.45));
         }
         @keyframes waveMotion { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes colorFade {
             0% { background-position: 0% 50%; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5)); }
-            100% { background-position: 100% 50%; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5)); }
+            100% { background-position: 100% 50%; filter: drop-shadow(0 0 10px var(--accent-glow)); }
         }
+        /* Effect: Glow */
+        .effect-glow {
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent), 0 0 30px var(--accent);
+        }
+        /* Effect: Pulse */
+        .effect-pulse {
+            color: #fff;
+            animation: textPulse 2s infinite alternate;
+        }
+        @keyframes textPulse {
+            0% { text-shadow: 0 0 5px var(--accent); }
+            100% { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
+        }
+        /* Effect: None */
+        .effect-none { color: var(--text-main); }
+
+
         .bio { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 12px; }
         .tech-stack-container { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 14px; }
-        .tech-pill { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease; }
+        .tech-pill { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease; cursor: none; }
         .tech-pill:hover { color: var(--text-main); border-color: var(--accent); background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
         .links-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding-right: 4px; }
         .links-list::-webkit-scrollbar { width: 4px; } .links-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        .social-link { display: flex; align-items: center; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 10px; color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: all 0.2s ease; }
+        .social-link { display: flex; align-items: center; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 10px; color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: all 0.2s ease; cursor: none; }
         .social-link i { width: 20px; font-size: 1rem; margin-right: 10px; color: var(--text-muted); }
         .social-link:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--accent); transform: translateX(4px); box-shadow: 0 0 10px var(--accent-glow); }
 
@@ -189,7 +220,7 @@
         .track-details { flex-grow: 1; }
         .track-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
         .track-title { font-size: 1.15rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
-        .queue-toggle-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; transition: color 0.2s; padding: 4px; }
+        .queue-toggle-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; transition: color 0.2s; padding: 4px; cursor: none; }
         .queue-toggle-btn:hover { color: var(--accent); }
         .visualizer-strip { display: flex; align-items: flex-end; gap: 4px; height: 28px; width: 100%; padding: 4px 0; overflow: hidden; }
         .viz-bar { flex: 1; background: linear-gradient(180deg, var(--accent), rgba(255,255,255,0.1)); border-radius: 2px 2px 0 0; height: 4px; transition: height 0.1s ease; box-shadow: 0 0 6px var(--accent-glow); }
@@ -197,13 +228,13 @@
         .player-controls { display: flex; flex-direction: column; gap: 8px; }
         .progress-bar-container { width: 100%; }
         .time-info { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; cursor: pointer; }
+        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; cursor: none; }
         .progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--text-main); box-shadow: 0 0 8px var(--text-main); border-radius: 3px; }
         .control-buttons { display: flex; align-items: center; justify-content: center; gap: 24px; }
         .volume-container { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-size: 0.85rem; }
-        .volume-slider { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; cursor: pointer; }
+        .volume-slider { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; cursor: none; }
         .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--text-main); }
-        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease; }
+        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; transition: all 0.2s ease; cursor: none; }
         .btn-control:hover { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.5); transform: scale(1.1); }
         .btn-play { width: 38px; height: 38px; background: var(--text-main); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s ease; }
         .btn-play:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); transform: scale(1.05); }
@@ -211,14 +242,14 @@
         .playlist-drawer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin 0.3s ease; background: rgba(0,0,0,0.3); border-radius: 10px; display: flex; flex-direction: column; gap: 4px; }
         .playlist-drawer.open { max-height: 180px; overflow-y: auto; margin-top: 10px; padding: 8px; border: 1px solid rgba(255,255,255,0.05); }
         .playlist-drawer::-webkit-scrollbar { width: 4px; } .playlist-drawer::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        .queue-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s; }
+        .queue-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; transition: background 0.15s; cursor: none; }
         .queue-item:hover { background: rgba(255,255,255,0.06); } .queue-item.active { background: var(--accent-glow); border-left: 3px solid var(--accent); }
         .queue-title { color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .queue-artist { color: var(--text-muted); font-size: 0.72rem; }
 
-        .discord-guild-box { display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; position: relative; }
+        .discord-guild-box { display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px; transition: all 0.2s ease; position: relative; cursor: none; }
         .discord-guild-box:hover { background: rgba(88, 101, 242, 0.08); border-color: rgba(88, 101, 242, 0.3); }
         .discord-guild-info { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; }
-        .btn-discord-join { background: #5865F2; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
+        .btn-discord-join { background: #5865F2; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; cursor: none; }
         .btn-discord-join:hover { background: #4752c4; box-shadow: 0 0 15px rgba(88, 101, 242, 0.4); transform: translateY(-1px); } 
         .copy-toast { position: absolute; top: -26px; right: 20px; background: #22c55e; color: #0b0b0c; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 5px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; transform: translateY(4px); }
         .copy-toast.show { opacity: 1; transform: translateY(0); }
@@ -226,14 +257,14 @@
         /* STATS */
         .stats-container { display: flex; flex-direction: column; gap: 12px; }
         .stat-card { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.01); cursor: default; }
-        .stat-card.clickable { cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease; }
+        .stat-card.clickable { transition: transform 0.2s ease, border-color 0.2s ease; cursor: none; }
         .stat-card.clickable:hover { border-color: var(--accent); transform: translateX(4px); }
         .stat-card.green { background: var(--stat-green); } .stat-card.pink { background: var(--stat-pink); }
         .stat-card.yellow { background: var(--stat-yellow); } .stat-card.blue { background: var(--stat-blue); }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
         .stat-value { font-size: 1.6rem; font-weight: 800; font-family: 'Georgia', serif; }
 
-        .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; }
+        .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; cursor: none; }
         .rig-specs-btn:hover { color: var(--text-main); border-color: var(--accent); background: rgba(255, 255, 255, 0.05); }
         .rig-specs-details { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.25); border-radius: 8px; padding: 0 10px; }
         .rig-specs-details.open { max-height: 200px; margin-top: 6px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.05); }
@@ -257,9 +288,9 @@
         .modal-overlay.active .modal-box { transform: scale(1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
         .modal-title { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: color 0.2s; } .modal-close:hover { color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s; cursor: none; } .modal-close:hover { color: var(--text-main); }
         .project-grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
-        .project-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease; }
+        .project-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease; cursor: none; }
         .project-item:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--accent); transform: translateY(-2px); }
         .project-head { display: flex; justify-content: space-between; align-items: center; } .project-name { font-weight: 700; font-size: 0.95rem; }
         .project-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: var(--accent-glow); color: var(--accent); font-weight: 600; } .project-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
@@ -280,7 +311,7 @@
     <style>@keyframes fade { to { opacity: 1; } }</style>
 
     <!-- CRT SCANLINES -->
-    <div class="scanlines"></div>
+    <div class="scanlines" id="scanlines-layer"></div>
 
     <!-- CUSTOM CURSOR -->
     <div id="custom-cursor"></div>
@@ -296,15 +327,6 @@
     <div class="header-actions">
         <button class="action-btn" id="sfx-btn" title="Toggle Sound FX"><i class="fas fa-volume-high"></i></button>
         <button class="action-btn" id="help-btn" title="Keyboard Shortcuts"><i class="fas fa-keyboard"></i></button>
-        <div class="theme-selector" style="position: relative;">
-            <button class="action-btn" id="theme-trigger"><i class="fas fa-palette"></i> Themes</button>
-            <div class="theme-dropdown" id="theme-menu">
-                <button class="theme-opt" data-theme="purple">Ametyst</button>
-                <button class="theme-opt" data-theme="red">Vengeance</button>
-                <button class="theme-opt" data-theme="green">Cyber</button>
-                <button class="theme-opt" data-theme="void">Void</button>
-            </div>
-        </div>
     </div>
 
     <!-- Unsichtbarer YouTube Player -->
@@ -318,7 +340,8 @@
                 <div class="avatar-wrapper">
                     <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
                 </div>
-                <h1 id="username" class="username">Loading...</h1>
+                <!-- Username mit dynamischer Klasse für Effekte -->
+                <h1 id="username" class="username effect-wave">Loading...</h1>
                 <p id="bio" class="bio">...</p>
                 
                 <div class="tech-stack-container">
@@ -365,7 +388,7 @@
                         </div>
 
                         <div class="volume-container">
-                            <i class="fas fa-volume-down" id="mute-icon" style="cursor:pointer;" title="Mute (M)"></i>
+                            <i class="fas fa-volume-down" id="mute-icon" style="cursor:none;" title="Mute (M)"></i>
                             <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
                         </div>
                     </div>
@@ -562,6 +585,7 @@
         let currentSongIndex = 0;
         let ytPlayer;
         let sfxEnabled = true;
+        let usernameEffectStyle = 'wave'; // Default
 
         // --- WEB AUDIO SFX ENGINE ---
         let audioCtx = null;
@@ -595,35 +619,50 @@
             });
         }
 
-        // --- CUSTOM CYBER CURSOR TRAIL ---
+        // --- CUSTOM CYBER CURSOR TRAIL (FIXED POINTER OFFSET) ---
         const cursor = document.getElementById('custom-cursor');
         const trail = document.getElementById('cursor-trail');
-        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
-        let trailX = mouseX, trailY = mouseY;
+        // Initial set off-screen to avoid jumping
+        let mouseX = -100, mouseY = -100;
+        let trailX = -100, trailY = -100;
 
+        // Use pageX/pageY if document is scrolled, but body is overflow hidden so clientX is fine.
         window.addEventListener('mousemove', (e) => {
             mouseX = e.clientX; mouseY = e.clientY;
-            cursor.style.left = `${mouseX}px`; cursor.style.top = `${mouseY}px`;
+            // Immediate update for dot to prevent lag behind actual invisible system cursor
+            cursor.style.left = `${mouseX}px`; 
+            cursor.style.top = `${mouseY}px`;
         });
 
         function animateCursorTrail() {
-            trailX += (mouseX - trailX) * 0.25; trailY += (mouseY - trailY) * 0.25;
-            trail.style.left = `${trailX}px`; trail.style.top = `${trailY}px`;
+            // Smooth follow for the ring
+            trailX += (mouseX - trailX) * 0.25; 
+            trailY += (mouseY - trailY) * 0.25;
+            trail.style.left = `${trailX}px`; 
+            trail.style.top = `${trailY}px`;
             requestAnimationFrame(animateCursorTrail);
         }
         animateCursorTrail();
 
-        document.querySelectorAll('button, a, .clickable, input, .queue-item').forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursor.style.width = '14px'; cursor.style.height = '14px';
-                trail.style.transform = 'translate(-50%, -50%) scale(1.4)'; playSfx('hover');
+        // Add hover effects
+        function applyCursorHoverEffects() {
+            document.querySelectorAll('button, a, .clickable, input, .queue-item, select').forEach(el => {
+                // Prevent adding multiple listeners if called again
+                if(el.dataset.cursorBound) return;
+                el.dataset.cursorBound = "true";
+
+                el.addEventListener('mouseenter', () => {
+                    cursor.style.width = '14px'; cursor.style.height = '14px';
+                    trail.style.transform = 'translate(-50%, -50%) scale(1.4)'; playSfx('hover');
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursor.style.width = '8px'; cursor.style.height = '8px';
+                    trail.style.transform = 'translate(-50%, -50%) scale(1)';
+                });
+                el.addEventListener('click', () => playSfx('click'));
             });
-            el.addEventListener('mouseleave', () => {
-                cursor.style.width = '8px'; cursor.style.height = '8px';
-                trail.style.transform = 'translate(-50%, -50%) scale(1)';
-            });
-            el.addEventListener('click', () => playSfx('click'));
-        });
+        }
+
 
         // --- 16-BAND FREQUENCY VISUALIZER ---
         const vizContainer = document.getElementById('visualizer-strip');
@@ -751,10 +790,6 @@
                 item.className = `queue-item ${idx === currentSongIndex ? 'active' : ''}`;
                 item.innerHTML = `<i class="fas fa-play" style="font-size:0.7rem; color:var(--text-muted);"></i><div style="overflow:hidden;"><div class="queue-title">${song.title}</div><div class="queue-artist">${song.artist}</div></div>`;
                 
-                // Audio Hover on generated elements
-                item.addEventListener('mouseenter', () => { cursor.style.width = '14px'; cursor.style.height = '14px'; trail.style.transform = 'translate(-50%, -50%) scale(1.4)'; playSfx('hover'); });
-                item.addEventListener('mouseleave', () => { cursor.style.width = '8px'; cursor.style.height = '8px'; trail.style.transform = 'translate(-50%, -50%) scale(1)'; });
-
                 item.addEventListener('click', () => {
                     playSfx('click');
                     currentSongIndex = idx;
@@ -767,6 +802,7 @@
                 });
                 playlistDrawer.appendChild(item);
             });
+            applyCursorHoverEffects(); // Re-apply for new DOM elements
         }
 
         // MODAL HANDLERS
@@ -788,29 +824,27 @@
             });
         }
 
-        // WELLEN-NAME RENDERN
+        // WELLEN-NAME RENDERN (Updated for dynamic effects)
         function setAnimatedUsername(name) {
-            const container = document.getElementById('username'); container.innerHTML = ''; const text = name || 'UpperEchelon';
-            [...text].forEach((char, index) => {
-                const span = document.createElement('span'); span.className = 'wave-char'; span.innerText = char === ' ' ? '\u00A0' : char;
-                span.style.animationDelay = `${index * 0.12}s`; container.appendChild(span);
-            });
-        }
+            const container = document.getElementById('username'); 
+            container.innerHTML = ''; 
+            const text = name || 'UpperEchelon';
+            
+            // Set base class based on DB config
+            container.className = `username effect-${usernameEffectStyle}`;
 
-        // THEME ENGINE
-        const trigger = document.getElementById('theme-trigger'); const menu = document.getElementById('theme-menu');
-        trigger.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('show'); });
-        window.addEventListener('click', () => menu.classList.remove('show'));
-        
-        document.querySelectorAll('.theme-opt').forEach(opt => {
-            opt.addEventListener('click', () => {
-                const theme = opt.getAttribute('data-theme'); document.body.className = ''; 
-                if(theme !== 'purple') document.body.classList.add('theme-v-' + theme);
-                localStorage.setItem('vengeance-theme', theme); menu.classList.remove('show');
-            });
-        });
-        const savedTheme = localStorage.getItem('vengeance-theme');
-        if(savedTheme && savedTheme !== 'purple') document.body.classList.add('theme-v-' + savedTheme);
+            if (usernameEffectStyle === 'wave') {
+                [...text].forEach((char, index) => {
+                    const span = document.createElement('span'); 
+                    span.className = 'wave-char'; 
+                    span.innerText = char === ' ' ? '\u00A0' : char;
+                    span.style.animationDelay = `${index * 0.12}s`; 
+                    container.appendChild(span);
+                });
+            } else {
+                container.innerText = text;
+            }
+        }
 
         // DISCORD STATUS UI
         function updateDiscordPresenceUI(data) {
@@ -862,12 +896,59 @@
             lanyardSocket.onerror = () => { try { lanyardSocket.close(); } catch(e) {} };
         }
 
+        // APPLY CUSTOMIZATIONS
+        function applyCustomizations(customization) {
+            if(!customization) return;
+            
+            // 1. Font
+            if(customization.font_family) {
+                document.documentElement.style.setProperty('--global-font', customization.font_family);
+            }
+            
+            // 2. Accent Color
+            if(customization.accent_color) {
+                document.documentElement.style.setProperty('--accent', customization.accent_color);
+                // Convert hex to rgb for glow
+                const hex = customization.accent_color.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.25)`);
+            }
+
+            // 3. Username Effect
+            if(customization.username_effect) {
+                usernameEffectStyle = customization.username_effect;
+            }
+
+            // 4. CRT Scanlines
+            const scanlinesLayer = document.getElementById('scanlines-layer');
+            if(scanlinesLayer) {
+                scanlinesLayer.style.display = customization.crt_scanlines ? 'block' : 'none';
+            }
+
+            // 5. Background Mode (Solid vs YouTube)
+            if(customization.bg_mode_solid) {
+                document.body.classList.add('solid-bg-mode');
+            } else {
+                document.body.classList.remove('solid-bg-mode');
+            }
+        }
+
         // LOAD LIVE DATA
+        let savedUsername = 'UpperEchelon'; // Fallback
         async function loadWebsiteData() {
             try {
+                // Load Customizations FIRST
+                const { data: customization } = await sbClient.from('site_customization').select('*').limit(1).maybeSingle();
+                if(customization) {
+                    applyCustomizations(customization);
+                }
+
                 const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
                 if (profile) {
-                    setAnimatedUsername(profile.username || 'UpperEchelon');
+                    savedUsername = profile.username || 'UpperEchelon';
+                    setAnimatedUsername(savedUsername);
                     document.getElementById('bio').innerText = profile.bio || '';
                     if (profile.avatar_url) document.getElementById('avatar').src = profile.avatar_url;
                 } else setAnimatedUsername('UpperEchelon');
@@ -910,13 +991,10 @@
                     dbLinks.forEach(link => {
                         const a = document.createElement('a'); a.href = link.url; a.target = '_blank'; a.className = 'social-link';
                         a.innerHTML = `<i class="${link.icon}"></i> ${link.name}`; linksContainer.appendChild(a);
-                        // Audio hover for links
-                        a.addEventListener('mouseenter', () => { cursor.style.width = '14px'; cursor.style.height = '14px'; trail.style.transform = 'translate(-50%, -50%) scale(1.4)'; playSfx('hover'); });
-                        a.addEventListener('mouseleave', () => { cursor.style.width = '8px'; cursor.style.height = '8px'; trail.style.transform = 'translate(-50%, -50%) scale(1)'; });
-                        a.addEventListener('click', () => playSfx('click'));
                     });
                 }
                 
+                applyCursorHoverEffects(); // Apply to links etc.
                 updatePlayerUI();
                 if(playlist.length > 0 && typeof YT !== 'undefined' && YT.Player) onYouTubeIframeAPIReady();
                 setTimeout(autoScaleGrid, 100);
