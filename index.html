@@ -54,6 +54,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            cursor: default;
         }
 
         body {
@@ -68,6 +69,36 @@
             overflow-x: hidden;
             position: relative;
             perspective: 1200px;
+        }
+
+        /* CUSTOM CYBER CURSOR */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 10px var(--accent);
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        #cursor-trail {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.5;
+            transform: translate(-50%, -50%);
+            transition: transform 0.08s ease-out, border-color 0.2s;
         }
 
         /* PARTICLE CANVAS */
@@ -215,9 +246,7 @@
             transition: opacity 0.3s ease;
         }
 
-        .card:hover::before {
-            opacity: 1;
-        }
+        .card:hover::before { opacity: 1; }
 
         .card:hover {
             border-color: rgba(255, 255, 255, 0.16);
@@ -274,7 +303,6 @@
             z-index: 2;
         }
 
-        /* ANIMIERTER WELLEN-NAME */
         .username {
             font-size: 1.35rem;
             font-weight: 800;
@@ -302,14 +330,8 @@
         }
 
         @keyframes colorFade {
-            0% {
-                background-position: 0% 50%;
-                filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
-            }
-            100% {
-                background-position: 100% 50%;
-                filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
-            }
+            0% { background-position: 0% 50%; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5)); }
+            100% { background-position: 100% 50%; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5)); }
         }
 
         .bio {
@@ -320,7 +342,6 @@
             flex-shrink: 0;
         }
 
-        /* SKILL PILLS */
         .tech-stack-container {
             width: 100%;
             display: flex;
@@ -388,51 +409,57 @@
 
         /* SPALTE 2: Musik-Player */
         .main-content { display: flex; flex-direction: column; gap: 20px; }
-        .music-player { display: flex; flex-direction: column; gap: 20px; }
+        .music-player { display: flex; flex-direction: column; gap: 16px; position: relative; }
         .track-info-container { display: flex; gap: 20px; align-items: center; }
         
         .album-art {
-            width: 100px;
-            height: 100px;
+            width: 95px;
+            height: 95px;
             border-radius: 12px;
             object-fit: cover;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.08);
             transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
 
         .album-art:hover { transform: scale(1.03); }
 
         .track-details { flex-grow: 1; }
-        .track-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-        .track-title { font-size: 1.2rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px; }
-        
-        /* AUDIO EQUALIZER BARS */
-        .equalizer {
-            display: inline-flex;
+        .track-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        .track-title { font-size: 1.15rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+
+        .queue-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            padding: 4px;
+        }
+        .queue-toggle-btn:hover { color: var(--accent); }
+
+        /* MULTI-BAR FREQUENCY VISUALIZER */
+        .visualizer-strip {
+            display: flex;
             align-items: flex-end;
-            gap: 3px;
-            height: 16px;
-            flex-shrink: 0;
+            gap: 4px;
+            height: 28px;
+            width: 100%;
+            padding: 4px 0;
+            overflow: hidden;
         }
-        .eq-bar {
-            width: 3px;
+        .viz-bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--accent), rgba(255,255,255,0.1));
+            border-radius: 2px 2px 0 0;
             height: 4px;
-            background: var(--accent);
-            border-radius: 2px;
-            transition: height 0.2s ease;
-        }
-        .equalizer.playing .eq-bar:nth-child(1) { animation: bounce 0.8s ease-in-out infinite alternate; }
-        .equalizer.playing .eq-bar:nth-child(2) { animation: bounce 1.1s ease-in-out 0.2s infinite alternate; }
-        .equalizer.playing .eq-bar:nth-child(3) { animation: bounce 0.9s ease-in-out 0.4s infinite alternate; }
-        .equalizer.playing .eq-bar:nth-child(4) { animation: bounce 1.2s ease-in-out 0.1s infinite alternate; }
-
-        @keyframes bounce {
-            0% { height: 4px; }
-            100% { height: 16px; }
+            transition: height 0.1s ease;
+            box-shadow: 0 0 6px var(--accent-glow);
         }
 
-        .track-artist { color: var(--text-muted); font-size: 0.9rem; }
+        .track-artist { color: var(--text-muted); font-size: 0.85rem; }
         .player-controls { display: flex; flex-direction: column; gap: 8px; }
         .progress-bar-container { width: 100%; }
         
@@ -450,7 +477,43 @@
         .btn-play { width: 38px; height: 38px; background: var(--text-main); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s ease; }
         .btn-play:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); transform: scale(1.05); }
 
-        /* DISCORD WIDGET MIT CLICK-TO-COPY */
+        /* PLAYLIST DRAWER / QUEUE */
+        .playlist-drawer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, margin 0.3s ease;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .playlist-drawer.open {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .playlist-drawer::-webkit-scrollbar { width: 4px; }
+        .playlist-drawer::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .queue-item:hover { background: rgba(255,255,255,0.06); }
+        .queue-item.active { background: var(--accent-glow); border-left: 3px solid var(--accent); }
+        .queue-title { color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .queue-artist { color: var(--text-muted); font-size: 0.72rem; }
+
+        /* DISCORD WIDGET */
         .discord-guild-box {
             display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px;
             cursor: pointer;
@@ -626,7 +689,7 @@
 
         .footer-text { grid-column: 1 / -1; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.2); letter-spacing: 2px; margin-top: 15px; text-transform: uppercase; }
 
-        /* MODAL STYLES (PROJECTS & SHORTCUTS) */
+        /* MODAL STYLES */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -740,6 +803,10 @@
 </head>
 <body>
 
+    <!-- CUSTOM CURSOR -->
+    <div id="custom-cursor"></div>
+    <div id="cursor-trail"></div>
+
     <!-- INTERAKTIVES CANVAS-PARTIKEL NETZ -->
     <canvas id="particle-canvas"></canvas>
 
@@ -748,6 +815,7 @@
     <div class="bg-grid-overlay"></div>
 
     <div class="header-actions">
+        <button class="action-btn" id="sfx-btn" title="Toggle Sound FX"><i class="fas fa-volume-high"></i></button>
         <button class="action-btn" id="help-btn" title="Keyboard Shortcuts"><i class="fas fa-keyboard"></i></button>
         <div class="theme-selector" style="position: relative;">
             <button class="action-btn" id="theme-trigger"><i class="fas fa-palette"></i> Themes</button>
@@ -772,7 +840,6 @@
             <h1 id="username" class="username">Loading...</h1>
             <p id="bio" class="bio">...</p>
             
-            <!-- Tech-Stack Badges -->
             <div class="tech-stack-container">
                 <span class="tech-pill"><i class="fas fa-code"></i> C++ / C#</span>
                 <span class="tech-pill"><i class="fab fa-windows"></i> WPF</span>
@@ -790,14 +857,12 @@
                     <div class="track-details">
                         <div class="track-header">
                             <div id="yt-title" class="track-title">Loading...</div>
-                            <div class="equalizer" id="equalizer">
-                                <span class="eq-bar"></span>
-                                <span class="eq-bar"></span>
-                                <span class="eq-bar"></span>
-                                <span class="eq-bar"></span>
-                            </div>
+                            <button class="queue-toggle-btn" id="queue-btn" title="Playlist Warteschlange"><i class="fas fa-list-ul"></i></button>
                         </div>
                         <div id="yt-artist" class="track-artist">Silence</div>
+                        
+                        <!-- 16-BAND AUDIO WAVE VISUALIZER -->
+                        <div class="visualizer-strip" id="visualizer-strip"></div>
                     </div>
                 </div>
                 
@@ -824,6 +889,9 @@
                     </div>
                 </div>
 
+                <!-- PLAYLIST QUEUE DRAWER -->
+                <div class="playlist-drawer" id="playlist-drawer"></div>
+
                 <div class="discord-guild-box" id="discord-copy-box" title="Klicke um Discord-ID zu kopieren">
                     <div class="copy-toast" id="copy-toast">Copied to Clipboard! ✓</div>
                     <div class="discord-guild-info">
@@ -845,7 +913,6 @@
                 <div id="stat-2" class="stat-value">0+</div>
             </div>
             
-            <!-- Interaktives Projects-Card -->
             <div class="card stat-card yellow clickable" id="projects-trigger" title="Klicken um Projekte anzusehen">
                 <div>
                     <div class="stat-label">Projects Built</div>
@@ -964,12 +1031,119 @@
         let playlist = [];
         let currentSongIndex = 0;
         let ytPlayer;
+        let sfxEnabled = true;
+
+        // --- WEB AUDIO SFX ENGINE (Synthesizer UI Clicks) ---
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        function playSfx(type = 'click') {
+            if (!sfxEnabled) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.04);
+                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.04);
+                } else if (type === 'hover') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.03);
+                }
+            } catch (e) {}
+        }
+
+        const sfxBtn = document.getElementById('sfx-btn');
+        if (sfxBtn) {
+            sfxBtn.addEventListener('click', () => {
+                sfxEnabled = !sfxEnabled;
+                sfxBtn.innerHTML = sfxEnabled ? '<i class="fas fa-volume-high"></i>' : '<i class="fas fa-volume-xmark"></i>';
+                playSfx('click');
+            });
+        }
+
+        // --- CUSTOM CYBER CURSOR TRAIL ---
+        const cursor = document.getElementById('custom-cursor');
+        const trail = document.getElementById('cursor-trail');
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let trailX = mouseX, trailY = mouseY;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.style.left = `${mouseX}px`;
+            cursor.style.top = `${mouseY}px`;
+        });
+
+        function animateCursorTrail() {
+            trailX += (mouseX - trailX) * 0.25;
+            trailY += (mouseY - trailY) * 0.25;
+            trail.style.left = `${trailX}px`;
+            trail.style.top = `${trailY}px`;
+            requestAnimationFrame(animateCursorTrail);
+        }
+        animateCursorTrail();
+
+        document.querySelectorAll('button, a, .clickable, input').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.width = '14px';
+                cursor.style.height = '14px';
+                trail.style.transform = 'translate(-50%, -50%) scale(1.4)';
+                playSfx('hover');
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.width = '8px';
+                cursor.style.height = '8px';
+                trail.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+            el.addEventListener('click', () => playSfx('click'));
+        });
+
+        // --- 16-BAND FREQUENCY VISUALIZER GENERATOR ---
+        const vizContainer = document.getElementById('visualizer-strip');
+        const vizBars = [];
+        for (let i = 0; i < 16; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'viz-bar';
+            vizContainer.appendChild(bar);
+            vizBars.push(bar);
+        }
+
+        function updateVisualizer(isPlaying) {
+            vizBars.forEach((bar, idx) => {
+                if (isPlaying) {
+                    const h = Math.floor(Math.random() * 22) + 5;
+                    bar.style.height = `${h}px`;
+                } else {
+                    bar.style.height = '4px';
+                }
+            });
+        }
+        setInterval(() => {
+            const isPlaying = ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING;
+            updateVisualizer(isPlaying);
+        }, 120);
 
         // --- PARTICLE BACKGROUND CANVAS ---
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        let mouse = { x: null, y: null, radius: 120 };
+        let mouse = { x: null, y: null, radius: 130 };
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -992,8 +1166,6 @@
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.size = Math.random() * 2 + 1;
-                this.baseX = this.x;
-                this.baseY = this.y;
                 this.speedX = (Math.random() - 0.5) * 0.6;
                 this.speedY = (Math.random() - 0.5) * 0.6;
             }
@@ -1108,6 +1280,40 @@
             });
         }
 
+        // QUEUE DRAWER TOGGLE
+        const queueBtn = document.getElementById('queue-btn');
+        const playlistDrawer = document.getElementById('playlist-drawer');
+        if (queueBtn && playlistDrawer) {
+            queueBtn.addEventListener('click', () => {
+                playlistDrawer.classList.toggle('open');
+            });
+        }
+
+        function renderQueue() {
+            if (!playlistDrawer) return;
+            playlistDrawer.innerHTML = '';
+            playlist.forEach((song, idx) => {
+                const item = document.createElement('div');
+                item.className = `queue-item ${idx === currentSongIndex ? 'active' : ''}`;
+                item.innerHTML = `
+                    <i class="fas fa-play" style="font-size:0.7rem; color:var(--text-muted);"></i>
+                    <div style="overflow:hidden;">
+                        <div class="queue-title">${song.title}</div>
+                        <div class="queue-artist">${song.artist}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    currentSongIndex = idx;
+                    if (ytPlayer) {
+                        ytPlayer.loadVideoById(playlist[currentSongIndex].id);
+                        updatePlayerUI();
+                        document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
+                    }
+                });
+                playlistDrawer.appendChild(item);
+            });
+        }
+
         // MODAL HANDLERS
         const projectsModal = document.getElementById('projects-modal');
         const projectsTrigger = document.getElementById('projects-trigger');
@@ -1181,7 +1387,7 @@
         const savedTheme = localStorage.getItem('vengeance-theme');
         if(savedTheme && savedTheme !== 'purple') document.body.classList.add('theme-v-' + savedTheme);
 
-        // DISCORD STATUS UI MIT GAME-ICONS & SPOTIFY
+        // DISCORD STATUS UI
         function updateDiscordPresenceUI(data) {
             const statusDot = document.querySelector('.status-dot');
             const statusText = document.getElementById('discord-presence');
@@ -1190,7 +1396,6 @@
             const discordStatus = data.discord_status || 'offline';
             statusDot.className = 'status-dot ' + (discordStatus !== 'offline' ? discordStatus : '');
 
-            // 1. Spotify
             if (data.listening_to_spotify && data.spotify) {
                 statusText.innerHTML = `
                     <img src="${data.spotify.album_art_url}" class="activity-icon" alt="Spotify Art">
@@ -1199,7 +1404,6 @@
                 return;
             }
 
-            // 2. Spiele & Rich Presence Aktivitäten
             const gameActivity = (data.activities || []).find(act => act.type === 0 || act.type === 1);
             if (gameActivity) {
                 let iconHtml = '<i class="fas fa-gamepad" style="color:var(--accent); margin-right:8px;"></i>';
@@ -1218,18 +1422,13 @@
                 }
 
                 let info = `Playing: <strong>${gameActivity.name}</strong>`;
-                if (gameActivity.details) {
-                    info += ` — ${gameActivity.details}`;
-                }
-                if (gameActivity.state) {
-                    info += ` (${gameActivity.state})`;
-                }
+                if (gameActivity.details) info += ` — ${gameActivity.details}`;
+                if (gameActivity.state) info += ` (${gameActivity.state})`;
 
                 statusText.innerHTML = `${iconHtml} ${info}`;
                 return;
             }
 
-            // 3. Reiner Status
             const statusLabels = {
                 online: 'Online — Active on Discord',
                 idle: 'Idle — Weg / Abwesend',
@@ -1239,7 +1438,7 @@
             statusText.innerText = statusLabels[discordStatus] || 'Active on Discord';
         }
 
-        // LANYARD WEBSOCKET LIVE STREAM
+        // LANYARD WEBSOCKET
         let lanyardSocket = null;
         let lanyardHeartbeat = null;
 
@@ -1344,6 +1543,8 @@
                     playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];
                 }
 
+                renderQueue();
+
                 const { data: dbLinks } = await sbClient.from('links').select('*');
                 const linksContainer = document.getElementById('links-container');
                 if (dbLinks && dbLinks.length > 0 && linksContainer) {
@@ -1380,16 +1581,13 @@
             if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
             const state = ytPlayer.getPlayerState();
             const icon = document.querySelector('#play-pause-btn i');
-            const eq = document.getElementById('equalizer');
 
             if (state === YT.PlayerState.PLAYING) {
                 ytPlayer.pauseVideo();
                 icon.className = 'fas fa-play';
-                eq.classList.remove('playing');
             } else {
                 ytPlayer.playVideo();
                 icon.className = 'fas fa-pause';
-                eq.classList.add('playing');
             }
         }
 
@@ -1413,7 +1611,6 @@
                 if (ytPlayer) ytPlayer.setVolume(this.value);
             });
 
-            // MUTE TOGGLE
             document.getElementById('mute-icon').addEventListener('click', () => {
                 if (!ytPlayer) return;
                 if (ytPlayer.isMuted()) {
@@ -1425,7 +1622,6 @@
                 }
             });
             
-            // KEYBOARD SHORTCUTS FÜR DEN PLAYER
             window.addEventListener('keydown', (e) => {
                 if (['input', 'textarea'].includes(document.activeElement.tagName.toLowerCase())) return;
 
@@ -1473,8 +1669,8 @@
             if (currentSongIndex < 0) currentSongIndex = playlist.length - 1;
             ytPlayer.loadVideoById(playlist[currentSongIndex].id);
             updatePlayerUI();
+            renderQueue();
             document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
-            document.getElementById('equalizer').classList.add('playing');
         }
 
         function updatePlayerUI() {
@@ -1504,13 +1700,10 @@
         }
 
         function onPlayerStateChange(event) {
-            const eq = document.getElementById('equalizer');
             const icon = document.querySelector('#play-pause-btn i');
             if (event.data === YT.PlayerState.PLAYING) {
-                eq.classList.add('playing');
                 icon.className = 'fas fa-pause';
             } else {
-                eq.classList.remove('playing');
                 icon.className = 'fas fa-play';
             }
             if (event.data === YT.PlayerState.ENDED) changeSong(1); 
