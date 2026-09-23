@@ -44,7 +44,7 @@
             margin: 0;
             padding: 0;
             font-family: var(--global-font);
-            cursor: none; /* Hide default cursor everywhere */
+            cursor: none !important; /* Hide default cursor everywhere permanently */
         }
 
         /* ANTI-SCROLL & FIXED VIEWPORT SETUP */
@@ -86,21 +86,21 @@
             position: fixed; inset: 0; z-index: 9997; pointer-events: none;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
             background-size: 100% 4px;
-            display: none; /* Controlled via DB */
+            display: none; 
         }
 
-        /* CUSTOM CYBER CURSOR - Fixed Offset */
+        /* CUSTOM CYBER CURSOR - GPU Accelerated */
         #custom-cursor {
             position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
             pointer-events: none; z-index: 9999; box-shadow: 0 0 10px var(--accent);
-            transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background-color 0.2s;
-            will-change: left, top;
+            transform: translate3d(-50%, -50%, 0); transition: width 0.15s ease, height 0.15s ease, background-color 0.2s;
+            will-change: transform;
         }
         #cursor-trail {
             position: fixed; top: 0; left: 0; width: 24px; height: 24px; border: 1px solid var(--accent); border-radius: 50%;
             pointer-events: none; z-index: 9998; opacity: 0.5;
-            transform: translate(-50%, -50%); transition: transform 0.08s ease-out, border-color 0.2s;
-            will-change: left, top;
+            transform: translate3d(-50%, -50%, 0); transition: width 0.15s ease, height 0.15s ease, border-color 0.2s;
+            will-change: transform;
         }
 
         /* PARTICLE & BG */
@@ -168,7 +168,6 @@
         .username { font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; display: inline-flex; justify-content: center; white-space: pre; }
         
         /* USERNAME EFFECTS */
-        /* Effect: Wave */
         .effect-wave .wave-char {
             display: inline-block; background: linear-gradient(90deg, #3b82f6, var(--accent), #3b82f6); background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -179,23 +178,10 @@
             0% { background-position: 0% 50%; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5)); }
             100% { background-position: 100% 50%; filter: drop-shadow(0 0 10px var(--accent-glow)); }
         }
-        /* Effect: Glow */
-        .effect-glow {
-            color: #fff;
-            text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent), 0 0 30px var(--accent);
-        }
-        /* Effect: Pulse */
-        .effect-pulse {
-            color: #fff;
-            animation: textPulse 2s infinite alternate;
-        }
-        @keyframes textPulse {
-            0% { text-shadow: 0 0 5px var(--accent); }
-            100% { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
-        }
-        /* Effect: None */
+        .effect-glow { color: #fff; text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent), 0 0 30px var(--accent); }
+        .effect-pulse { color: #fff; animation: textPulse 2s infinite alternate; }
+        @keyframes textPulse { 0% { text-shadow: 0 0 5px var(--accent); } 100% { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); } }
         .effect-none { color: var(--text-main); }
-
 
         .bio { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 12px; }
         .tech-stack-container { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 14px; }
@@ -212,7 +198,6 @@
         .music-player { display: flex; flex-direction: column; gap: 16px; position: relative; }
         .track-info-container { display: flex; gap: 20px; align-items: center; }
         
-        /* SPINNING VINYL EFFECT */
         @keyframes spinRecord { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .album-art { width: 95px; height: 95px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); transition: all 0.4s ease; flex-shrink: 0; }
         .album-art.playing { animation: spinRecord 5s linear infinite; border-radius: 50%; box-shadow: 0 0 0 4px #121214, 0 0 15px var(--accent-glow); }
@@ -262,7 +247,7 @@
         .stat-card.green { background: var(--stat-green); } .stat-card.pink { background: var(--stat-pink); }
         .stat-card.yellow { background: var(--stat-yellow); } .stat-card.blue { background: var(--stat-blue); }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
-        .stat-value { font-size: 1.6rem; font-weight: 800; font-family: 'Georgia', serif; }
+        .stat-value { font-size: 1.6rem; font-weight: 800; font-family: var(--global-font); }
 
         .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; cursor: none; }
         .rig-specs-btn:hover { color: var(--text-main); border-color: var(--accent); background: rgba(255, 255, 255, 0.05); }
@@ -526,6 +511,10 @@
     </div>
 
     <script>
+        // GLOBALS
+        let currentGridScale = 1;
+        let ytApiReady = false;
+
         // --- BOOT SEQUENCE LOGIC ---
         window.addEventListener('load', () => {
             setTimeout(() => {
@@ -546,12 +535,11 @@
             const grid = document.getElementById('bento-grid');
             if (!wrapper || !grid) return;
             
-            // Set reset to measure correctly
             grid.style.transform = `scale(1)`;
             
             const availableHeight = window.innerHeight;
             const availableWidth = window.innerWidth;
-            const padding = 60; // Puffer für Rand
+            const padding = 60; 
             
             const gridRect = grid.getBoundingClientRect();
             const gridHeight = gridRect.height + padding;
@@ -559,17 +547,18 @@
 
             let scale = 1;
             
-            // Wenn Grid zu hoch für Monitor
             if (gridHeight > availableHeight) {
                 scale = availableHeight / gridHeight;
             }
-            // Wenn Grid zusätzlich zu breit ist (Handy/Tablets)
             if (gridWidth * scale > availableWidth) {
                 scale = availableWidth / gridWidth;
             }
             
             if (scale < 1) {
                 grid.style.transform = `scale(${scale})`;
+                currentGridScale = scale;
+            } else {
+                currentGridScale = 1;
             }
         }
         window.addEventListener('resize', autoScaleGrid);
@@ -583,9 +572,15 @@
 
         let playlist = [];
         let currentSongIndex = 0;
-        let ytPlayer;
+        let ytPlayer = null;
         let sfxEnabled = true;
-        let usernameEffectStyle = 'wave'; // Default
+        let usernameEffectStyle = 'wave'; 
+
+        // --- YOUTUBE API RACE CONDITION FIX ---
+        window.onYouTubeIframeAPIReady = function() {
+            ytApiReady = true;
+            tryInitPlayer();
+        };
 
         // --- WEB AUDIO SFX ENGINE ---
         let audioCtx = null;
@@ -619,50 +614,43 @@
             });
         }
 
-        // --- CUSTOM CYBER CURSOR TRAIL (FIXED POINTER OFFSET) ---
+        // --- CUSTOM CYBER CURSOR TRAIL (PERFECT SYNC) ---
         const cursor = document.getElementById('custom-cursor');
         const trail = document.getElementById('cursor-trail');
-        // Initial set off-screen to avoid jumping
         let mouseX = -100, mouseY = -100;
         let trailX = -100, trailY = -100;
+        let isHovering = false;
 
-        // Use pageX/pageY if document is scrolled, but body is overflow hidden so clientX is fine.
         window.addEventListener('mousemove', (e) => {
             mouseX = e.clientX; mouseY = e.clientY;
-            // Immediate update for dot to prevent lag behind actual invisible system cursor
-            cursor.style.left = `${mouseX}px`; 
-            cursor.style.top = `${mouseY}px`;
+            // Instant update via CSS variable or translate3d avoids JS reflow lag
+            cursor.style.transform = `translate3d(calc(${mouseX}px - 50%), calc(${mouseY}px - 50%), 0)`;
         });
 
         function animateCursorTrail() {
-            // Smooth follow for the ring
             trailX += (mouseX - trailX) * 0.25; 
             trailY += (mouseY - trailY) * 0.25;
-            trail.style.left = `${trailX}px`; 
-            trail.style.top = `${trailY}px`;
+            trail.style.transform = `translate3d(calc(${trailX}px - 50%), calc(${trailY}px - 50%), 0) scale(${isHovering ? 1.4 : 1})`;
             requestAnimationFrame(animateCursorTrail);
         }
         animateCursorTrail();
 
-        // Add hover effects
         function applyCursorHoverEffects() {
             document.querySelectorAll('button, a, .clickable, input, .queue-item, select').forEach(el => {
-                // Prevent adding multiple listeners if called again
                 if(el.dataset.cursorBound) return;
                 el.dataset.cursorBound = "true";
 
                 el.addEventListener('mouseenter', () => {
                     cursor.style.width = '14px'; cursor.style.height = '14px';
-                    trail.style.transform = 'translate(-50%, -50%) scale(1.4)'; playSfx('hover');
+                    isHovering = true; playSfx('hover');
                 });
                 el.addEventListener('mouseleave', () => {
                     cursor.style.width = '8px'; cursor.style.height = '8px';
-                    trail.style.transform = 'translate(-50%, -50%) scale(1)';
+                    isHovering = false;
                 });
                 el.addEventListener('click', () => playSfx('click'));
             });
         }
-
 
         // --- 16-BAND FREQUENCY VISUALIZER ---
         const vizContainer = document.getElementById('visualizer-strip');
@@ -751,13 +739,21 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // 3D TILT EFFECT
+        // 3D TILT EFFECT (Fixed with scaling factor)
         document.querySelectorAll('.card').forEach(card => {
             card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+                const rect = card.getBoundingClientRect(); 
+                // Fix: Divide by currentGridScale to get exact local card coordinates
+                const x = (e.clientX - rect.left) / currentGridScale; 
+                const y = (e.clientY - rect.top) / currentGridScale;
+                
                 card.style.setProperty('--mouse-x', `${x}px`); card.style.setProperty('--mouse-y', `${y}px`);
-                const centerX = rect.width / 2; const centerY = rect.height / 2;
-                const rotateX = ((y - centerY) / centerY) * -5; const rotateY = ((x - centerX) / centerX) * 5;
+                
+                const centerX = (rect.width / currentGridScale) / 2; 
+                const centerY = (rect.height / currentGridScale) / 2;
+                const rotateX = ((y - centerY) / centerY) * -5; 
+                const rotateY = ((x - centerX) / centerX) * 5;
+                
                 card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
             });
             card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)'; });
@@ -769,7 +765,7 @@
             rigToggle.addEventListener('click', () => {
                 const isOpen = rigDetails.classList.toggle('open');
                 rigChevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-                setTimeout(autoScaleGrid, 350); // Resize event triggern falls Accordion Layout verändert
+                setTimeout(autoScaleGrid, 350);
             });
         }
 
@@ -791,9 +787,8 @@
                 item.innerHTML = `<i class="fas fa-play" style="font-size:0.7rem; color:var(--text-muted);"></i><div style="overflow:hidden;"><div class="queue-title">${song.title}</div><div class="queue-artist">${song.artist}</div></div>`;
                 
                 item.addEventListener('click', () => {
-                    playSfx('click');
                     currentSongIndex = idx;
-                    if (ytPlayer) {
+                    if (ytPlayer && ytApiReady) {
                         ytPlayer.loadVideoById(playlist[currentSongIndex].id);
                         updatePlayerUI();
                         document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
@@ -802,7 +797,7 @@
                 });
                 playlistDrawer.appendChild(item);
             });
-            applyCursorHoverEffects(); // Re-apply for new DOM elements
+            applyCursorHoverEffects(); 
         }
 
         // MODAL HANDLERS
@@ -824,13 +819,12 @@
             });
         }
 
-        // WELLEN-NAME RENDERN (Updated for dynamic effects)
+        // WELLEN-NAME RENDERN 
         function setAnimatedUsername(name) {
             const container = document.getElementById('username'); 
             container.innerHTML = ''; 
             const text = name || 'UpperEchelon';
             
-            // Set base class based on DB config
             container.className = `username effect-${usernameEffectStyle}`;
 
             if (usernameEffectStyle === 'wave') {
@@ -900,15 +894,12 @@
         function applyCustomizations(customization) {
             if(!customization) return;
             
-            // 1. Font
             if(customization.font_family) {
                 document.documentElement.style.setProperty('--global-font', customization.font_family);
             }
             
-            // 2. Accent Color
             if(customization.accent_color) {
                 document.documentElement.style.setProperty('--accent', customization.accent_color);
-                // Convert hex to rgb for glow
                 const hex = customization.accent_color.replace('#', '');
                 const r = parseInt(hex.substring(0, 2), 16);
                 const g = parseInt(hex.substring(2, 4), 16);
@@ -916,18 +907,15 @@
                 document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.25)`);
             }
 
-            // 3. Username Effect
             if(customization.username_effect) {
                 usernameEffectStyle = customization.username_effect;
             }
 
-            // 4. CRT Scanlines
             const scanlinesLayer = document.getElementById('scanlines-layer');
             if(scanlinesLayer) {
                 scanlinesLayer.style.display = customization.crt_scanlines ? 'block' : 'none';
             }
 
-            // 5. Background Mode (Solid vs YouTube)
             if(customization.bg_mode_solid) {
                 document.body.classList.add('solid-bg-mode');
             } else {
@@ -936,14 +924,14 @@
         }
 
         // LOAD LIVE DATA
-        let savedUsername = 'UpperEchelon'; // Fallback
+        let savedUsername = 'UpperEchelon'; 
         async function loadWebsiteData() {
             try {
-                // Load Customizations FIRST
-                const { data: customization } = await sbClient.from('site_customization').select('*').limit(1).maybeSingle();
-                if(customization) {
-                    applyCustomizations(customization);
-                }
+                // Try Catch für Customization, falls Table in Supabase noch fehlt (Crash verhindern)
+                try {
+                    const { data: customization } = await sbClient.from('site_customization').select('*').limit(1).maybeSingle();
+                    if(customization) applyCustomizations(customization);
+                } catch(e) { console.log("Customization table not found yet."); }
 
                 const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
                 if (profile) {
@@ -979,8 +967,11 @@
                 }
 
                 const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*').order('position', { ascending: true });
-                if (dbPlaylist && dbPlaylist.length > 0) playlist = dbPlaylist.map(song => ({ title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url }));
-                else playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];
+                if (dbPlaylist && dbPlaylist.length > 0) {
+                    playlist = dbPlaylist.map(song => ({ title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url }));
+                } else {
+                    playlist = [{ title: "No Songs", artist: "Empty DB", id: "7qFfFVSerQo", cover: "https://img.youtube.com/vi/7qFfFVSerQo/hqdefault.jpg" }];
+                }
 
                 renderQueue();
 
@@ -994,21 +985,23 @@
                     });
                 }
                 
-                applyCursorHoverEffects(); // Apply to links etc.
+                applyCursorHoverEffects(); 
                 updatePlayerUI();
-                if(playlist.length > 0 && typeof YT !== 'undefined' && YT.Player) onYouTubeIframeAPIReady();
+                tryInitPlayer(); // Versuch Player zu laden, falls API schon da ist
                 setTimeout(autoScaleGrid, 100);
 
             } catch (err) { console.error(err); }
         }
 
-        // --- YOUTUBE CONFIG ---
-        function onYouTubeIframeAPIReady() {
-            if(playlist.length === 0 || ytPlayer) return;
-            ytPlayer = new YT.Player('youtube-player', {
-                height: '0', width: '0', videoId: playlist[currentSongIndex]?.id || '',
-                playerVars: { 'autoplay': 0, 'controls': 0 }, events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
-            });
+        // --- YOUTUBE INIT FIX ---
+        function tryInitPlayer() {
+            if (ytApiReady && playlist.length > 0 && !ytPlayer) {
+                ytPlayer = new YT.Player('youtube-player', {
+                    height: '0', width: '0', videoId: playlist[currentSongIndex]?.id || '',
+                    playerVars: { 'autoplay': 0, 'controls': 0 }, 
+                    events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+                });
+            }
         }
 
         function togglePlayPause() {
@@ -1067,23 +1060,41 @@
             currentSongIndex += direction;
             if (currentSongIndex >= playlist.length) currentSongIndex = 0;
             if (currentSongIndex < 0) currentSongIndex = playlist.length - 1;
-            ytPlayer.loadVideoById(playlist[currentSongIndex].id);
+            if(ytPlayer && ytApiReady) {
+                ytPlayer.loadVideoById(playlist[currentSongIndex].id);
+            }
             updatePlayerUI(); renderQueue();
             document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
             document.getElementById('yt-cover').classList.add('playing');
         }
 
+        // --- BROKEN IMAGE FALLBACK FIX ---
         function updatePlayerUI() {
             if (!playlist[currentSongIndex]) return;
             const currentSong = playlist[currentSongIndex];
-            document.getElementById('yt-title').innerText = currentSong.title; document.getElementById('yt-artist').innerText = currentSong.artist; document.getElementById('yt-progress').style.width = '0%';
+            document.getElementById('yt-title').innerText = currentSong.title; 
+            document.getElementById('yt-artist').innerText = currentSong.artist; 
+            document.getElementById('yt-progress').style.width = '0%';
             
-            const imgElement = document.getElementById('yt-cover'); const bgElement = document.getElementById('dynamic-bg');
-            const targetCover = currentSong.cover || `https://img.youtube.com/vi/${currentSong.id}/hqdefault.jpg`;
+            const imgElement = document.getElementById('yt-cover'); 
+            const bgElement = document.getElementById('dynamic-bg');
+            
+            // Fix für broken Dummy-Images (z.B. via.placeholder, das oft geblockt wird)
+            let targetCover = currentSong.cover || currentSong.cover_url;
+            if (!targetCover || targetCover.includes('placeholder.com')) {
+                targetCover = `https://img.youtube.com/vi/${currentSong.id}/hqdefault.jpg`;
+            }
+
             if (targetCover.includes('maxresdefault.jpg')) {
                 imgElement.src = targetCover;
-                imgElement.onerror = function() { this.src = targetCover.replace('maxresdefault.jpg', 'hqdefault.jpg'); bgElement.style.backgroundImage = `url('${this.src}')`; this.onerror = null; };
-            } else imgElement.src = targetCover;
+                imgElement.onerror = function() { 
+                    this.src = targetCover.replace('maxresdefault.jpg', 'hqdefault.jpg'); 
+                    bgElement.style.backgroundImage = `url('${this.src}')`; 
+                    this.onerror = null; 
+                };
+            } else {
+                imgElement.src = targetCover;
+            }
             bgElement.style.backgroundImage = `url('${targetCover}')`;
         }
 
