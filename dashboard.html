@@ -37,8 +37,9 @@
         
         .form-group { margin-bottom: 18px; }
         label { display: block; font-size: 0.85rem; color: var(--text-gray); margin-bottom: 6px; }
-        input[type="text"], textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; color: var(--text-light); font-size: 0.9rem; outline: none; }
-        input:focus, textarea:focus { border-color: var(--accent); }
+        input[type="text"], input[type="color"], select, textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; color: var(--text-light); font-size: 0.9rem; outline: none; }
+        input[type="color"] { padding: 4px 8px; height: 42px; cursor: pointer; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); }
         .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; }
@@ -49,6 +50,13 @@
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--input-bg); border: 1px solid var(--border-color); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px; background-color: var(--text-gray); transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); background-color: white; }
     </style>
 </head>
 <body>
@@ -57,6 +65,7 @@
         <div class="logo"><i class="fas fa-terminal" style="color: var(--accent);"></i> Vengeance OS</div>
         <ul class="nav-list">
             <li class="nav-item active" data-target="tab-profile"><i class="fas fa-user-cog"></i> Profile Settings</li>
+            <li class="nav-item" data-target="tab-customization"><i class="fas fa-paint-brush"></i> Site Customization</li>
             <li class="nav-item" data-target="tab-links"><i class="fas fa-link"></i> Link Manager</li>
             <li class="nav-item" data-target="tab-stats"><i class="fas fa-chart-bar"></i> Stats Adjuster</li>
             <li class="nav-item" data-target="tab-youtube"><i class="fab fa-youtube"></i> YouTube Player</li>
@@ -83,7 +92,59 @@
             </div>
         </div>
 
-        <!-- TAB 2: LINKS -->
+        <!-- TAB 2: SITE CUSTOMIZATION -->
+        <div id="tab-customization" class="tab-content">
+            <div class="admin-card" style="max-width: 600px;">
+                <div class="card-title"><i class="fas fa-paint-roller"></i> Visual Styles & Effects</div>
+                <form id="customization-form">
+                    <div class="form-group">
+                        <label>Global Custom Font</label>
+                        <select id="input-font">
+                            <option value="'Segoe UI', sans-serif">Standard (Segoe UI)</option>
+                            <option value="'Inter', sans-serif">Inter (Clean & Modern)</option>
+                            <option value="'Roboto Mono', monospace">Roboto Mono (Hacker Vibe)</option>
+                            <option value="'Fira Code', monospace">Fira Code (Dev Style)</option>
+                            <option value="'Outfit', sans-serif">Outfit (Bold & Techy)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Global Accent Color (Hex)</label>
+                        <input type="color" id="input-accent-color" value="#7c3aed">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Username Text Effect</label>
+                        <select id="input-username-effect">
+                            <option value="wave">Wave Gradient (Classic)</option>
+                            <option value="glow">Static Neon Glow</option>
+                            <option value="pulse">Pulsing Neon</option>
+                            <option value="none">No Effect</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="margin-bottom: 0;">Enable CRT Scanlines</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="input-crt-scanlines">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="margin-bottom: 0;">Background Mode (Off = YouTube, On = Dark Gradient)</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="input-bg-mode">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-save" style="margin-top: 15px;">Save Styles</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 3: LINKS -->
         <div id="tab-links" class="tab-content">
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fas fa-plus-circle"></i> Add New Social Link</div>
@@ -100,7 +161,7 @@
             </div>
         </div>
 
-        <!-- TAB 3: STATS -->
+        <!-- TAB 4: STATS -->
         <div id="tab-stats" class="tab-content">
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fas fa-sort-numeric-up-alt"></i> Grid Statistics</div>
@@ -114,7 +175,7 @@
             </div>
         </div>
 
-        <!-- TAB 4: YOUTUBE -->
+        <!-- TAB 5: YOUTUBE -->
         <div id="tab-youtube" class="tab-content">
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fab fa-youtube"></i> Manage YouTube Playlist</div>
@@ -131,7 +192,7 @@
             </div>
         </div>
 
-        <!-- TAB 5: DISCORD -->
+        <!-- TAB 6: DISCORD -->
         <div id="tab-discord" class="tab-content">
             <div class="admin-card" style="max-width: 600px;">
                 <div class="card-title"><i class="fab fa-discord"></i> Discord Integration</div>
@@ -152,6 +213,7 @@
     let currentProfileId = 1;
     let currentStatsId = 1;
     let currentDiscordId = 1;
+    let currentCustomizationId = 1; // Assuming ID 1 for customization row
 
     if(sbClient) {
         const dbStatus = document.getElementById('db-status');
@@ -178,6 +240,17 @@
                 document.getElementById('input-username').value = profile.username || '';
                 document.getElementById('input-avatar').value = profile.avatar_url || '';
                 document.getElementById('input-bio').value = profile.bio || '';
+            }
+
+            // Load Customization Data (Need to create this table in Supabase)
+            const { data: customization } = await sbClient.from('site_customization').select('*').limit(1).maybeSingle();
+            if (customization) {
+                 currentCustomizationId = customization.id;
+                 document.getElementById('input-font').value = customization.font_family || "'Segoe UI', sans-serif";
+                 document.getElementById('input-accent-color').value = customization.accent_color || "#7c3aed";
+                 document.getElementById('input-username-effect').value = customization.username_effect || "wave";
+                 document.getElementById('input-crt-scanlines').checked = customization.crt_scanlines || false;
+                 document.getElementById('input-bg-mode').checked = customization.bg_mode_solid || false;
             }
 
             const { data: stats } = await sbClient.from('stats').select('*').limit(1).maybeSingle();
@@ -381,6 +454,23 @@
         else alert(error.message);
     });
 
+    document.getElementById('customization-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            font_family: document.getElementById('input-font').value,
+            accent_color: document.getElementById('input-accent-color').value,
+            username_effect: document.getElementById('input-username-effect').value,
+            crt_scanlines: document.getElementById('input-crt-scanlines').checked,
+            bg_mode_solid: document.getElementById('input-bg-mode').checked
+        };
+        
+        // Assuming table `site_customization` exists. If not, this needs creating in Supabase
+        const { error } = await sbClient.from('site_customization').upsert({ id: currentCustomizationId, ...payload });
+        
+        if(!error) alert('Design-Einstellungen gespeichert! 🎨 \n(Stelle sicher, dass die Tabelle "site_customization" in Supabase existiert)');
+        else alert('Fehler: ' + error.message);
+    });
+
     document.getElementById('stats-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
@@ -462,3 +552,5 @@
     // Direkt ausführen beim Laden der Skripte
     loadDashboardData();
 </script>
+</body>
+</html>
