@@ -7,7 +7,6 @@
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🔮</text></svg>">
     
-    <!-- Google Fonts Imports -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&family=Roboto+Mono:wght@400;600;700&family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
@@ -24,7 +23,6 @@
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
             
-            /* Dynamic Accent - Will be overridden by DB */
             --accent: #7c3aed;
             --accent-glow: rgba(123, 58, 237, 0.25);
             
@@ -44,66 +42,69 @@
             margin: 0;
             padding: 0;
             font-family: var(--global-font);
-            cursor: none !important; /* Hide default cursor everywhere permanently */
+            cursor: none !important;
         }
 
-        /* ANTI-SCROLL & FIXED VIEWPORT SETUP */
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
             width: 100vw;
             height: 100vh;
-            overflow: hidden !important; 
-            position: relative;
-            perspective: 1200px;
-        }
-
-        /* Zentrierungs-Wrapper für dynamische Skalierung */
-        .bento-wrapper {
-            position: absolute;
-            inset: 0;
+            overflow: hidden !important;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2;
-            opacity: 0;
-            transition: opacity 1s ease-in;
+            position: relative;
         }
 
-        /* TERMINAL BOOT SCREEN */
         #boot-screen {
             position: fixed; inset: 0; background: #050505; z-index: 999999;
             display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
             padding: 40px; color: var(--accent); font-family: 'Roboto Mono', monospace;
             font-size: 1.1rem; text-shadow: 0 0 5px var(--accent-glow);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-            cursor: none;
+            transition: opacity 0.5s ease-out;
         }
         .boot-line { margin: 4px 0; opacity: 0; }
+        @keyframes fade { to { opacity: 1; } }
 
-        /* CRT SCANLINES - Dynamic Display */
         .scanlines {
             position: fixed; inset: 0; z-index: 9997; pointer-events: none;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
             background-size: 100% 4px;
-            display: none; 
+            display: none;
         }
 
-        /* CUSTOM CYBER CURSOR - GPU Accelerated */
+        /* HARDWARE-ACCELERATED EXACT CURSOR */
         #custom-cursor {
-            position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
-            pointer-events: none; z-index: 9999; box-shadow: 0 0 10px var(--accent);
-            transform: translate3d(-50%, -50%, 0); transition: width 0.15s ease, height 0.15s ease, background-color 0.2s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 10px var(--accent);
             will-change: transform;
+            transform: translate3d(-100px, -100px, 0);
         }
         #cursor-trail {
-            position: fixed; top: 0; left: 0; width: 24px; height: 24px; border: 1px solid var(--accent); border-radius: 50%;
-            pointer-events: none; z-index: 9998; opacity: 0.5;
-            transform: translate3d(-50%, -50%, 0); transition: width 0.15s ease, height 0.15s ease, border-color 0.2s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 26px;
+            height: 26px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.45;
             will-change: transform;
+            transform: translate3d(-100px, -100px, 0);
+            transition: width 0.15s ease, height 0.15s ease;
         }
 
-        /* PARTICLE & BG */
         #particle-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; }
         .yt-backdrop {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-size: cover; background-position: center;
@@ -116,7 +117,6 @@
             background-size: 40px 40px; z-index: 1; pointer-events: none;
         }
 
-        /* Solid Dark Background mode */
         .solid-bg-mode .yt-backdrop {
             background-image: radial-gradient(circle at center, var(--bg-grad-1), var(--bg-grad-2)) !important;
             filter: none;
@@ -126,26 +126,33 @@
         .header-actions { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; align-items: center; gap: 10px; }
         .action-btn {
             background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); padding: 10px 14px;
-            border-radius: 10px; cursor: none; backdrop-filter: blur(10px); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s;
+            border-radius: 10px; backdrop-filter: blur(10px); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s;
         }
         .action-btn:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
 
-        /* BENTO GRID (wird über JS skaliert) */
+        /* BENTO CONTAINER - ECHTE MITTIGE POSITIONIERUNG */
         .bento-container {
             max-width: 1200px;
-            width: 100%;
+            width: 94vw;
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
-            transform-origin: center center; 
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
+            margin: auto;
         }
-        @media (min-width: 900px) { .bento-container { grid-template-columns: 310px 1fr 300px; } }
+        @media (min-width: 900px) {
+            .bento-container {
+                grid-template-columns: 310px 1.4fr 300px;
+            }
+        }
 
-        /* CARDS */
         .card {
             background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(16px); border-radius: 16px;
-            padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45); position: relative; overflow: hidden;
-            transform-style: preserve-3d; transition: transform 0.15s ease-out, border-color 0.3s ease, box-shadow 0.3s ease;
+            padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45); position: relative; overflow: hidden;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .card::before {
             content: ''; position: absolute; inset: 0; background: radial-gradient(350px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.08), transparent 60%);
@@ -157,7 +164,7 @@
 
         /* PROFIL */
         .profile-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .avatar-wrapper { position: relative; width: 100px; height: 100px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .avatar-wrapper { position: relative; width: 95px; height: 95px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .avatar-wrapper::before {
             content: ''; position: absolute; width: 106%; height: 106%; border-radius: 28px;
             background: linear-gradient(90deg, var(--accent), transparent, var(--accent)); animation: rotateBorder 4s linear infinite; z-index: 1;
@@ -167,7 +174,6 @@
         
         .username { font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; display: inline-flex; justify-content: center; white-space: pre; }
         
-        /* USERNAME EFFECTS */
         .effect-wave .wave-char {
             display: inline-block; background: linear-gradient(90deg, #3b82f6, var(--accent), #3b82f6); background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -185,78 +191,78 @@
 
         .bio { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 12px; }
         .tech-stack-container { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 14px; }
-        .tech-pill { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease; cursor: none; }
+        .tech-pill { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease; }
         .tech-pill:hover { color: var(--text-main); border-color: var(--accent); background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
-        .links-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding-right: 4px; }
+        .links-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; padding-right: 4px; }
         .links-list::-webkit-scrollbar { width: 4px; } .links-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        .social-link { display: flex; align-items: center; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 10px; color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: all 0.2s ease; cursor: none; }
+        .social-link { display: flex; align-items: center; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 10px; color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: all 0.2s ease; }
         .social-link i { width: 20px; font-size: 1rem; margin-right: 10px; color: var(--text-muted); }
         .social-link:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--accent); transform: translateX(4px); box-shadow: 0 0 10px var(--accent-glow); }
 
         /* MUSIC PLAYER */
-        .main-content { display: flex; flex-direction: column; gap: 20px; }
-        .music-player { display: flex; flex-direction: column; gap: 16px; position: relative; }
-        .track-info-container { display: flex; gap: 20px; align-items: center; }
+        .main-content { display: flex; flex-direction: column; gap: 16px; }
+        .music-player { display: flex; flex-direction: column; gap: 14px; position: relative; }
+        .track-info-container { display: flex; gap: 18px; align-items: center; }
         
         @keyframes spinRecord { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .album-art { width: 95px; height: 95px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); transition: all 0.4s ease; flex-shrink: 0; }
+        .album-art { width: 90px; height: 90px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); transition: all 0.4s ease; flex-shrink: 0; background: #161619; }
         .album-art.playing { animation: spinRecord 5s linear infinite; border-radius: 50%; box-shadow: 0 0 0 4px #121214, 0 0 15px var(--accent-glow); }
         
-        .track-details { flex-grow: 1; }
+        .track-details { flex-grow: 1; overflow: hidden; }
         .track-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-        .track-title { font-size: 1.15rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
-        .queue-toggle-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; transition: color 0.2s; padding: 4px; cursor: none; }
+        .track-title { font-size: 1.15rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
+        .queue-toggle-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; transition: color 0.2s; padding: 4px; }
         .queue-toggle-btn:hover { color: var(--accent); }
-        .visualizer-strip { display: flex; align-items: flex-end; gap: 4px; height: 28px; width: 100%; padding: 4px 0; overflow: hidden; }
+        .visualizer-strip { display: flex; align-items: flex-end; gap: 4px; height: 26px; width: 100%; padding: 4px 0; overflow: hidden; }
         .viz-bar { flex: 1; background: linear-gradient(180deg, var(--accent), rgba(255,255,255,0.1)); border-radius: 2px 2px 0 0; height: 4px; transition: height 0.1s ease; box-shadow: 0 0 6px var(--accent-glow); }
         .track-artist { color: var(--text-muted); font-size: 0.85rem; }
         .player-controls { display: flex; flex-direction: column; gap: 8px; }
         .progress-bar-container { width: 100%; }
         .time-info { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; cursor: none; }
+        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; }
         .progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--text-main); box-shadow: 0 0 8px var(--text-main); border-radius: 3px; }
         .control-buttons { display: flex; align-items: center; justify-content: center; gap: 24px; }
         .volume-container { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-size: 0.85rem; }
-        .volume-slider { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; cursor: none; }
+        .volume-slider { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; }
         .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--text-main); }
-        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; transition: all 0.2s ease; cursor: none; }
+        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; transition: all 0.2s ease; }
         .btn-control:hover { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.5); transform: scale(1.1); }
         .btn-play { width: 38px; height: 38px; background: var(--text-main); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s ease; }
         .btn-play:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); transform: scale(1.05); }
 
         .playlist-drawer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin 0.3s ease; background: rgba(0,0,0,0.3); border-radius: 10px; display: flex; flex-direction: column; gap: 4px; }
-        .playlist-drawer.open { max-height: 180px; overflow-y: auto; margin-top: 10px; padding: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .playlist-drawer.open { max-height: 160px; overflow-y: auto; margin-top: 10px; padding: 8px; border: 1px solid rgba(255,255,255,0.05); }
         .playlist-drawer::-webkit-scrollbar { width: 4px; } .playlist-drawer::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        .queue-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; transition: background 0.15s; cursor: none; }
+        .queue-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; transition: background 0.15s; }
         .queue-item:hover { background: rgba(255,255,255,0.06); } .queue-item.active { background: var(--accent-glow); border-left: 3px solid var(--accent); }
         .queue-title { color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .queue-artist { color: var(--text-muted); font-size: 0.72rem; }
 
-        .discord-guild-box { display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px; transition: all 0.2s ease; position: relative; cursor: none; }
+        .discord-guild-box { display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px; transition: all 0.2s ease; position: relative; }
         .discord-guild-box:hover { background: rgba(88, 101, 242, 0.08); border-color: rgba(88, 101, 242, 0.3); }
         .discord-guild-info { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; }
-        .btn-discord-join { background: #5865F2; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; cursor: none; }
+        .btn-discord-join { background: #5865F2; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
         .btn-discord-join:hover { background: #4752c4; box-shadow: 0 0 15px rgba(88, 101, 242, 0.4); transform: translateY(-1px); } 
         .copy-toast { position: absolute; top: -26px; right: 20px; background: #22c55e; color: #0b0b0c; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 5px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; transform: translateY(4px); }
         .copy-toast.show { opacity: 1; transform: translateY(0); }
 
         /* STATS */
-        .stats-container { display: flex; flex-direction: column; gap: 12px; }
-        .stat-card { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.01); cursor: default; }
-        .stat-card.clickable { transition: transform 0.2s ease, border-color 0.2s ease; cursor: none; }
+        .stats-container { display: flex; flex-direction: column; gap: 10px; }
+        .stat-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.01); }
+        .stat-card.clickable { transition: transform 0.2s ease, border-color 0.2s ease; }
         .stat-card.clickable:hover { border-color: var(--accent); transform: translateX(4px); }
         .stat-card.green { background: var(--stat-green); } .stat-card.pink { background: var(--stat-pink); }
         .stat-card.yellow { background: var(--stat-yellow); } .stat-card.blue { background: var(--stat-blue); }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
-        .stat-value { font-size: 1.6rem; font-weight: 800; font-family: var(--global-font); }
+        .stat-value { font-size: 1.5rem; font-weight: 800; font-family: var(--global-font); }
 
-        .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; cursor: none; }
+        .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; }
         .rig-specs-btn:hover { color: var(--text-main); border-color: var(--accent); background: rgba(255, 255, 255, 0.05); }
         .rig-specs-details { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.25); border-radius: 8px; padding: 0 10px; }
         .rig-specs-details.open { max-height: 200px; margin-top: 6px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.05); }
         .spec-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .spec-item:last-child { border-bottom: none; } .spec-val { color: var(--text-main); font-weight: 600; }
 
-        .status-banner { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; padding: 16px 24px; margin-top: 10px; gap: 15px; flex-wrap: wrap; }
+        .status-banner { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 14px 20px; gap: 15px; flex-wrap: wrap; }
         .status-content-left { display: flex; align-items: center; gap: 12px; }
         .status-dot { width: 12px; height: 12px; background: #64748b; border-radius: 50%; position: relative; flex-shrink: 0; transition: background-color 0.3s ease; }
         .status-dot.online { background: #22c55e; } .status-dot.idle { background: #eab308; } .status-dot.dnd { background: #ef4444; }
@@ -264,7 +270,7 @@
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
         .activity-icon { width: 22px; height: 22px; border-radius: 5px; object-fit: cover; margin-right: 8px; vertical-align: middle; box-shadow: 0 0 6px rgba(0, 0, 0, 0.4); display: inline-block; }
         .live-clock-badge { font-size: 0.8rem; color: var(--text-muted); background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-family: monospace; }
-        .footer-text { grid-column: 1 / -1; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.2); letter-spacing: 2px; margin-top: 15px; text-transform: uppercase; }
+        .footer-text { grid-column: 1 / -1; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.2); letter-spacing: 2px; margin-top: 5px; text-transform: uppercase; }
 
         /* MODALS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.25s ease; }
@@ -273,9 +279,9 @@
         .modal-overlay.active .modal-box { transform: scale(1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
         .modal-title { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s; cursor: none; } .modal-close:hover { color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s; } .modal-close:hover { color: var(--text-main); }
         .project-grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
-        .project-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease; cursor: none; }
+        .project-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease; }
         .project-item:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--accent); transform: translateY(-2px); }
         .project-head { display: flex; justify-content: space-between; align-items: center; } .project-name { font-weight: 700; font-size: 0.95rem; }
         .project-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: var(--accent-glow); color: var(--accent); font-weight: 600; } .project-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
@@ -286,26 +292,20 @@
 </head>
 <body>
 
-    <!-- BOOT SCREEN -->
     <div id="boot-screen">
         <div class="boot-line" style="animation: fade 0.1s forwards 0.1s">> initializing system environment...</div>
         <div class="boot-line" style="animation: fade 0.1s forwards 0.3s">> loading modules: [UI, SUPABASE, LANYARD]</div>
         <div class="boot-line" style="animation: fade 0.1s forwards 0.5s">> connecting to RPC server... OK</div>
         <div class="boot-line" style="animation: fade 0.1s forwards 0.7s; color: #fff;">> Welcome back, UpperEchelon.</div>
     </div>
-    <style>@keyframes fade { to { opacity: 1; } }</style>
 
-    <!-- CRT SCANLINES -->
     <div class="scanlines" id="scanlines-layer"></div>
 
-    <!-- CUSTOM CURSOR -->
     <div id="custom-cursor"></div>
     <div id="cursor-trail"></div>
 
-    <!-- INTERAKTIVES CANVAS-PARTIKEL NETZ -->
     <canvas id="particle-canvas"></canvas>
 
-    <!-- YOUTUBE VIDEO COVER ALS HINTERGRUND -->
     <div id="dynamic-bg" class="yt-backdrop"></div>
     <div class="bg-grid-overlay"></div>
 
@@ -314,136 +314,128 @@
         <button class="action-btn" id="help-btn" title="Keyboard Shortcuts"><i class="fas fa-keyboard"></i></button>
     </div>
 
-    <!-- Unsichtbarer YouTube Player -->
     <div id="youtube-player" style="display: none;"></div>
 
-    <!-- BENTO WRAPPER (Für Auto-Scaling) -->
-    <div class="bento-wrapper" id="main-wrapper">
-        <div class="bento-container" id="bento-grid">
+    <div class="bento-container" id="bento-grid">
+        
+        <div class="card profile-card">
+            <div class="avatar-wrapper">
+                <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
+            </div>
+            <h1 id="username" class="username effect-wave">Loading...</h1>
+            <p id="bio" class="bio">...</p>
             
-            <div class="card profile-card">
-                <div class="avatar-wrapper">
-                    <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
-                </div>
-                <!-- Username mit dynamischer Klasse für Effekte -->
-                <h1 id="username" class="username effect-wave">Loading...</h1>
-                <p id="bio" class="bio">...</p>
-                
-                <div class="tech-stack-container">
-                    <span class="tech-pill"><i class="fas fa-code"></i> C++ / C#</span>
-                    <span class="tech-pill"><i class="fab fa-windows"></i> WPF</span>
-                    <span class="tech-pill"><i class="fab fa-git-alt"></i> Git</span>
-                    <span class="tech-pill"><i class="fas fa-terminal"></i> CLI Tools</span>
-                </div>
-
-                <div id="links-container" class="links-list"></div>
+            <div class="tech-stack-container">
+                <span class="tech-pill"><i class="fas fa-code"></i> C++ / C#</span>
+                <span class="tech-pill"><i class="fab fa-windows"></i> WPF</span>
+                <span class="tech-pill"><i class="fab fa-git-alt"></i> Git</span>
+                <span class="tech-pill"><i class="fas fa-terminal"></i> CLI Tools</span>
             </div>
 
-            <div class="main-content">
-                <div class="card music-player">
-                    <div class="track-info-container">
-                        <img id="yt-cover" src="https://via.placeholder.com/150" alt="Album Art" class="album-art">
-                        <div class="track-details">
-                            <div class="track-header">
-                                <div id="yt-title" class="track-title">Loading...</div>
-                                <button class="queue-toggle-btn" id="queue-btn" title="Playlist Warteschlange"><i class="fas fa-list-ul"></i></button>
-                            </div>
-                            <div id="yt-artist" class="track-artist">Silence</div>
-                            
-                            <!-- 16-BAND AUDIO WAVE VISUALIZER -->
-                            <div class="visualizer-strip" id="visualizer-strip"></div>
+            <div id="links-container" class="links-list"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="card music-player">
+                <div class="track-info-container">
+                    <img id="yt-cover" src="https://via.placeholder.com/150" alt="Album Art" class="album-art">
+                    <div class="track-details">
+                        <div class="track-header">
+                            <div id="yt-title" class="track-title">Loading...</div>
+                            <button class="queue-toggle-btn" id="queue-btn" title="Playlist Warteschlange"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="yt-artist" class="track-artist">Silence</div>
+                        
+                        <div class="visualizer-strip" id="visualizer-strip"></div>
+                    </div>
+                </div>
+                
+                <div class="player-controls">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-timeline">
+                            <div id="yt-progress" class="progress-fill"></div>
+                        </div>
+                        <div class="time-info">
+                            <span id="yt-current-time">0:00</span>
+                            <span id="yt-duration">0:00</span>
                         </div>
                     </div>
                     
-                    <div class="player-controls">
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="progress-timeline">
-                                <div id="yt-progress" class="progress-fill"></div>
-                            </div>
-                            <div class="time-info">
-                                <span id="yt-current-time">0:00</span>
-                                <span id="yt-duration">0:00</span>
-                            </div>
-                        </div>
-                        
-                        <div class="control-buttons">
-                            <button class="btn-control" id="prev-btn" title="Vorheriger Track (Pfeil links)"><i class="fas fa-backward"></i></button>
-                            <button class="btn-control btn-play" id="play-pause-btn" title="Play/Pause (Leertaste)"><i class="fas fa-play"></i></button>
-                            <button class="btn-control" id="next-btn" title="Nächster Track (Pfeil rechts)"><i class="fas fa-forward"></i></button>
-                        </div>
-
-                        <div class="volume-container">
-                            <i class="fas fa-volume-down" id="mute-icon" style="cursor:none;" title="Mute (M)"></i>
-                            <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
-                        </div>
+                    <div class="control-buttons">
+                        <button class="btn-control" id="prev-btn" title="Vorheriger Track (Pfeil links)"><i class="fas fa-backward"></i></button>
+                        <button class="btn-control btn-play" id="play-pause-btn" title="Play/Pause (Leertaste)"><i class="fas fa-play"></i></button>
+                        <button class="btn-control" id="next-btn" title="Nächster Track (Pfeil rechts)"><i class="fas fa-forward"></i></button>
                     </div>
 
-                    <!-- PLAYLIST QUEUE DRAWER -->
-                    <div class="playlist-drawer" id="playlist-drawer"></div>
-
-                    <div class="discord-guild-box" id="discord-copy-box" title="Klicke um Discord-ID zu kopieren">
-                        <div class="copy-toast" id="copy-toast">Copied to Clipboard! ✓</div>
-                        <div class="discord-guild-info">
-                            <i class="fab fa-discord" style="color: #5865F2; font-size: 1.3rem;"></i>
-                            <span id="discord-guild-stats">0 Online Members</span>
-                        </div>
-                        <a id="discord-guild-invite" href="#" target="_blank" class="btn-discord-join">Join Server <i class="fas fa-sign-in-alt"></i></a>
+                    <div class="volume-container">
+                        <i class="fas fa-volume-down" id="mute-icon" title="Mute (M)"></i>
+                        <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
                     </div>
+                </div>
+
+                <div class="playlist-drawer" id="playlist-drawer"></div>
+
+                <div class="discord-guild-box" id="discord-copy-box" title="Klicke um Discord-ID zu kopieren">
+                    <div class="copy-toast" id="copy-toast">Copied to Clipboard! ✓</div>
+                    <div class="discord-guild-info">
+                        <i class="fab fa-discord" style="color: #5865F2; font-size: 1.3rem;"></i>
+                        <span id="discord-guild-stats">0 Online Members</span>
+                    </div>
+                    <a id="discord-guild-invite" href="#" target="_blank" class="btn-discord-join">Join Server <i class="fas fa-sign-in-alt"></i></a>
                 </div>
             </div>
-
-            <div class="stats-container">
-                <div class="card stat-card green">
-                    <div class="stat-label">Years Coding</div>
-                    <div id="stat-1" class="stat-value">0+</div>
-                </div>
-                <div class="card stat-card pink">
-                    <div class="stat-label">Coding Languages</div>
-                    <div id="stat-2" class="stat-value">0+</div>
-                </div>
-                
-                <div class="card stat-card yellow clickable" id="projects-trigger" title="Klicken um Projekte anzusehen">
-                    <div>
-                        <div class="stat-label">Projects Built</div>
-                        <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;"><i class="fas fa-external-link-alt"></i> Show list</div>
-                    </div>
-                    <div id="stat-3" class="stat-value">0+</div>
-                </div>
-
-                <div class="card stat-card blue">
-                    <div class="stat-label">Profile Views</div>
-                    <div id="stat-4" class="stat-value">0</div>
-                </div>
-
-                <!-- Hardware / Rig Specs Accordion -->
-                <div>
-                    <button class="rig-specs-btn" id="rig-toggle">
-                        <span><i class="fas fa-microchip" style="margin-right: 6px;"></i> System Specs</span>
-                        <i class="fas fa-chevron-down" id="rig-chevron"></i>
-                    </button>
-                    <div class="rig-specs-details" id="rig-details">
-                        <div class="spec-item"><span>CPU</span><span class="spec-val">AMD Ryzen 7 5800X</span></div>
-                        <div class="spec-item"><span>GPU</span><span class="spec-val">Aorus Elite Radeon RX 6750 XT</span></div>
-                        <div class="spec-item"><span>RAM</span><span class="spec-val">32 GB DDR4</span></div>
-                        <div class="spec-item"><span>Board</span><span class="spec-val">ROG Strix B550-A Gaming</span></div>
-                        <div class="spec-item"><span>OS</span><span class="spec-val">W11 Pro running AtlasOS</span></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card status-banner">
-                <div class="status-content-left">
-                    <div class="status-dot"></div>
-                    <span id="discord-presence">Connecting to Discord...</span>
-                </div>
-                <div class="live-clock-badge" id="live-clock">
-                    <i class="far fa-clock"></i> <span>--:--:--</span>
-                </div>
-            </div>
-
-            <div class="footer-text">Website Coded by &bull; Upperechelon/Vengeance Utilities</div>
         </div>
-    </div> <!-- Ende Bento-Wrapper -->
+
+        <div class="stats-container">
+            <div class="card stat-card green">
+                <div class="stat-label">Years Coding</div>
+                <div id="stat-1" class="stat-value">0+</div>
+            </div>
+            <div class="card stat-card pink">
+                <div class="stat-label">Coding Languages</div>
+                <div id="stat-2" class="stat-value">0+</div>
+            </div>
+            
+            <div class="card stat-card yellow clickable" id="projects-trigger" title="Klicken um Projekte anzusehen">
+                <div>
+                    <div class="stat-label">Projects Built</div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;"><i class="fas fa-external-link-alt"></i> Show list</div>
+                </div>
+                <div id="stat-3" class="stat-value">0+</div>
+            </div>
+
+            <div class="card stat-card blue">
+                <div class="stat-label">Profile Views</div>
+                <div id="stat-4" class="stat-value">0</div>
+            </div>
+
+            <div>
+                <button class="rig-specs-btn" id="rig-toggle">
+                    <span><i class="fas fa-microchip" style="margin-right: 6px;"></i> System Specs</span>
+                    <i class="fas fa-chevron-down" id="rig-chevron"></i>
+                </button>
+                <div class="rig-specs-details" id="rig-details">
+                    <div class="spec-item"><span>CPU</span><span class="spec-val">AMD Ryzen 7 5800X</span></div>
+                    <div class="spec-item"><span>GPU</span><span class="spec-val">Aorus Elite Radeon RX 6750 XT</span></div>
+                    <div class="spec-item"><span>RAM</span><span class="spec-val">32 GB DDR4</span></div>
+                    <div class="spec-item"><span>Board</span><span class="spec-val">ROG Strix B550-A Gaming</span></div>
+                    <div class="spec-item"><span>OS</span><span class="spec-val">W11 Pro running AtlasOS</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card status-banner">
+            <div class="status-content-left">
+                <div class="status-dot"></div>
+                <span id="discord-presence">Connecting to Discord...</span>
+            </div>
+            <div class="live-clock-badge" id="live-clock">
+                <i class="far fa-clock"></i> <span>--:--:--</span>
+            </div>
+        </div>
+
+        <div class="footer-text">Website Coded by &bull; Upperechelon/Vengeance Utilities</div>
+    </div>
 
     <!-- MODAL: PROJEKTE -->
     <div class="modal-overlay" id="projects-modal">
@@ -486,82 +478,28 @@
                 <button class="modal-close" id="close-shortcuts">&times;</button>
             </div>
             <div class="shortcuts-list">
-                <div class="shortcut-row">
-                    <span>Play / Pause</span>
-                    <span class="kbd-badge">Space</span>
-                </div>
-                <div class="shortcut-row">
-                    <span>Nächster Song</span>
-                    <span class="kbd-badge">&rarr;</span>
-                </div>
-                <div class="shortcut-row">
-                    <span>Vorheriger Song</span>
-                    <span class="kbd-badge">&larr;</span>
-                </div>
-                <div class="shortcut-row">
-                    <span>Lauter / Leiser (+/- 5%)</span>
-                    <span class="kbd-badge">&uarr; / &darr;</span>
-                </div>
-                <div class="shortcut-row">
-                    <span>Stummschalten (Mute)</span>
-                    <span class="kbd-badge">M</span>
-                </div>
+                <div class="shortcut-row"><span>Play / Pause</span><span class="kbd-badge">Space</span></div>
+                <div class="shortcut-row"><span>Nächster Song</span><span class="kbd-badge">&rarr;</span></div>
+                <div class="shortcut-row"><span>Vorheriger Song</span><span class="kbd-badge">&larr;</span></div>
+                <div class="shortcut-row"><span>Lauter / Leiser (+/- 5%)</span><span class="kbd-badge">&uarr; / &darr;</span></div>
+                <div class="shortcut-row"><span>Stummschalten (Mute)</span><span class="kbd-badge">M</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        // GLOBALS
-        let currentGridScale = 1;
         let ytApiReady = false;
 
-        // --- BOOT SEQUENCE LOGIC ---
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const boot = document.getElementById('boot-screen');
-                boot.style.transform = 'scale(1.05)';
                 boot.style.opacity = '0';
                 setTimeout(() => {
                     boot.style.display = 'none';
-                    document.getElementById('main-wrapper').style.opacity = '1';
-                    autoScaleGrid(); // Call scale once UI is visible
-                }, 500);
-            }, 1200); // Intro length
+                    document.getElementById('bento-grid').style.opacity = '1';
+                }, 400);
+            }, 1000);
         });
-
-        // --- ANTI-SCROLL AUTO-SCALER ---
-        function autoScaleGrid() {
-            const wrapper = document.getElementById('main-wrapper');
-            const grid = document.getElementById('bento-grid');
-            if (!wrapper || !grid) return;
-            
-            grid.style.transform = `scale(1)`;
-            
-            const availableHeight = window.innerHeight;
-            const availableWidth = window.innerWidth;
-            const padding = 60; 
-            
-            const gridRect = grid.getBoundingClientRect();
-            const gridHeight = gridRect.height + padding;
-            const gridWidth = gridRect.width + padding;
-
-            let scale = 1;
-            
-            if (gridHeight > availableHeight) {
-                scale = availableHeight / gridHeight;
-            }
-            if (gridWidth * scale > availableWidth) {
-                scale = availableWidth / gridWidth;
-            }
-            
-            if (scale < 1) {
-                grid.style.transform = `scale(${scale})`;
-                currentGridScale = scale;
-            } else {
-                currentGridScale = 1;
-            }
-        }
-        window.addEventListener('resize', autoScaleGrid);
 
         const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
@@ -576,13 +514,11 @@
         let sfxEnabled = true;
         let usernameEffectStyle = 'wave'; 
 
-        // --- YOUTUBE API RACE CONDITION FIX ---
         window.onYouTubeIframeAPIReady = function() {
             ytApiReady = true;
             tryInitPlayer();
         };
 
-        // --- WEB AUDIO SFX ENGINE ---
         let audioCtx = null;
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function playSfx(type = 'click') {
@@ -614,7 +550,7 @@
             });
         }
 
-        // --- CUSTOM CYBER CURSOR TRAIL (PERFECT SYNC) ---
+        /* ABSOLUTER 1:1 HARDWARE-CURSOR OHNE OFFSET */
         const cursor = document.getElementById('custom-cursor');
         const trail = document.getElementById('cursor-trail');
         let mouseX = -100, mouseY = -100;
@@ -622,15 +558,16 @@
         let isHovering = false;
 
         window.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX; mouseY = e.clientY;
-            // Instant update via CSS variable or translate3d avoids JS reflow lag
-            cursor.style.transform = `translate3d(calc(${mouseX}px - 50%), calc(${mouseY}px - 50%), 0)`;
+            mouseX = e.clientX; 
+            mouseY = e.clientY;
+            cursor.style.transform = `translate3d(${mouseX - 4}px, ${mouseY - 4}px, 0)`;
         });
 
         function animateCursorTrail() {
-            trailX += (mouseX - trailX) * 0.25; 
-            trailY += (mouseY - trailY) * 0.25;
-            trail.style.transform = `translate3d(calc(${trailX}px - 50%), calc(${trailY}px - 50%), 0) scale(${isHovering ? 1.4 : 1})`;
+            trailX += (mouseX - trailX) * 0.28; 
+            trailY += (mouseY - trailY) * 0.28;
+            const sizeOffset = isHovering ? 17 : 13;
+            trail.style.transform = `translate3d(${trailX - sizeOffset}px, ${trailY - sizeOffset}px, 0) scale(${isHovering ? 1.3 : 1})`;
             requestAnimationFrame(animateCursorTrail);
         }
         animateCursorTrail();
@@ -642,17 +579,18 @@
 
                 el.addEventListener('mouseenter', () => {
                     cursor.style.width = '14px'; cursor.style.height = '14px';
+                    cursor.style.transform = `translate3d(${mouseX - 7}px, ${mouseY - 7}px, 0)`;
                     isHovering = true; playSfx('hover');
                 });
                 el.addEventListener('mouseleave', () => {
                     cursor.style.width = '8px'; cursor.style.height = '8px';
+                    cursor.style.transform = `translate3d(${mouseX - 4}px, ${mouseY - 4}px, 0)`;
                     isHovering = false;
                 });
                 el.addEventListener('click', () => playSfx('click'));
             });
         }
 
-        // --- 16-BAND FREQUENCY VISUALIZER ---
         const vizContainer = document.getElementById('visualizer-strip');
         const vizBars = [];
         for (let i = 0; i < 16; i++) {
@@ -663,7 +601,7 @@
         function updateVisualizer(isPlaying) {
             vizBars.forEach((bar) => {
                 if (isPlaying) {
-                    const h = Math.floor(Math.random() * 22) + 5; bar.style.height = `${h}px`;
+                    const h = Math.floor(Math.random() * 20) + 4; bar.style.height = `${h}px`;
                 } else {
                     bar.style.height = '4px';
                 }
@@ -674,7 +612,7 @@
             updateVisualizer(isPlaying);
         }, 120);
 
-        // --- PARTICLE BACKGROUND CANVAS ---
+        /* HINTERGRUND PARTICLES */
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         let particles = []; let mouse = { x: null, y: null, radius: 130 };
@@ -728,53 +666,36 @@
         }
         animateParticles();
 
-        // ANIMIERTER TAB TEXT
         let titleText = " Vengeance Utilities - UpperEchelon dev ";
         setInterval(() => { titleText = titleText.substring(1) + titleText.substring(0, 1); document.title = titleText; }, 300);
 
-        // LIVE-UHRZEIT ANZEIGE
         function updateClock() {
             const clockEl = document.querySelector('#live-clock span');
             if (clockEl) { const now = new Date(); clockEl.innerText = 'DE • ' + now.toLocaleTimeString('de-DE'); }
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // 3D TILT EFFECT (Fixed with scaling factor)
+        /* KARTEN SPOTLIGHT */
         document.querySelectorAll('.card').forEach(card => {
             card.addEventListener('mousemove', (e) => {
                 const rect = card.getBoundingClientRect(); 
-                // Fix: Divide by currentGridScale to get exact local card coordinates
-                const x = (e.clientX - rect.left) / currentGridScale; 
-                const y = (e.clientY - rect.top) / currentGridScale;
-                
-                card.style.setProperty('--mouse-x', `${x}px`); card.style.setProperty('--mouse-y', `${y}px`);
-                
-                const centerX = (rect.width / currentGridScale) / 2; 
-                const centerY = (rect.height / currentGridScale) / 2;
-                const rotateX = ((y - centerY) / centerY) * -5; 
-                const rotateY = ((x - centerX) / centerX) * 5;
-                
-                card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
+                card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`); 
+                card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
             });
-            card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)'; });
         });
 
-        // RIG SPECS ACCORDION
         const rigToggle = document.getElementById('rig-toggle'); const rigDetails = document.getElementById('rig-details'); const rigChevron = document.getElementById('rig-chevron');
         if (rigToggle && rigDetails) {
             rigToggle.addEventListener('click', () => {
                 const isOpen = rigDetails.classList.toggle('open');
                 rigChevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-                setTimeout(autoScaleGrid, 350);
             });
         }
 
-        // QUEUE DRAWER TOGGLE
         const queueBtn = document.getElementById('queue-btn'); const playlistDrawer = document.getElementById('playlist-drawer');
         if (queueBtn && playlistDrawer) {
             queueBtn.addEventListener('click', () => {
                 playlistDrawer.classList.toggle('open');
-                setTimeout(autoScaleGrid, 350);
             });
         }
 
@@ -800,7 +721,6 @@
             applyCursorHoverEffects(); 
         }
 
-        // MODAL HANDLERS
         const projectsModal = document.getElementById('projects-modal'); const projectsTrigger = document.getElementById('projects-trigger'); const closeProjects = document.getElementById('close-projects');
         const shortcutsModal = document.getElementById('shortcuts-modal'); const helpBtn = document.getElementById('help-btn'); const closeShortcuts = document.getElementById('close-shortcuts');
 
@@ -808,7 +728,6 @@
         if (helpBtn) { helpBtn.addEventListener('click', () => shortcutsModal.classList.add('active')); closeShortcuts.addEventListener('click', () => shortcutsModal.classList.remove('active')); }
         [projectsModal, shortcutsModal].forEach(modal => { modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); }); });
 
-        // CLICK-TO-COPY DISCORD
         const discordBox = document.getElementById('discord-copy-box'); const copyToast = document.getElementById('copy-toast');
         if (discordBox) {
             discordBox.addEventListener('click', (e) => {
@@ -819,7 +738,6 @@
             });
         }
 
-        // WELLEN-NAME RENDERN 
         function setAnimatedUsername(name) {
             const container = document.getElementById('username'); 
             container.innerHTML = ''; 
@@ -840,7 +758,6 @@
             }
         }
 
-        // DISCORD STATUS UI
         function updateDiscordPresenceUI(data) {
             const statusDot = document.querySelector('.status-dot'); const statusText = document.getElementById('discord-presence');
             if (!statusDot || !statusText || !data) return;
@@ -871,7 +788,6 @@
             statusText.innerText = statusLabels[discordStatus] || 'Active on Discord';
         }
 
-        // LANYARD WEBSOCKET
         let lanyardSocket = null; let lanyardHeartbeat = null;
         function connectLanyardSocket(userId) {
             if (lanyardSocket) { try { lanyardSocket.close(); } catch(e) {} clearInterval(lanyardHeartbeat); }
@@ -890,7 +806,6 @@
             lanyardSocket.onerror = () => { try { lanyardSocket.close(); } catch(e) {} };
         }
 
-        // APPLY CUSTOMIZATIONS
         function applyCustomizations(customization) {
             if(!customization) return;
             
@@ -923,15 +838,13 @@
             }
         }
 
-        // LOAD LIVE DATA
         let savedUsername = 'UpperEchelon'; 
         async function loadWebsiteData() {
             try {
-                // Try Catch für Customization, falls Table in Supabase noch fehlt (Crash verhindern)
                 try {
                     const { data: customization } = await sbClient.from('site_customization').select('*').limit(1).maybeSingle();
                     if(customization) applyCustomizations(customization);
-                } catch(e) { console.log("Customization table not found yet."); }
+                } catch(e) {}
 
                 const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
                 if (profile) {
@@ -987,13 +900,11 @@
                 
                 applyCursorHoverEffects(); 
                 updatePlayerUI();
-                tryInitPlayer(); // Versuch Player zu laden, falls API schon da ist
-                setTimeout(autoScaleGrid, 100);
+                tryInitPlayer();
 
             } catch (err) { console.error(err); }
         }
 
-        // --- YOUTUBE INIT FIX ---
         function tryInitPlayer() {
             if (ytApiReady && playlist.length > 0 && !ytPlayer) {
                 ytPlayer = new YT.Player('youtube-player', {
@@ -1068,7 +979,6 @@
             document.getElementById('yt-cover').classList.add('playing');
         }
 
-        // --- BROKEN IMAGE FALLBACK FIX ---
         function updatePlayerUI() {
             if (!playlist[currentSongIndex]) return;
             const currentSong = playlist[currentSongIndex];
@@ -1079,22 +989,17 @@
             const imgElement = document.getElementById('yt-cover'); 
             const bgElement = document.getElementById('dynamic-bg');
             
-            // Fix für broken Dummy-Images (z.B. via.placeholder, das oft geblockt wird)
             let targetCover = currentSong.cover || currentSong.cover_url;
             if (!targetCover || targetCover.includes('placeholder.com')) {
                 targetCover = `https://img.youtube.com/vi/${currentSong.id}/hqdefault.jpg`;
             }
 
-            if (targetCover.includes('maxresdefault.jpg')) {
-                imgElement.src = targetCover;
-                imgElement.onerror = function() { 
-                    this.src = targetCover.replace('maxresdefault.jpg', 'hqdefault.jpg'); 
-                    bgElement.style.backgroundImage = `url('${this.src}')`; 
-                    this.onerror = null; 
-                };
-            } else {
-                imgElement.src = targetCover;
-            }
+            imgElement.src = targetCover;
+            imgElement.onerror = function() {
+                this.src = `https://img.youtube.com/vi/${currentSong.id}/hqdefault.jpg`;
+                bgElement.style.backgroundImage = `url('${this.src}')`;
+                this.onerror = null;
+            };
             bgElement.style.backgroundImage = `url('${targetCover}')`;
         }
 
