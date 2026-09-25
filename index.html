@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,26 +42,7 @@
             margin: 0;
             padding: 0;
             font-family: var(--global-font);
-        }
-
-        /* HARDWARE CUSTOM CURSOR OPTIONAL */
-        body {
-            cursor: default;
-        }
-
-        /* DYNAMIC SCROLLBARS FOR ALL CONTAINERS */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 4px;
-            box-shadow: 0 0 6px var(--accent-glow);
+            cursor: none !important;
         }
 
         body {
@@ -84,6 +65,16 @@
             }
         }
 
+        #boot-screen {
+            position: fixed; inset: 0; background: #050505; z-index: 999999;
+            display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+            padding: 40px; color: var(--accent); font-family: 'Roboto Mono', monospace;
+            font-size: 1.1rem; text-shadow: 0 0 5px var(--accent-glow);
+            transition: opacity 0.5s ease-out;
+        }
+        .boot-line { margin: 4px 0; opacity: 0; }
+        @keyframes fade { to { opacity: 1; } }
+
         .scanlines {
             position: fixed; inset: 0; z-index: 9997; pointer-events: none;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
@@ -91,20 +82,19 @@
             display: none;
         }
 
-        /* HARDWARE CURSOR */
+        /* CURSOR */
         #custom-cursor {
             position: fixed; top: 0; left: 0; width: 8px; height: 8px;
             background: var(--accent); border-radius: 50%; pointer-events: none;
             z-index: 9999; box-shadow: 0 0 10px var(--accent);
             will-change: transform; transform: translate3d(-100px, -100px, 0);
-            transition: background 0.4s ease, box-shadow 0.4s ease;
         }
         #cursor-trail {
             position: fixed; top: 0; left: 0; width: 26px; height: 26px;
             border: 1px solid var(--accent); border-radius: 50%; pointer-events: none;
             z-index: 9998; opacity: 0.45; will-change: transform;
             transform: translate3d(-100px, -100px, 0);
-            transition: width 0.15s ease, height 0.15s ease, border-color 0.4s ease;
+            transition: width 0.15s ease, height 0.15s ease;
         }
 
         #particle-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; }
@@ -123,7 +113,6 @@
         .action-btn {
             background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); padding: 10px 14px;
             border-radius: 10px; backdrop-filter: blur(10px); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s;
-            cursor: pointer;
         }
         .action-btn:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
 
@@ -136,7 +125,8 @@
             gap: 16px;
             position: relative;
             z-index: 2;
-            opacity: 1; /* Sofort sichtbar ohne Boot-Screen */
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
             margin: auto;
         }
         @media (min-width: 900px) {
@@ -158,13 +148,12 @@
         .card:hover { border-color: rgba(255, 255, 255, 0.16); box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px var(--accent-glow); }
         .card > * { position: relative; z-index: 1; }
 
-        /* PROFILE */
+        /* PROFIL */
         .profile-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .avatar-wrapper { position: relative; width: 95px; height: 95px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .avatar-wrapper::before {
             content: ''; position: absolute; width: 106%; height: 106%; border-radius: 28px;
             background: linear-gradient(90deg, var(--accent), transparent, var(--accent)); animation: rotateBorder 4s linear infinite; z-index: 1;
-            transition: background 0.4s ease;
         }
         @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .avatar { width: 94%; height: 94%; border-radius: 26px; object-fit: cover; background: #161619; padding: 2px; z-index: 2; }
@@ -207,44 +196,34 @@
         .track-details { flex-grow: 1; overflow: hidden; }
         .track-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
         .track-title { font-size: 1.15rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
-        .queue-toggle-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; transition: color 0.2s; padding: 4px; cursor: pointer; }
+        .queue-toggle-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; transition: color 0.2s; padding: 4px; }
         .queue-toggle-btn:hover { color: var(--accent); }
-        
-        /* BEAT-PUNCH VISUALIZER */
-        .visualizer-strip { display: flex; align-items: flex-end; gap: 5px; height: 28px; width: 100%; padding: 4px 0; overflow: hidden; }
-        .viz-bar { 
-            flex: 1; 
-            background: linear-gradient(180deg, var(--accent), rgba(255,255,255,0.06)); 
-            border-radius: 3px 3px 0 0; 
-            height: 4px; 
-            min-height: 4px;
-            transition: height 0.06s ease, background 0.4s ease; 
-            box-shadow: 0 0 8px var(--accent-glow); 
-        }
+        .visualizer-strip { display: flex; align-items: flex-end; gap: 4px; height: 26px; width: 100%; padding: 4px 0; overflow: hidden; }
+        .viz-bar { flex: 1; background: linear-gradient(180deg, var(--accent), rgba(255,255,255,0.1)); border-radius: 2px 2px 0 0; height: 4px; transition: height 0.15s ease; box-shadow: 0 0 6px var(--accent-glow); }
         .track-artist { color: var(--text-muted); font-size: 0.85rem; }
         .player-controls { display: flex; flex-direction: column; gap: 8px; }
-        .progress-bar-container { width: 100%; cursor: pointer; }
+        .progress-bar-container { width: 100%; }
         .time-info { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
         .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; }
-        .progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--accent); box-shadow: 0 0 8px var(--accent); border-radius: 3px; transition: background 0.4s ease, box-shadow 0.4s ease; }
+        .progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--text-main); box-shadow: 0 0 8px var(--text-main); border-radius: 3px; }
         
         .control-buttons { display: flex; align-items: center; justify-content: center; gap: 18px; }
         .volume-container { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-size: 0.85rem; }
-        .volume-slider { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; cursor: pointer; }
-        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); transition: background 0.4s ease; cursor: pointer; }
-        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1rem; transition: all 0.2s ease; position: relative; cursor: pointer; }
+        .volume-slider { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; }
+        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--text-main); }
+        .btn-control { background: none; border: none; color: var(--text-muted); font-size: 1rem; transition: all 0.2s ease; position: relative; }
         .btn-control:hover { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.5); transform: scale(1.1); }
-        .btn-control.active { color: var(--accent) !important; text-shadow: 0 0 10px var(--accent-glow); }
+        .btn-control.active { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow); }
         .btn-play { width: 38px; height: 38px; background: var(--text-main); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s ease; }
         .btn-play:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); transform: scale(1.05); }
 
         .playlist-drawer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin 0.3s ease; background: rgba(0,0,0,0.3); border-radius: 10px; display: flex; flex-direction: column; gap: 4px; }
         .playlist-drawer.open { max-height: 160px; overflow-y: auto; margin-top: 10px; padding: 8px; border: 1px solid rgba(255,255,255,0.05); }
-        .queue-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; transition: background 0.15s; cursor: pointer; }
+        .queue-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; transition: background 0.15s; }
         .queue-item:hover { background: rgba(255,255,255,0.06); } .queue-item.active { background: var(--accent-glow); border-left: 3px solid var(--accent); }
         .queue-title { color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .discord-guild-box { display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px; transition: all 0.2s ease; position: relative; cursor: pointer; }
+        .discord-guild-box { display: flex; align-items: center; justify-content: space-between; background: rgba(88, 101, 242, 0.04); border: 1px solid rgba(88, 101, 242, 0.1); padding: 14px 20px; border-radius: 12px; transition: all 0.2s ease; position: relative; }
         .discord-guild-box:hover { background: rgba(88, 101, 242, 0.08); border-color: rgba(88, 101, 242, 0.3); }
         .discord-guild-info { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; }
         .btn-discord-join { background: #5865F2; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
@@ -255,14 +234,14 @@
         /* STATS */
         .stats-container { display: flex; flex-direction: column; gap: 10px; }
         .stat-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.01); }
-        .stat-card.clickable { transition: transform 0.2s ease, border-color 0.2s ease; cursor: pointer; }
+        .stat-card.clickable { transition: transform 0.2s ease, border-color 0.2s ease; }
         .stat-card.clickable:hover { border-color: var(--accent); transform: translateX(4px); }
         .stat-card.green { background: var(--stat-green); } .stat-card.pink { background: var(--stat-pink); }
         .stat-card.yellow { background: var(--stat-yellow); } .stat-card.blue { background: var(--stat-blue); }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
         .stat-value { font-size: 1.5rem; font-weight: 800; }
 
-        .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; cursor: pointer; width: 100%; }
+        .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; }
         .rig-specs-btn:hover { color: var(--text-main); border-color: var(--accent); background: rgba(255, 255, 255, 0.05); }
         .rig-specs-details { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.25); border-radius: 8px; padding: 0 10px; }
         .rig-specs-details.open { max-height: 200px; margin-top: 6px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.05); }
@@ -285,7 +264,7 @@
         .modal-overlay.active .modal-box { transform: scale(1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
         .modal-title { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s; cursor: pointer; } .modal-close:hover { color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s; } .modal-close:hover { color: var(--text-main); }
         
         .project-grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
         .project-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease; text-decoration: none; color: inherit; }
@@ -294,14 +273,15 @@
         .project-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: var(--accent-glow); color: var(--accent); font-weight: 600; }
         .project-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
 
-        /* CLI TERMINAL MODAL */
+        /* TERMINAL MODAL */
         .cli-box {
-            background: #09090b; border: 1px solid var(--accent); border-radius: 12px;
-            font-family: 'Fira Code', 'Roboto Mono', monospace; font-size: 0.85rem; color: var(--accent);
+            background: #09090b; border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px;
+            font-family: 'Fira Code', 'Roboto Mono', monospace; font-size: 0.85rem; color: #a78bfa;
             padding: 16px; height: 350px; display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 0 25px var(--accent-glow);
+            box-shadow: 0 0 25px rgba(124, 58, 237, 0.15);
         }
         .cli-output { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .cli-output::-webkit-scrollbar { width: 4px; } .cli-output::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
         .cli-input-line { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
         .cli-prompt { color: #22c55e; font-weight: bold; }
         .cli-input {
@@ -320,14 +300,21 @@
         .ctx-item {
             display: flex; align-items: center; gap: 10px; padding: 8px 12px;
             font-size: 0.82rem; color: var(--text-main); border-radius: 8px;
-            transition: all 0.15s ease; cursor: pointer;
+            transition: all 0.15s ease;
         }
         .ctx-item i { width: 16px; color: var(--accent); }
-        .ctx-item:hover { background: var(--accent-glow); transform: translateX(3px); }
+        .ctx-item:hover { background: rgba(124, 58, 237, 0.2); transform: translateX(3px); }
         .ctx-separator { height: 1px; background: rgba(255, 255, 255, 0.06); margin: 4px 6px; }
     </style>
 </head>
 <body>
+
+    <div id="boot-screen">
+        <div class="boot-line" style="animation: fade 0.1s forwards 0.1s">> initializing system environment...</div>
+        <div class="boot-line" style="animation: fade 0.1s forwards 0.3s">> loading modules: [UI, SUPABASE, AUDIO_ENGINE]</div>
+        <div class="boot-line" style="animation: fade 0.1s forwards 0.5s">> checking system state... OK</div>
+        <div class="boot-line" style="animation: fade 0.1s forwards 0.7s; color: #fff;">> Welcome back, UpperEchelon.</div>
+    </div>
 
     <div class="scanlines" id="scanlines-layer"></div>
 
@@ -340,7 +327,7 @@
     <div class="bg-grid-overlay"></div>
 
     <div class="header-actions">
-        <button class="action-btn" id="cli-btn" title="Open Interactive CLI (~ / `)"><i class="fas fa-terminal"></i></button>
+        <button class="action-btn" id="cli-btn" title="Open Interactive CLI (~ / ^)"><i class="fas fa-terminal"></i></button>
         <button class="action-btn" id="sfx-btn" title="Toggle Sound FX"><i class="fas fa-volume-high"></i></button>
         <button class="action-btn" id="help-btn" title="Keyboard Shortcuts"><i class="fas fa-keyboard"></i></button>
     </div>
@@ -351,14 +338,14 @@
         
         <div class="card profile-card">
             <div class="avatar-wrapper">
-                <img id="avatar" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80" alt="Avatar" class="avatar">
+                <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
             </div>
-            <h1 id="username" class="username effect-wave">UpperEchelon</h1>
-            <p id="bio" class="bio">C++ & C# Developer for Various Projects and Apps</p>
+            <h1 id="username" class="username effect-wave">Loading...</h1>
+            <p id="bio" class="bio">...</p>
             
             <div class="tech-stack-container">
                 <span class="tech-pill" title="C++ & C# Native & Desktop Application Development"><i class="fas fa-code"></i> C++ / C#</span>
-                <span class="tech-pill" title="Windows Presentation Foundation Framework"><i class="fab fa-windows"></i> WPF</span>
+                <span class="tech-pill" title="Windows Presentation Foundation GUI Framework"><i class="fab fa-windows"></i> WPF</span>
                 <span class="tech-pill" title="Version Control & GitHub Pipelines"><i class="fab fa-git-alt"></i> Git</span>
                 <span class="tech-pill" title="Command Line Tools & PowerShell Utilities"><i class="fas fa-terminal"></i> CLI Tools</span>
             </div>
@@ -369,20 +356,20 @@
         <div class="main-content">
             <div class="card music-player">
                 <div class="track-info-container">
-                    <img id="yt-cover" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&auto=format&fit=crop&q=80" alt="Album Art" class="album-art">
+                    <img id="yt-cover" src="https://via.placeholder.com/150" alt="Album Art" class="album-art">
                     <div class="track-details">
                         <div class="track-header">
-                            <div id="yt-title" class="track-title">Twisted World</div>
-                            <button class="queue-toggle-btn" id="queue-btn" title="Playlist Queue"><i class="fas fa-list-ul"></i></button>
+                            <div id="yt-title" class="track-title">Loading...</div>
+                            <button class="queue-toggle-btn" id="queue-btn" title="Playlist Warteschlange"><i class="fas fa-list-ul"></i></button>
                         </div>
-                        <div id="yt-artist" class="track-artist">Tommy Knocker</div>
+                        <div id="yt-artist" class="track-artist">Silence</div>
                         <div class="visualizer-strip" id="visualizer-strip"></div>
                     </div>
                 </div>
                 
                 <div class="player-controls">
-                    <div class="progress-bar-container" id="progress-timeline">
-                        <div class="progress-bar">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-timeline">
                             <div id="yt-progress" class="progress-fill"></div>
                         </div>
                         <div class="time-info">
@@ -392,28 +379,28 @@
                     </div>
                     
                     <div class="control-buttons">
-                        <button class="btn-control" id="shuffle-btn" title="Shuffle (S)"><i class="fas fa-shuffle"></i></button>
-                        <button class="btn-control" id="prev-btn" title="Previous Track (Left Arrow)"><i class="fas fa-backward"></i></button>
-                        <button class="btn-control btn-play" id="play-pause-btn" title="Play/Pause (Space)"><i class="fas fa-play"></i></button>
-                        <button class="btn-control" id="next-btn" title="Next Track (Right Arrow)"><i class="fas fa-forward"></i></button>
-                        <button class="btn-control" id="loop-btn" title="Repeat Song (R)"><i class="fas fa-repeat"></i></button>
+                        <button class="btn-control" id="shuffle-btn" title="Zufallswiedergabe (S)"><i class="fas fa-shuffle"></i></button>
+                        <button class="btn-control" id="prev-btn" title="Vorheriger Track (Pfeil links)"><i class="fas fa-backward"></i></button>
+                        <button class="btn-control btn-play" id="play-pause-btn" title="Play/Pause (Leertaste)"><i class="fas fa-play"></i></button>
+                        <button class="btn-control" id="next-btn" title="Nächster Track (Pfeil rechts)"><i class="fas fa-forward"></i></button>
+                        <button class="btn-control" id="loop-btn" title="Song wiederholen (R)"><i class="fas fa-repeat"></i></button>
                     </div>
 
                     <div class="volume-container">
-                        <i class="fas fa-volume-down" id="mute-icon" title="Mute (M)" style="cursor:pointer;"></i>
+                        <i class="fas fa-volume-down" id="mute-icon" title="Mute (M)"></i>
                         <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
                     </div>
                 </div>
 
                 <div class="playlist-drawer" id="playlist-drawer"></div>
 
-                <div class="discord-guild-box" id="discord-copy-box" title="Click to copy Discord ID">
+                <div class="discord-guild-box" id="discord-copy-box" title="Klicke um Discord-ID zu kopieren">
                     <div class="copy-toast" id="copy-toast">Copied to Clipboard! ✓</div>
                     <div class="discord-guild-info">
                         <i class="fab fa-discord" style="color: #5865F2; font-size: 1.3rem;"></i>
                         <span id="discord-guild-stats">THE CRYPT</span>
                     </div>
-                    <a id="discord-guild-invite" href="https://discord.gg" target="_blank" class="btn-discord-join">Join Server <i class="fas fa-sign-in-alt"></i></a>
+                    <a id="discord-guild-invite" href="#" target="_blank" class="btn-discord-join">Join Server <i class="fas fa-sign-in-alt"></i></a>
                 </div>
             </div>
         </div>
@@ -428,7 +415,7 @@
                 <div id="stat-2" class="stat-value">3+</div>
             </div>
             
-            <div class="card stat-card yellow clickable" id="projects-trigger" title="Click to view projects">
+            <div class="card stat-card yellow clickable" id="projects-trigger" title="Klicken um Projekte anzusehen">
                 <div>
                     <div class="stat-label">Projects Built</div>
                     <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;"><i class="fas fa-external-link-alt"></i> Show list</div>
@@ -475,7 +462,7 @@
     <!-- CUSTOM CONTEXT MENU -->
     <div id="custom-context-menu">
         <div class="ctx-item" id="ctx-playpause"><i class="fas fa-play"></i> <span>Play / Pause</span></div>
-        <div class="ctx-item" id="ctx-next"><i class="fas fa-forward"></i> <span>Next Track</span></div>
+        <div class="ctx-item" id="ctx-next"><i class="fas fa-forward"></i> <span>Next Song</span></div>
         <div class="ctx-item" id="ctx-mute"><i class="fas fa-volume-xmark"></i> <span>Toggle Mute</span></div>
         <div class="ctx-separator"></div>
         <div class="ctx-item" id="ctx-cli"><i class="fas fa-terminal"></i> <span>Open Terminal</span></div>
@@ -484,7 +471,7 @@
         <div class="ctx-item" id="ctx-copy-discord"><i class="fab fa-discord"></i> <span>Copy Discord ID</span></div>
     </div>
 
-    <!-- MODAL: PROJECTS -->
+    <!-- MODAL: PROJEKTE -->
     <div class="modal-overlay" id="projects-modal">
         <div class="modal-box">
             <div class="modal-header">
@@ -497,21 +484,21 @@
                         <span class="project-name">Vengeance Game Launcher</span>
                         <span class="project-tag">C# / WPF</span>
                     </div>
-                    <p class="project-desc">Custom Game Launcher & Mod Manager with live hardware monitoring and fast profile switches.</p>
+                    <p class="project-desc">Custom Game Launcher & Mod-Manager mit Hardware-Monitoring, Schnellstart und Game-Profilen.</p>
                 </div>
                 <div class="project-item">
                     <div class="project-head">
                         <span class="project-name">Vengeance Utilities Dashboard</span>
                         <span class="project-tag">HTML5 / Supabase</span>
                     </div>
-                    <p class="project-desc">Interactive web dashboard with dynamic YouTube sync, glassmorphism Bento UI, and cloud stats.</p>
+                    <p class="project-desc">Interaktives Web-Dashboard mit YouTube Sync, Glassmorphism Bento UI und Cloud-Stats.</p>
                 </div>
                 <div class="project-item">
                     <div class="project-head">
                         <span class="project-name">System Tuning & Monitoring Suite</span>
                         <span class="project-tag">C++ / WinAPI</span>
                     </div>
-                    <p class="project-desc">Lightweight system tray tool for tracking CPU thermals, PBO power limits, and custom fan curves.</p>
+                    <p class="project-desc">Leichtgewichtiges Tray-Tool zur Überwachung von CPU-Temperaturen, PBO-Limits und Lüfterkurven.</p>
                 </div>
             </div>
         </div>
@@ -525,7 +512,7 @@
                 <button class="modal-close" id="close-github">&times;</button>
             </div>
             <div class="project-grid" id="github-repo-list">
-                <div style="color:var(--text-muted); font-size:0.85rem; padding:10px;">Fetching repositories...</div>
+                <div style="color:var(--text-muted); font-size:0.85rem; padding:10px;">Lade Repositories...</div>
             </div>
         </div>
     </div>
@@ -540,7 +527,7 @@
             <div class="cli-box">
                 <div class="cli-output" id="cli-output">
                     <div>Vengeance Terminal [Version 2.0.26]</div>
-                    <div>Type <span style="color:#fff;">'help'</span> for a list of available commands.</div>
+                    <div>Tippe <span style="color:#fff;">'help'</span> für eine Liste aller Befehle ein.</div>
                     <div style="height: 6px;"></div>
                 </div>
                 <div class="cli-input-line">
@@ -560,10 +547,10 @@
             </div>
             <div class="shortcuts-list" style="display:flex; flex-direction:column; gap:10px; font-size:0.85rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Play / Pause</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">Space</span></div>
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Next / Previous Track</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">&rarr; / &larr;</span></div>
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Shuffle / Repeat</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">S / R</span></div>
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Volume (+/- 5%)</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">&uarr; / &darr;</span></div>
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Open Terminal</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">~ / `</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Nächster / Vorheriger Song</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">&rarr; / &larr;</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Zufall / Wiederholung</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">S / R</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Lautstärke (+/- 5%)</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">&uarr; / &darr;</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:8px;"><span>Terminal Konsole öffnen</span><span class="kbd-badge" style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-family:monospace;">~ / ^</span></div>
             </div>
         </div>
     </div>
@@ -571,30 +558,31 @@
     <script>
         let ytApiReady = false;
 
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const boot = document.getElementById('boot-screen');
+                boot.style.opacity = '0';
+                setTimeout(() => {
+                    boot.style.display = 'none';
+                    document.getElementById('bento-grid').style.opacity = '1';
+                }, 400);
+            }, 800);
+        });
+
         const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
-        let sbClient = null;
-        try {
-            if (typeof supabase !== 'undefined') {
-                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            }
-        } catch (e) {
-            console.error('Supabase init failed:', e);
-        }
+        const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const DEFAULT_DISCORD_USER_ID = '935755290203283546';
         const DEFAULT_DISCORD_SERVER_ID = '1106609783680802886';
-        const GITHUB_USERNAME = 'UpperEchelon';
+        const GITHUB_USERNAME = 'UpperEchelon'; // Hier bei Bedarf anpassen
 
-        let playlist = [
-            { title: "Twisted world - The Viper", artist: "Tommy Knocker", id: "0wQ8nS2xX78", cover: "" }
-        ];
+        let playlist = [];
         let currentSongIndex = 0;
         let ytPlayer = null;
         let sfxEnabled = true;
         let isLooping = false;
         let isShuffling = false;
-        let isAudioActuallyPlaying = false;
 
         window.onYouTubeIframeAPIReady = function() {
             ytApiReady = true;
@@ -640,105 +628,74 @@
 
         window.addEventListener('mousemove', (e) => {
             mouseX = e.clientX; mouseY = e.clientY;
-            if (cursor) cursor.style.transform = `translate3d(${mouseX - 4}px,${mouseY - 4}px, 0)`;
+            cursor.style.transform = `translate3d(${mouseX - 4}px, ${mouseY - 4}px, 0)`;
         });
 
         function animateCursorTrail() {
-            if (trail) {
-                trailX += (mouseX - trailX) * 0.28; 
-                trailY += (mouseY - trailY) * 0.28;
-                const sizeOffset = isHovering ? 17 : 13;
-                trail.style.transform = `translate3d(${trailX - sizeOffset}px, ${trailY - sizeOffset}px, 0) scale(${isHovering ? 1.3 : 1})`;
-            }
+            trailX += (mouseX - trailX) * 0.28; 
+            trailY += (mouseY - trailY) * 0.28;
+            const sizeOffset = isHovering ? 17 : 13;
+            trail.style.transform = `translate3d(${trailX - sizeOffset}px, ${trailY - sizeOffset}px, 0) scale(${isHovering ? 1.3 : 1})`;
             requestAnimationFrame(animateCursorTrail);
         }
         animateCursorTrail();
 
         function applyCursorHoverEffects() {
             document.querySelectorAll('button, a, .clickable, input, .queue-item, .ctx-item').forEach(el => {
-                if (el.dataset.cursorBound) return;
+                if(el.dataset.cursorBound) return;
                 el.dataset.cursorBound = "true";
 
                 el.addEventListener('mouseenter', () => {
-                    if (cursor) {
-                        cursor.style.width = '14px'; cursor.style.height = '14px';
-                        cursor.style.transform = `translate3d(${mouseX - 7}px,${mouseY - 7}px, 0)`;
-                    }
+                    cursor.style.width = '14px'; cursor.style.height = '14px';
+                    cursor.style.transform = `translate3d(${mouseX - 7}px, ${mouseY - 7}px, 0)`;
                     isHovering = true; playSfx('hover');
                 });
                 el.addEventListener('mouseleave', () => {
-                    if (cursor) {
-                        cursor.style.width = '8px'; cursor.style.height = '8px';
-                        cursor.style.transform = `translate3d(${mouseX - 4}px,${mouseY - 4}px, 0)`;
-                    }
+                    cursor.style.width = '8px'; cursor.style.height = '8px';
+                    cursor.style.transform = `translate3d(${mouseX - 4}px, ${mouseY - 4}px, 0)`;
                     isHovering = false;
                 });
                 el.addEventListener('click', () => playSfx('click'));
             });
         }
 
-        /* BEAT-PUNCH VISUALIZER */
+        /* VISUALIZER */
         const vizContainer = document.getElementById('visualizer-strip');
         const vizBars = [];
-        if (vizContainer) {
-            for (let i = 0; i < 18; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'viz-bar'; 
-                vizContainer.appendChild(bar); 
-                vizBars.push(bar);
-            }
+        for (let i = 0; i < 16; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'viz-bar'; vizContainer.appendChild(bar); vizBars.push(bar);
         }
 
-        function resetVisualizer() {
-            vizBars.forEach(b => { b.style.height = '4px'; });
-        }
-
-        function updateVisualizer() {
-            if (!isAudioActuallyPlaying) {
-                resetVisualizer();
-                return;
-            }
-
-            const t = Date.now() / 110;
+        function updateVisualizer(isPlaying) {
             vizBars.forEach((bar, index) => {
-                let h = 4;
-                if (index < 4) {
-                    const kick = Math.pow(Math.sin(t * 1.8), 6);
-                    h = Math.floor(kick * 24) + 4;
-                } else if (index < 11) {
-                    const mid = Math.abs(Math.sin(t * 2.3 + index * 0.7));
-                    h = Math.floor(mid * 18) + 4;
+                if (isPlaying) {
+                    const wave = Math.sin(Date.now() / 150 + index * 0.5) * 10 + 12;
+                    bar.style.height = `${Math.max(4, Math.floor(wave))}px`;
                 } else {
-                    const highs = (Math.sin(t * 4.8 + index * 1.5) + 1) * 0.5;
-                    h = Math.floor(highs * 13) + 4;
+                    bar.style.height = '4px';
                 }
-                bar.style.height = `${h}px`;
             });
         }
-        setInterval(updateVisualizer, 35);
+        setInterval(() => {
+            const isPlaying = ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING;
+            updateVisualizer(isPlaying);
+        }, 80);
 
         /* PARTICLES */
         const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas ? canvas.getContext('2d') : null;
+        const ctx = canvas.getContext('2d');
         let particles = []; let mouse = { x: null, y: null, radius: 130 };
 
-        function resizeCanvas() { 
-            if (!canvas) return;
-            canvas.width = window.innerWidth; 
-            canvas.height = window.innerHeight; 
-        }
-        window.addEventListener('resize', resizeCanvas); 
-        resizeCanvas();
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
         window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
         window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
 
         class Particle {
             constructor() {
-                this.x = Math.random() * (canvas ? canvas.width : 500); 
-                this.y = Math.random() * (canvas ? canvas.height : 500);
-                this.size = Math.random() * 2 + 1; 
-                this.speedX = (Math.random() - 0.5) * 0.6; 
-                this.speedY = (Math.random() - 0.5) * 0.6;
+                this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1; this.speedX = (Math.random() - 0.5) * 0.6; this.speedY = (Math.random() - 0.5) * 0.6;
             }
             update() {
                 this.x += this.speedX; this.y += this.speedY;
@@ -755,35 +712,22 @@
                 }
             }
             draw() {
-                if (!ctx) return;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'; 
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); 
-                ctx.closePath(); 
-                ctx.fill();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'; ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.closePath(); ctx.fill();
             }
         }
-        if (canvas) {
-            for (let i = 0; i < (window.innerWidth > 900 ? 55 : 25); i++) particles.push(new Particle());
-        }
+        for (let i = 0; i < (window.innerWidth > 900 ? 55 : 25); i++) particles.push(new Particle());
 
         function animateParticles() {
-            if (!ctx || !canvas) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let i = 0; i < particles.length; i++) {
-                particles[i].update(); 
-                particles[i].draw();
+                particles[i].update(); particles[i].draw();
                 for (let j = i; j < particles.length; j++) {
                     let dx = particles[i].x - particles[j].x; let dy = particles[i].y - particles[j].y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance < 90) {
-                        ctx.beginPath(); 
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.12 - distance / 90 * 0.12})`;
-                        ctx.lineWidth = 0.6; 
-                        ctx.moveTo(particles[i].x, particles[i].y); 
-                        ctx.lineTo(particles[j].x, particles[j].y); 
-                        ctx.stroke(); 
-                        ctx.closePath();
+                        ctx.beginPath(); ctx.strokeStyle = `rgba(255, 255, 255, ${0.12 - distance / 90 * 0.12})`;
+                        ctx.lineWidth = 0.6; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke(); ctx.closePath();
                     }
                 }
             }
@@ -793,15 +737,11 @@
 
         function updateClock() {
             const clockEl = document.querySelector('#live-clock span');
-            if (clockEl) { 
-                const now = new Date(); 
-                clockEl.innerText = 'UTC • ' + now.toLocaleTimeString('en-US', { hour12: false }); 
-            }
+            if (clockEl) { const now = new Date(); clockEl.innerText = 'DE • ' + now.toLocaleTimeString('de-DE'); }
         }
-        setInterval(updateClock, 1000); 
-        updateClock();
+        setInterval(updateClock, 1000); updateClock();
 
-        /* SPOTLIGHT EFFECT */
+        /* SPOTLIGHT */
         document.querySelectorAll('.card').forEach(card => {
             card.addEventListener('mousemove', (e) => {
                 const rect = card.getBoundingClientRect(); 
@@ -838,12 +778,11 @@
                 
                 item.addEventListener('click', () => {
                     currentSongIndex = idx;
-                    if (ytPlayer && ytApiReady && ytPlayer.loadVideoById) {
+                    if (ytPlayer && ytApiReady) {
                         ytPlayer.loadVideoById(playlist[currentSongIndex].id);
                         updatePlayerUI();
                         document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
                         document.getElementById('yt-cover').classList.add('playing');
-                        isAudioActuallyPlaying = true;
                     }
                 });
                 playlistDrawer.appendChild(item);
@@ -874,7 +813,7 @@
         if (githubTrigger) { githubTrigger.addEventListener('click', () => { githubModal.classList.add('active'); loadGithubRepos(); }); closeGithub.addEventListener('click', () => githubModal.classList.remove('active')); }
         if (helpBtn) { helpBtn.addEventListener('click', () => shortcutsModal.classList.add('active')); closeShortcuts.addEventListener('click', () => shortcutsModal.classList.remove('active')); }
         
-        function openCli() { cliModal.classList.add('active'); setTimeout(() => cliInput && cliInput.focus(), 100); }
+        function openCli() { cliModal.classList.add('active'); setTimeout(() => cliInput.focus(), 100); }
         function closeCliModal() { cliModal.classList.remove('active'); }
         if (cliBtn) cliBtn.addEventListener('click', openCli);
         if (closeCli) closeCli.addEventListener('click', closeCliModal);
@@ -895,7 +834,7 @@
             });
         }
 
-        /* GITHUB REPOS LOADER (FIXED OPERATOR) */
+        /* GITHUB REPOS LOADER */
         async function loadGithubRepos() {
             const list = document.getElementById('github-repo-list');
             try {
@@ -903,23 +842,21 @@
                 if(!res.ok) throw new Error();
                 const repos = await res.json();
                 document.getElementById('stat-gh-count').innerText = repos.length;
-                if (list) {
-                    list.innerHTML = '';
-                    repos.forEach(repo => {
-                        const item = document.createElement('a');
-                        item.href = repo.html_url; item.target = '_blank'; item.className = 'project-item';
-                        item.innerHTML = `
-                            <div class="project-head">
-                                <span class="project-name"><i class="fab fa-github"></i> ${repo.name}</span>
-                                <span class="project-tag">${repo.language \vert{}\vert{} 'Code'} ★${repo.stargazers_count}</span>
-                            </div>
-                            <p class="project-desc">${repo.description || 'No description provided.'}</p>
-                        `;
-                        list.appendChild(item);
-                    });
-                }
+                list.innerHTML = '';
+                repos.forEach(repo => {
+                    const item = document.createElement('a');
+                    item.href = repo.html_url; item.target = '_blank'; item.className = 'project-item';
+                    item.innerHTML = `
+                        <div class="project-head">
+                            <span class="project-name"><i class="fab fa-github"></i> ${repo.name}</span>
+                            <span class="project-tag">${repo.language || 'Code'} ★ ${repo.stargazers_count}</span>
+                        </div>
+                        <p class="project-desc">${repo.description || 'Keine Beschreibung angegeben.'}</p>
+                    `;
+                    list.appendChild(item);
+                });
             } catch(e) {
-                if (list) list.innerHTML = '<div style="color:var(--text-muted); padding:10px;">Failed to load repositories or GitHub rate limit reached.</div>';
+                list.innerHTML = '<div style="color:var(--text-muted); padding:10px;">Repositories konnten nicht geladen werden oder GitHub-Rate-Limit erreicht.</div>';
             }
         }
 
@@ -944,18 +881,18 @@
 
             switch(cmd) {
                 case 'help':
-                    res.innerHTML = `Available commands:<br>
-                    • <span style="color:var(--accent);">projects</span> - Display ongoing software projects<br>
-                    • <span style="color:var(--accent);">specs</span> - Show machine & hardware configuration<br>
-                    • <span style="color:var(--accent);">skills</span> - Programming languages and tools overview<br>
-                    • <span style="color:var(--accent);">play / pause / next / prev</span> - Control music playback<br>
-                    • <span style="color:var(--accent);">clear / cls</span> - Flush the terminal console`;
+                    res.innerHTML = `Verfügbare Befehle:<br>
+                    • <span style="color:#a78bfa;">projects</span> - Zeigt aktuelle Software-Projekte an<br>
+                    • <span style="color:#a78bfa;">specs</span> - Listet PC-Hardware auf<br>
+                    • <span style="color:#a78bfa;">skills</span> - Übersicht deiner Programmiersprachen<br>
+                    • <span style="color:#a78bfa;">play / pause / next / prev</span> - Steuert den Music-Player<br>
+                    • <span style="color:#a78bfa;">clear / cls</span> - Leert das Terminal`;
                     break;
                 case 'projects':
                     res.innerHTML = `1. Vengeance Game Launcher (C#/WPF)<br>2. Vengeance Dashboard (HTML/JS/Supabase)<br>3. Hardware Tuning & Monitor Tool (C++)`;
                     break;
                 case 'specs':
-                    res.innerHTML = `AMD Ryzen 7 5800X | Radeon RX 6750 XT | 32GB RAM | ROG Strix B550-A Gaming`;
+                    res.innerHTML = `AMD Ryzen 7 5800X | Radeon RX 6750 XT | 32GB RAM | ASUS B550-A Gaming`;
                     break;
                 case 'skills':
                     res.innerHTML = `C++, C#, WPF, XAML, Python, Web/JS, Git, Batch Automation`;
@@ -963,15 +900,15 @@
                 case 'play':
                 case 'pause':
                     togglePlayPause();
-                    res.innerText = 'Toggled audio playback.';
+                    res.innerText = 'Player toggled.';
                     break;
                 case 'next':
                     changeSong(1);
-                    res.innerText = 'Loaded next song.';
+                    res.innerText = 'Next song loaded.';
                     break;
                 case 'prev':
                     changeSong(-1);
-                    res.innerText = 'Loaded previous song.';
+                    res.innerText = 'Previous song loaded.';
                     break;
                 case 'clear':
                 case 'cls':
@@ -980,7 +917,7 @@
                 case '':
                     return;
                 default:
-                    res.innerHTML = `Command not recognized: '${cmd}'. Type 'help' for instructions.`;
+                    res.innerHTML = `Befehl nicht gefunden: '${cmd}'. Tippe 'help' für Hilfe.`;
                     break;
             }
             cliOutput.appendChild(res);
@@ -991,7 +928,6 @@
         const ctxMenu = document.getElementById('custom-context-menu');
         window.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            if (!ctxMenu) return;
             ctxMenu.style.display = 'block';
             let x = e.clientX, y = e.clientY;
             if (x + 200 > window.innerWidth) x = window.innerWidth - 210;
@@ -999,14 +935,14 @@
             ctxMenu.style.left = `${x}px`;
             ctxMenu.style.top = `${y}px`;
         });
-        window.addEventListener('click', () => { if (ctxMenu) ctxMenu.style.display = 'none'; });
+        window.addEventListener('click', () => { ctxMenu.style.display = 'none'; });
 
-        document.getElementById('ctx-playpause')?.addEventListener('click', togglePlayPause);
-        document.getElementById('ctx-next')?.addEventListener('click', () => changeSong(1));
-        document.getElementById('ctx-mute')?.addEventListener('click', () => document.getElementById('mute-icon')?.click());
-        document.getElementById('ctx-cli')?.addEventListener('click', openCli);
-        document.getElementById('ctx-projects')?.addEventListener('click', () => projectsModal.classList.add('active'));
-        document.getElementById('ctx-copy-discord')?.addEventListener('click', () => {
+        document.getElementById('ctx-playpause').addEventListener('click', togglePlayPause);
+        document.getElementById('ctx-next').addEventListener('click', () => changeSong(1));
+        document.getElementById('ctx-mute').addEventListener('click', () => document.getElementById('mute-icon').click());
+        document.getElementById('ctx-cli').addEventListener('click', openCli);
+        document.getElementById('ctx-projects').addEventListener('click', () => projectsModal.classList.add('active'));
+        document.getElementById('ctx-copy-discord').addEventListener('click', () => {
             navigator.clipboard.writeText(DEFAULT_DISCORD_USER_ID);
             copyToast.classList.add('show'); setTimeout(() => copyToast.classList.remove('show'), 2000);
         });
@@ -1014,69 +950,61 @@
         /* DATA LOADER */
         async function loadWebsiteData() {
             try {
-                if (sbClient) {
-                    const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
-                    if (profile) {
-                        setAnimatedUsername(profile.username || 'UpperEchelon');
-                        if (profile.bio) document.getElementById('bio').innerText = profile.bio;
-                        if (profile.avatar_url) document.getElementById('avatar').src = profile.avatar_url;
-                    } else {
-                        setAnimatedUsername('UpperEchelon');
-                    }
+                // Profile & Stats aus Supabase
+                const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
+                if (profile) {
+                    setAnimatedUsername(profile.username || 'UpperEchelon');
+                    document.getElementById('bio').innerText = profile.bio || '';
+                    if (profile.avatar_url) document.getElementById('avatar').src = profile.avatar_url;
+                } else setAnimatedUsername('UpperEchelon');
 
-                    const { data: stats } = await sbClient.from('stats').select('*').eq('id', 1).maybeSingle();
-                    if (stats) {
-                        document.getElementById('stat-1').innerText = stats.years_coding || '3+';
-                        document.getElementById('stat-2').innerText = stats.languages || '3+';
-                        document.getElementById('stat-3').innerText = stats.projects || '20+';
-                    }
-
-                    // Playlist
-                    const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*').order('position', { ascending: true });
-                    if (dbPlaylist && dbPlaylist.length > 0) {
-                        playlist = dbPlaylist.map(song => ({ title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url }));
-                    }
-
-                    // Links
-                    const { data: dbLinks } = await sbClient.from('links').select('*');
-                    const linksContainer = document.getElementById('links-container');
-                    if (dbLinks && dbLinks.length > 0 && linksContainer) {
-                        linksContainer.innerHTML = '';
-                        dbLinks.forEach(link => {
-                            const a = document.createElement('a'); a.href = link.url; a.target = '_blank'; a.className = 'social-link';
-                            a.innerHTML = `<i class="${link.icon}"></i> ${link.name}`; linksContainer.appendChild(a);
-                        });
-                    }
-                } else {
-                    setAnimatedUsername('UpperEchelon');
+                const { data: stats } = await sbClient.from('stats').select('*').eq('id', 1).maybeSingle();
+                if (stats) {
+                    document.getElementById('stat-1').innerText = stats.years_coding || '3+';
+                    document.getElementById('stat-2').innerText = stats.languages || '3+';
+                    document.getElementById('stat-3').innerText = stats.projects || '20+';
                 }
 
+                // Playlist
+                const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*').order('position', { ascending: true });
+                if (dbPlaylist && dbPlaylist.length > 0) {
+                    playlist = dbPlaylist.map(song => ({ title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url }));
+                } else {
+                    playlist = [{ title: "Twisted world - The Viper", artist: "Tommy Knocker", id: "0wQ8nS2xX78", cover: "" }];
+                }
                 renderQueue();
 
-                // Discord Widget
-                fetch(`https://discord.com/api/guilds/${DEFAULT_DISCORD_SERVER_ID}/widget.json`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && data.name) {
-                            document.getElementById('discord-guild-stats').innerText = `${data.name} (${data.presence_count || 'Online'})`;
-                            if (data.instant_invite) document.getElementById('discord-guild-invite').href = data.instant_invite;
-                        }
-                    }).catch(() => {});
+                // Links
+                const { data: dbLinks } = await sbClient.from('links').select('*');
+                const linksContainer = document.getElementById('links-container');
+                if (dbLinks && dbLinks.length > 0 && linksContainer) {
+                    linksContainer.innerHTML = '';
+                    dbLinks.forEach(link => {
+                        const a = document.createElement('a'); a.href = link.url; a.target = '_blank'; a.className = 'social-link';
+                        a.innerHTML = `<i class="${link.icon}"></i> ${link.name}`; linksContainer.appendChild(a);
+                    });
+                }
 
+                // Discord Server Widget Info
+                fetch(`https://discord.com/api/guilds/${DEFAULT_DISCORD_SERVER_ID}/widget.json`).then(res => res.json()).then(data => {
+                    if (data && data.name) {
+                        document.getElementById('discord-guild-stats').innerText = `${data.name} (${data.presence_count || 'Online'})`;
+                        if (data.instant_invite) document.getElementById('discord-guild-invite').href = data.instant_invite;
+                    }
+                }).catch(() => {});
+
+                // Initial Github Repos Fetch
                 loadGithubRepos();
+
                 applyCursorHoverEffects(); 
                 updatePlayerUI();
                 tryInitPlayer();
 
-            } catch (err) { 
-                console.error(err); 
-                setAnimatedUsername('UpperEchelon');
-            }
+            } catch (err) { console.error(err); }
         }
 
         function setAnimatedUsername(name) {
             const container = document.getElementById('username'); 
-            if (!container) return;
             container.innerHTML = ''; 
             [...(name || 'UpperEchelon')].forEach((char, index) => {
                 const span = document.createElement('span'); 
@@ -1088,9 +1016,9 @@
         }
 
         function tryInitPlayer() {
-            if (ytApiReady && playlist.length > 0 && !ytPlayer && typeof YT !== 'undefined' && YT.Player) {
+            if (ytApiReady && playlist.length > 0 && !ytPlayer) {
                 ytPlayer = new YT.Player('youtube-player', {
-                    height: '0', width: '0', videoId: playlist[currentSongIndex]?.id || '0wQ8nS2xX78',
+                    height: '0', width: '0', videoId: playlist[currentSongIndex]?.id || '',
                     playerVars: { 'autoplay': 0, 'controls': 0 }, 
                     events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
                 });
@@ -1098,29 +1026,22 @@
         }
 
         function togglePlayPause() {
-            if (!ytPlayer || !playlist[currentSongIndex]?.id || !ytPlayer.getPlayerState) return;
+            if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
             const state = ytPlayer.getPlayerState(); 
             const icon = document.querySelector('#play-pause-btn i');
             const cover = document.getElementById('yt-cover');
             if (state === YT.PlayerState.PLAYING) {
-                ytPlayer.pauseVideo(); 
-                isAudioActuallyPlaying = false;
-                if (icon) icon.className = 'fas fa-play'; 
-                if (cover) cover.classList.remove('playing');
-                resetVisualizer();
+                ytPlayer.pauseVideo(); icon.className = 'fas fa-play'; cover.classList.remove('playing');
             } else {
-                ytPlayer.playVideo(); 
-                isAudioActuallyPlaying = true;
-                if (icon) icon.className = 'fas fa-pause'; 
-                if (cover) cover.classList.add('playing');
+                ytPlayer.playVideo(); icon.className = 'fas fa-pause'; cover.classList.add('playing');
             }
         }
 
         function onPlayerReady() {
             ytPlayer.setVolume(document.getElementById('volume-slider').value);
-            document.getElementById('play-pause-btn')?.addEventListener('click', togglePlayPause);
-            document.getElementById('next-btn')?.addEventListener('click', () => changeSong(1));
-            document.getElementById('prev-btn')?.addEventListener('click', () => changeSong(-1));
+            document.getElementById('play-pause-btn').addEventListener('click', togglePlayPause);
+            document.getElementById('next-btn').addEventListener('click', () => changeSong(1));
+            document.getElementById('prev-btn').addEventListener('click', () => changeSong(-1));
             
             const shuffleBtn = document.getElementById('shuffle-btn');
             if (shuffleBtn) {
@@ -1138,8 +1059,8 @@
                 });
             }
 
-            document.getElementById('progress-timeline')?.addEventListener('click', function(e) {
-                if (!ytPlayer || !playlist[currentSongIndex]?.id || !ytPlayer.getDuration) return;
+            document.getElementById('progress-timeline').addEventListener('click', function(e) {
+                if (!ytPlayer || !playlist[currentSongIndex]?.id) return;
                 const rect = this.getBoundingClientRect(); 
                 const clickPosition = (e.clientX - rect.left) / rect.width;
                 const totalDuration = ytPlayer.getDuration(); 
@@ -1147,10 +1068,10 @@
             });
 
             const volumeSlider = document.getElementById('volume-slider');
-            volumeSlider?.addEventListener('input', function() { if (ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(this.value); });
+            volumeSlider.addEventListener('input', function() { if (ytPlayer) ytPlayer.setVolume(this.value); });
             
-            document.getElementById('mute-icon')?.addEventListener('click', () => {
-                if (!ytPlayer || !ytPlayer.isMuted) return;
+            document.getElementById('mute-icon').addEventListener('click', () => {
+                if (!ytPlayer) return;
                 if (ytPlayer.isMuted()) { ytPlayer.unMute(); document.getElementById('mute-icon').className = 'fas fa-volume-down'; }
                 else { ytPlayer.mute(); document.getElementById('mute-icon').className = 'fas fa-volume-mute'; }
             });
@@ -1160,16 +1081,16 @@
                 if (e.code === 'Space') { e.preventDefault(); togglePlayPause(); }
                 else if (e.code === 'ArrowRight') { e.preventDefault(); changeSong(1); }
                 else if (e.code === 'ArrowLeft') { e.preventDefault(); changeSong(-1); }
-                else if (e.code === 'KeyS') { e.preventDefault(); shuffleBtn?.click(); }
-                else if (e.code === 'KeyR') { e.preventDefault(); loopBtn?.click(); }
-                else if (e.code === 'KeyM') { e.preventDefault(); document.getElementById('mute-icon')?.click(); }
-                else if (e.key === '~' || e.key === '`' || e.key === '^') { e.preventDefault(); openCli(); }
-                else if (e.code === 'ArrowUp') { e.preventDefault(); let v = Math.min(100, parseInt(volumeSlider.value) + 5); volumeSlider.value = v; if (ytPlayer?.setVolume) ytPlayer.setVolume(v); }
-                else if (e.code === 'ArrowDown') { e.preventDefault(); let v = Math.max(0, parseInt(volumeSlider.value) - 5); volumeSlider.value = v; if (ytPlayer?.setVolume) ytPlayer.setVolume(v); }
+                else if (e.code === 'KeyS') { e.preventDefault(); shuffleBtn.click(); }
+                else if (e.code === 'KeyR') { e.preventDefault(); loopBtn.click(); }
+                else if (e.code === 'KeyM') { e.preventDefault(); document.getElementById('mute-icon').click(); }
+                else if (e.key === '~' || e.key === '^') { e.preventDefault(); openCli(); }
+                else if (e.code === 'ArrowUp') { e.preventDefault(); let v = Math.min(100, parseInt(volumeSlider.value) + 5); volumeSlider.value = v; if (ytPlayer) ytPlayer.setVolume(v); }
+                else if (e.code === 'ArrowDown') { e.preventDefault(); let v = Math.max(0, parseInt(volumeSlider.value) - 5); volumeSlider.value = v; if (ytPlayer) ytPlayer.setVolume(v); }
             });
 
             setInterval(() => {
-                if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getPlayerState && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+                if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     const current = ytPlayer.getCurrentTime(); const total = ytPlayer.getDuration();
                     if (total > 0) document.getElementById('yt-progress').style.width = (current / total) * 100 + '%';
                     const formatTime = (time) => Math.floor(time / 60) + ':' + ('0' + Math.floor(time % 60)).slice(-2);
@@ -1193,15 +1114,13 @@
                 if (currentSongIndex < 0) currentSongIndex = playlist.length - 1;
             }
 
-            if(ytPlayer && ytApiReady && ytPlayer.loadVideoById) {
+            if(ytPlayer && ytApiReady) {
                 ytPlayer.loadVideoById(playlist[currentSongIndex].id);
             }
             updatePlayerUI(); 
             renderQueue();
-            isAudioActuallyPlaying = true;
-            const icon = document.querySelector('#play-pause-btn i');
-            if (icon) icon.className = 'fas fa-pause';
-            document.getElementById('yt-cover')?.classList.add('playing');
+            document.querySelector('#play-pause-btn i').className = 'fas fa-pause';
+            document.getElementById('yt-cover').classList.add('playing');
         }
 
         function updatePlayerUI() {
@@ -1215,22 +1134,17 @@
             const bgElement = document.getElementById('dynamic-bg');
             
             let targetCover = currentSong.cover || `https://img.youtube.com/vi/${currentSong.id}/hqdefault.jpg`;
-            if (imgElement) imgElement.src = targetCover;
-            if (bgElement) bgElement.style.backgroundImage = `url('${targetCover}')`;
+            imgElement.src = targetCover;
+            bgElement.style.backgroundImage = `url('${targetCover}')`;
         }
 
         function onPlayerStateChange(event) {
             const icon = document.querySelector('#play-pause-btn i');
             const cover = document.getElementById('yt-cover');
             if (event.data === YT.PlayerState.PLAYING) { 
-                isAudioActuallyPlaying = true;
-                if (icon) icon.className = 'fas fa-pause'; 
-                if (cover) cover.classList.add('playing'); 
+                icon.className = 'fas fa-pause'; cover.classList.add('playing'); 
             } else { 
-                isAudioActuallyPlaying = false;
-                if (icon) icon.className = 'fas fa-play'; 
-                if (cover) cover.classList.remove('playing'); 
-                resetVisualizer();
+                icon.className = 'fas fa-play'; cover.classList.remove('playing'); 
             }
 
             if (event.data === YT.PlayerState.ENDED) {
