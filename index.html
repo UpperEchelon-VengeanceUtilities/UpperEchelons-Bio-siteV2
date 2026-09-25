@@ -382,7 +382,7 @@
         <div class="main-content">
             <div class="card music-player">
                 <div class="track-info-container">
-                    <img id="yt-cover" src="https://via.placeholder.com/150" alt="Album Art" class="album-art" crossorigin="anonymous">
+                    <img id="yt-cover" src="https://via.placeholder.com/150" alt="Album Art" class="album-art">
                     <div class="track-details">
                         <div class="track-header">
                             <div id="yt-title" class="track-title">Loading...</div>
@@ -584,16 +584,19 @@
     <script>
         let ytApiReady = false;
 
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const boot = document.getElementById('boot-screen');
+        function hideBootScreen() {
+            const boot = document.getElementById('boot-screen');
+            if (boot && boot.style.display !== 'none') {
                 boot.style.opacity = '0';
                 setTimeout(() => {
                     boot.style.display = 'none';
-                    document.getElementById('bento-grid').style.opacity = '1';
+                    const grid = document.getElementById('bento-grid');
+                    if (grid) grid.style.opacity = '1';
                 }, 400);
-            }, 800);
-        });
+            }
+        }
+        window.addEventListener('load', () => setTimeout(hideBootScreen, 800));
+        setTimeout(hideBootScreen, 2500);
 
         const SUPABASE_URL = 'https://pdyrfnbjegsyjmcmbqck.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_XfgU_toGSxKo2eM810q59w_qJt_HAO0';
@@ -708,15 +711,12 @@
             vizBars.forEach((bar, index) => {
                 let h = 4;
                 if (index < 4) {
-                    // Deep Kick / Bass punch
                     const kick = Math.pow(Math.sin(t * 1.8), 6);
                     h = Math.floor(kick * 24) + 4;
                 } else if (index < 11) {
-                    // Synth / Lead / Mid frequencies
                     const mid = Math.abs(Math.sin(t * 2.3 + index * 0.7));
                     h = Math.floor(mid * 18) + 4;
                 } else {
-                    // Highs / Hats / Percussion
                     const highs = (Math.sin(t * 4.8 + index * 1.5) + 1) * 0.5;
                     h = Math.floor(highs * 13) + 4;
                 }
@@ -833,36 +833,37 @@
             applyCursorHoverEffects(); 
         }
 
-        /* DYNAMIC ACCENT COLOR SYNC FROM ALBUM COVER */
+        /* DYNAMIC ACCENT COLOR SYNC */
         function syncThemeWithCover(img) {
             try {
-                const c = document.createElement('canvas');
-                const ctx = c.getContext('2d');
-                c.width = 40; c.height = 40;
-                ctx.drawImage(img, 0, 0, 40, 40);
-                const data = ctx.getImageData(0, 0, 40, 40).data;
-                
-                let rSum = 0, gSum = 0, bSum = 0, count = 0;
-                for (let i = 0; i < data.length; i += 4) {
-                    const r = data[i], g = data[i+1], b = data[i+2];
-                    const brightness = (r + g + b) / 3;
-                    // Exclude pure blacks or whites to isolate vibrant signature colors
-                    if (brightness > 35 && brightness < 235) {
-                        rSum += r; gSum += g; bSum += b; count++;
-                    }
-                }
-                if (count > 0) {
-                    const r = Math.round(rSum / count);
-                    const g = Math.round(gSum / count);
-                    const b = Math.round(bSum / count);
+                const tempImg = new Image();
+                tempImg.crossOrigin = "Anonymous";
+                tempImg.src = img.src;
+                tempImg.onload = function() {
+                    const c = document.createElement('canvas');
+                    const ctx = c.getContext('2d');
+                    c.width = 30; c.height = 30;
+                    ctx.drawImage(tempImg, 0, 0, 30, 30);
+                    const data = ctx.getImageData(0, 0, 30, 30).data;
                     
-                    const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-                    document.documentElement.style.setProperty('--accent', hex);
-                    document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g},${b}, 0.35)`);
-                }
-            } catch (e) {
-                // Keep default accent if canvas read is blocked
-            }
+                    let rSum = 0, gSum = 0, bSum = 0, count = 0;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i], g = data[i+1], b = data[i+2];
+                        const brightness = (r + g + b) / 3;
+                        if (brightness > 40 && brightness < 220) {
+                            rSum += r; gSum += g; bSum += b; count++;
+                        }
+                    }
+                    if (count > 0) {
+                        const r = Math.round(rSum / count);
+                        const g = Math.round(gSum / count);
+                        const b = Math.round(bSum / count);
+                        const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+                        document.documentElement.style.setProperty('--accent', hex);
+                        document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g},${b}, 0.35)`);
+                    }
+                };
+            } catch (e) {}
         }
 
         /* MODALS */
@@ -920,7 +921,9 @@
                 list.innerHTML = '';
                 repos.forEach(repo => {
                     const item = document.createElement('a');
-                    item.href = repo.html_url; item.target = '_blank'; item.className = 'project-item';
+                    item.href = repo.html_url; 
+                    item.target = '_blank'; 
+                    item.className = 'project-item';
                     item.innerHTML = `
                         <div class="project-head">
                             <span class="project-name"><i class="fab fa-github"></i> ${repo.name}</span>
