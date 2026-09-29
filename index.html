@@ -98,11 +98,32 @@
         }
 
         #particle-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; }
-        .yt-backdrop {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-size: cover; background-position: center;
-            filter: blur(45px) brightness(0.25) saturate(1.4); transform: scale(1.15); z-index: 0;
-            transition: background-image 1.2s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
+        
+        /* YT VIDEO HINTERGRUND MIT WEICHEM BLUR & CROP */
+        .video-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
         }
+
+        #youtube-player {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 56.25vw; /* 16:9 Verhältnis */
+            min-height: 100vh;
+            min-width: 177.77vh; /* 16:9 Verhältnis */
+            transform: translate(-50%, -50%) scale(1.35); /* Vergrößert, schneidet UI und Ränder ab */
+            filter: blur(18px) brightness(0.35) saturate(1.4);
+            pointer-events: none;
+        }
+
         .bg-grid-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
@@ -234,7 +255,6 @@
         /* STATS */
         .stats-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
         
-        /* Stat Top Row: Years Coding + Specs Dropdown nebeneinander */
         .stat-top-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -349,7 +369,11 @@
 
     <canvas id="particle-canvas"></canvas>
 
-    <div id="dynamic-bg" class="yt-backdrop"></div>
+    <!-- HINTERGRUND VIDEO PLAYER -->
+    <div class="video-bg-container">
+        <div id="youtube-player"></div>
+    </div>
+    
     <div class="bg-grid-overlay"></div>
 
     <div class="header-actions">
@@ -357,8 +381,6 @@
         <button class="action-btn" id="sfx-btn" title="Toggle Sound FX"><i class="fas fa-volume-high"></i></button>
         <button class="action-btn" id="help-btn" title="Keyboard Shortcuts"><i class="fas fa-keyboard"></i></button>
     </div>
-
-    <div id="youtube-player" style="display: none;"></div>
 
     <div class="bento-container" id="bento-grid">
         
@@ -469,7 +491,7 @@
                 <div id="stat-3" class="stat-value">20+</div>
             </div>
 
-            <!-- Reihe 4: Website Views (Zurückgebracht & live synchronisiert mit Supabase) -->
+            <!-- Reihe 4: Website Views -->
             <div class="card stat-card blue">
                 <div>
                     <div class="stat-label">Website Views</div>
@@ -780,7 +802,6 @@
                 rigChevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
             });
 
-            // Schließt das Dropdown beim Klick irgendwo außerhalb
             document.addEventListener('click', (e) => {
                 if (!rigToggle.contains(e.target) && !rigDetails.contains(e.target)) {
                     rigDetails.classList.remove('open');
@@ -947,7 +968,6 @@
         /* DATA LOADER */
         async function loadWebsiteData() {
             try {
-                // Profile & Stats aus Supabase
                 const { data: profile } = await sbClient.from('profile').select('*').eq('id', 1).maybeSingle();
                 if (profile) {
                     setAnimatedUsername(profile.username || 'UpperEchelon');
@@ -961,13 +981,11 @@
                     document.getElementById('stat-2').innerText = stats.languages || '3+';
                     document.getElementById('stat-3').innerText = stats.projects || '20+';
                     
-                    // Website Views anzeigen und bei Seitenaufruf um +1 hochzählen
                     const currentViews = (stats.views || 0) + 1;
                     document.getElementById('stat-4').innerText = currentViews.toLocaleString();
                     sbClient.from('stats').update({ views: currentViews }).eq('id', 1).then();
                 }
 
-                // Playlist
                 const { data: dbPlaylist } = await sbClient.from('youtube_playlist').select('*').order('position', { ascending: true });
                 if (dbPlaylist && dbPlaylist.length > 0) {
                     playlist = dbPlaylist.map(song => ({ title: song.song_title, artist: song.artist, id: song.youtube_id, cover: song.cover_url }));
@@ -976,7 +994,6 @@
                 }
                 renderQueue();
 
-                // Links
                 const { data: dbLinks } = await sbClient.from('links').select('*');
                 const linksContainer = document.getElementById('links-container');
                 if (dbLinks && dbLinks.length > 0 && linksContainer) {
@@ -987,7 +1004,6 @@
                     });
                 }
 
-                // Discord Server Widget Info
                 fetch(`https://discord.com/api/guilds/${DEFAULT_DISCORD_SERVER_ID}/widget.json`).then(res => res.json()).then(data => {
                     if (data && data.name) {
                         document.getElementById('discord-guild-stats').innerText = `${data.name} (${data.presence_count || 'Online'})`;
@@ -1017,8 +1033,18 @@
         function tryInitPlayer() {
             if (ytApiReady && playlist.length > 0 && !ytPlayer) {
                 ytPlayer = new YT.Player('youtube-player', {
-                    height: '0', width: '0', videoId: playlist[currentSongIndex]?.id || '',
-                    playerVars: { 'autoplay': 0, 'controls': 0 }, 
+                    videoId: playlist[currentSongIndex]?.id || '',
+                    playerVars: { 
+                        'autoplay': 0, 
+                        'controls': 0,
+                        'disablekb': 1,
+                        'enablejsapi': 1,
+                        'fs': 0,
+                        'iv_load_policy': 3,
+                        'modestbranding': 1,
+                        'rel': 0,
+                        'showinfo': 0
+                    }, 
                     events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
                 });
             }
@@ -1130,11 +1156,8 @@
             document.getElementById('yt-progress').style.width = '0%';
             
             const imgElement = document.getElementById('yt-cover'); 
-            const bgElement = document.getElementById('dynamic-bg');
-            
             let targetCover = currentSong.cover || `https://img.youtube.com/vi/${currentSong.id}/hqdefault.jpg`;
             imgElement.src = targetCover;
-            bgElement.style.backgroundImage = `url('${targetCover}')`;
         }
 
         function onPlayerStateChange(event) {
