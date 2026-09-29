@@ -232,7 +232,17 @@
         .copy-toast.show { opacity: 1; transform: translateY(0); }
 
         /* STATS */
-        .stats-container { display: flex; flex-direction: column; gap: 10px; }
+        .stats-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
+        
+        /* Stat Top Row: Years Coding + Specs Dropdown nebeneinander */
+        .stat-top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            align-items: stretch;
+            position: relative;
+        }
+
         .stat-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.01); }
         .stat-card.clickable { transition: transform 0.2s ease, border-color 0.2s ease; }
         .stat-card.clickable:hover { border-color: var(--accent); transform: translateX(4px); }
@@ -241,12 +251,28 @@
         .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
         .stat-value { font-size: 1.5rem; font-weight: 800; }
 
-        .rig-specs-btn { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; }
-        .rig-specs-btn:hover { color: var(--text-main); border-color: var(--accent); background: rgba(255, 255, 255, 0.05); }
-        .rig-specs-details { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.25); border-radius: 8px; padding: 0 10px; }
-        .rig-specs-details.open { max-height: 200px; margin-top: 6px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .spec-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .spec-item:last-child { border-bottom: none; } .spec-val { color: var(--text-main); font-weight: 600; }
+        /* Specs Button & Floating Dropdown */
+        .rig-specs-wrapper { position: relative; display: flex; flex-direction: column; }
+        .rig-specs-btn {
+            background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(16px);
+            color: var(--text-main); border-radius: 14px; padding: 14px 16px; font-size: 0.85rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: space-between; height: 100%; transition: all 0.2s ease;
+        }
+        .rig-specs-btn:hover { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); transform: translateY(-2px); }
+        
+        .rig-specs-details {
+            position: absolute; top: calc(100% + 8px); right: 0; left: -140px; z-index: 100;
+            background: rgba(18, 18, 22, 0.95); border: 1px solid var(--card-border); backdrop-filter: blur(16px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 15px var(--accent-glow);
+            max-height: 0; opacity: 0; overflow: hidden; pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 12px; padding: 0 12px;
+            display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; color: var(--text-muted);
+        }
+        .rig-specs-details.open {
+            max-height: 250px; opacity: 1; pointer-events: auto; padding: 10px 12px; border-color: rgba(255,255,255,0.12);
+        }
+        .spec-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .spec-item:last-child { border-bottom: none; } .spec-val { color: var(--text-main); font-weight: 600; margin-left: 12px; }
 
         .status-banner { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 14px 20px; gap: 15px; flex-wrap: wrap; }
         .status-content-left { display: flex; align-items: center; gap: 12px; }
@@ -406,15 +432,35 @@
         </div>
 
         <div class="stats-container">
-            <div class="card stat-card green">
-                <div class="stat-label">Years Coding</div>
-                <div id="stat-1" class="stat-value">3+</div>
+            <!-- Reihe 1: Years Coding & System Specs nebeneinander -->
+            <div class="stat-top-row">
+                <div class="card stat-card green">
+                    <div class="stat-label">Years Coding</div>
+                    <div id="stat-1" class="stat-value">3+</div>
+                </div>
+
+                <div class="rig-specs-wrapper">
+                    <button class="rig-specs-btn" id="rig-toggle" title="Hardware Spezifikationen anzeigen">
+                        <span><i class="fas fa-microchip" style="margin-right: 6px;"></i> Specs</span>
+                        <i class="fas fa-chevron-down" id="rig-chevron"></i>
+                    </button>
+                    <div class="rig-specs-details" id="rig-details">
+                        <div class="spec-item"><span>CPU</span><span class="spec-val">Ryzen 7 5800X</span></div>
+                        <div class="spec-item"><span>GPU</span><span class="spec-val">RX 6750 XT</span></div>
+                        <div class="spec-item"><span>RAM</span><span class="spec-val">32 GB DDR4</span></div>
+                        <div class="spec-item"><span>Board</span><span class="spec-val">B550-A Gaming</span></div>
+                        <div class="spec-item"><span>OS</span><span class="spec-val">W11 Pro (AtlasOS)</span></div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Reihe 2: Coding Languages -->
             <div class="card stat-card pink">
                 <div class="stat-label">Coding Languages</div>
                 <div id="stat-2" class="stat-value">3+</div>
             </div>
             
+            <!-- Reihe 3: Projects Built -->
             <div class="card stat-card yellow clickable" id="projects-trigger" title="Klicken um Projekte anzusehen">
                 <div>
                     <div class="stat-label">Projects Built</div>
@@ -423,26 +469,13 @@
                 <div id="stat-3" class="stat-value">20+</div>
             </div>
 
-            <div class="card stat-card blue clickable" id="github-trigger" title="Live GitHub Repositories">
+            <!-- Reihe 4: Website Views (Zurückgebracht & live synchronisiert mit Supabase) -->
+            <div class="card stat-card blue">
                 <div>
-                    <div class="stat-label">GitHub Activity</div>
-                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;"><i class="fab fa-github"></i> Repos live</div>
+                    <div class="stat-label">Website Views</div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;"><i class="fas fa-eye"></i> Total visits</div>
                 </div>
-                <div id="stat-gh-count" class="stat-value">⚡</div>
-            </div>
-
-            <div>
-                <button class="rig-specs-btn" id="rig-toggle">
-                    <span><i class="fas fa-microchip" style="margin-right: 6px;"></i> System Specs</span>
-                    <i class="fas fa-chevron-down" id="rig-chevron"></i>
-                </button>
-                <div class="rig-specs-details" id="rig-details">
-                    <div class="spec-item"><span>CPU</span><span class="spec-val">AMD Ryzen 7 5800X</span></div>
-                    <div class="spec-item"><span>GPU</span><span class="spec-val">Aorus Elite Radeon RX 6750 XT</span></div>
-                    <div class="spec-item"><span>RAM</span><span class="spec-val">32 GB DDR4</span></div>
-                    <div class="spec-item"><span>Board</span><span class="spec-val">ROG Strix B550-A Gaming</span></div>
-                    <div class="spec-item"><span>OS</span><span class="spec-val">W11 Pro running AtlasOS</span></div>
-                </div>
+                <div id="stat-4" class="stat-value">0</div>
             </div>
         </div>
 
@@ -500,19 +533,6 @@
                     </div>
                     <p class="project-desc">Leichtgewichtiges Tray-Tool zur Überwachung von CPU-Temperaturen, PBO-Limits und Lüfterkurven.</p>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: GITHUB REPOSITORIES -->
-    <div class="modal-overlay" id="github-modal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-title"><i class="fab fa-github" style="color:var(--accent);"></i> GitHub Repositories</div>
-                <button class="modal-close" id="close-github">&times;</button>
-            </div>
-            <div class="project-grid" id="github-repo-list">
-                <div style="color:var(--text-muted); font-size:0.85rem; padding:10px;">Lade Repositories...</div>
             </div>
         </div>
     </div>
@@ -575,7 +595,6 @@
 
         const DEFAULT_DISCORD_USER_ID = '935755290203283546';
         const DEFAULT_DISCORD_SERVER_ID = '1106609783680802886';
-        const GITHUB_USERNAME = 'UpperEchelon'; // Hier bei Bedarf anpassen
 
         let playlist = [];
         let currentSongIndex = 0;
@@ -755,9 +774,18 @@
         const rigDetails = document.getElementById('rig-details'); 
         const rigChevron = document.getElementById('rig-chevron');
         if (rigToggle && rigDetails) {
-            rigToggle.addEventListener('click', () => {
+            rigToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const isOpen = rigDetails.classList.toggle('open');
                 rigChevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+
+            // Schließt das Dropdown beim Klick irgendwo außerhalb
+            document.addEventListener('click', (e) => {
+                if (!rigToggle.contains(e.target) && !rigDetails.contains(e.target)) {
+                    rigDetails.classList.remove('open');
+                    rigChevron.style.transform = 'rotate(0deg)';
+                }
             });
         }
 
@@ -795,10 +823,6 @@
         const projectsTrigger = document.getElementById('projects-trigger'); 
         const closeProjects = document.getElementById('close-projects');
 
-        const githubModal = document.getElementById('github-modal');
-        const githubTrigger = document.getElementById('github-trigger');
-        const closeGithub = document.getElementById('close-github');
-
         const cliModal = document.getElementById('cli-modal');
         const cliBtn = document.getElementById('cli-btn');
         const closeCli = document.getElementById('close-cli');
@@ -810,7 +834,6 @@
         const closeShortcuts = document.getElementById('close-shortcuts');
 
         if (projectsTrigger) { projectsTrigger.addEventListener('click', () => projectsModal.classList.add('active')); closeProjects.addEventListener('click', () => projectsModal.classList.remove('active')); }
-        if (githubTrigger) { githubTrigger.addEventListener('click', () => { githubModal.classList.add('active'); loadGithubRepos(); }); closeGithub.addEventListener('click', () => githubModal.classList.remove('active')); }
         if (helpBtn) { helpBtn.addEventListener('click', () => shortcutsModal.classList.add('active')); closeShortcuts.addEventListener('click', () => shortcutsModal.classList.remove('active')); }
         
         function openCli() { cliModal.classList.add('active'); setTimeout(() => cliInput.focus(), 100); }
@@ -818,7 +841,7 @@
         if (cliBtn) cliBtn.addEventListener('click', openCli);
         if (closeCli) closeCli.addEventListener('click', closeCliModal);
 
-        [projectsModal, githubModal, cliModal, shortcutsModal].forEach(modal => { 
+        [projectsModal, cliModal, shortcutsModal].forEach(modal => { 
             if(modal) modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); }); 
         });
 
@@ -832,32 +855,6 @@
                     copyToast.classList.add('show'); setTimeout(() => copyToast.classList.remove('show'), 2000);
                 });
             });
-        }
-
-        /* GITHUB REPOS LOADER */
-        async function loadGithubRepos() {
-            const list = document.getElementById('github-repo-list');
-            try {
-                const res = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6`);
-                if(!res.ok) throw new Error();
-                const repos = await res.json();
-                document.getElementById('stat-gh-count').innerText = repos.length;
-                list.innerHTML = '';
-                repos.forEach(repo => {
-                    const item = document.createElement('a');
-                    item.href = repo.html_url; item.target = '_blank'; item.className = 'project-item';
-                    item.innerHTML = `
-                        <div class="project-head">
-                            <span class="project-name"><i class="fab fa-github"></i> ${repo.name}</span>
-                            <span class="project-tag">${repo.language || 'Code'} ★ ${repo.stargazers_count}</span>
-                        </div>
-                        <p class="project-desc">${repo.description || 'Keine Beschreibung angegeben.'}</p>
-                    `;
-                    list.appendChild(item);
-                });
-            } catch(e) {
-                list.innerHTML = '<div style="color:var(--text-muted); padding:10px;">Repositories konnten nicht geladen werden oder GitHub-Rate-Limit erreicht.</div>';
-            }
         }
 
         /* CLI COMMANDS */
@@ -963,6 +960,11 @@
                     document.getElementById('stat-1').innerText = stats.years_coding || '3+';
                     document.getElementById('stat-2').innerText = stats.languages || '3+';
                     document.getElementById('stat-3').innerText = stats.projects || '20+';
+                    
+                    // Website Views anzeigen und bei Seitenaufruf um +1 hochzählen
+                    const currentViews = (stats.views || 0) + 1;
+                    document.getElementById('stat-4').innerText = currentViews.toLocaleString();
+                    sbClient.from('stats').update({ views: currentViews }).eq('id', 1).then();
                 }
 
                 // Playlist
@@ -992,9 +994,6 @@
                         if (data.instant_invite) document.getElementById('discord-guild-invite').href = data.instant_invite;
                     }
                 }).catch(() => {});
-
-                // Initial Github Repos Fetch
-                loadGithubRepos();
 
                 applyCursorHoverEffects(); 
                 updatePlayerUI();
